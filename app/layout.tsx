@@ -1,3 +1,4 @@
+import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from "next/font/google"
 
 import "./globals.css"
@@ -14,6 +15,22 @@ const fontMono = Geist_Mono({
   variable: "--font-mono",
 })
 
+export const metadata: Metadata = {
+  title: "Proxymon - Pokemon Proxy Card Generator",
+  description: "Generate high-quality printable proxy cards for Pokemon TCG",
+}
+
+// Viewport configuration for mobile safe areas
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  // This is the key property for handling safe areas
+  viewportFit: 'cover',
+  themeColor: '#020617',
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -25,7 +42,7 @@ export default function RootLayout({
       suppressHydrationWarning
       className={cn("antialiased", fontMono.variable, "font-sans", fontSans.variable)}
     >
-      <body>
+      <body className="overscroll-none">
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>

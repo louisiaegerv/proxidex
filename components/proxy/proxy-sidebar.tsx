@@ -101,10 +101,45 @@ export function ProxySidebar() {
       return ""
     }
     
-    // Format: "quantity name setId localId"
-    const cardList = items
-      .map((item) => `${item.quantity} ${item.name} ${getSetId(item)} ${item.localId}`)
-      .join("\n")
+    // Helper to get a unique key for a card (for comparison)
+    const getCardKey = (item: typeof items[0]): string => {
+      return `${item.name}|${getSetId(item)}|${item.localId}`
+    }
+    
+    // Merge adjacent identical cards
+    const mergedLines: string[] = []
+    let currentKey: string | null = null
+    let currentQuantity = 0
+    let currentName = ""
+    let currentSetId = ""
+    let currentLocalId = ""
+    
+    for (const item of items) {
+      const key = getCardKey(item)
+      
+      if (key === currentKey) {
+        // Same card as previous, accumulate quantity
+        currentQuantity += item.quantity
+      } else {
+        // Different card, output previous if exists
+        if (currentKey !== null) {
+          mergedLines.push(`${currentQuantity} ${currentName} ${currentSetId} ${currentLocalId}`)
+        }
+        // Start new group
+        currentKey = key
+        currentQuantity = item.quantity
+        currentName = item.name
+        currentSetId = getSetId(item)
+        currentLocalId = item.localId
+      }
+    }
+    
+    // Output the last group
+    if (currentKey !== null) {
+      mergedLines.push(`${currentQuantity} ${currentName} ${currentSetId} ${currentLocalId}`)
+    }
+    
+    const cardList = mergedLines.join("\n")
     
     try {
       await navigator.clipboard.writeText(cardList)

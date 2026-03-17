@@ -40,6 +40,7 @@ export interface ParsedDeckResult {
  * Also handles special characters and variants like:
  * - "3 Charmeleon ex"
  * - "2 Charizard ex OBF 223"
+ * - "1 Darkness Energy sm1 D" (energy cards with letter suffixes)
  */
 export function parseDeckList(deckText: string): DeckListItem[] {
   const lines = deckText.trim().split('\n');
@@ -73,7 +74,7 @@ export function parseDeckList(deckText: string): DeckListItem[] {
     
     // Check if there's a set code and card number at the end
     // Pattern: "... OBF 26" or "... OBF026" or "... 026"
-    const setNumberMatch = rest.match(/^(.*?)\s+([A-Za-z0-9.]+)\s*(\d{1,3})$/i);
+    const setNumberMatch = rest.match(/^(.*?)\s+([A-Za-z0-9.]+)\s*(\d{1,3}|[A-Z])$/i);
     const numberOnlyMatch = rest.match(/^(.*?)\s+(\d{1,3})$/);
     
     if (setNumberMatch) {
@@ -83,7 +84,7 @@ export function parseDeckList(deckText: string): DeckListItem[] {
       items.push({
         quantity,
         cardName: setNumberMatch[1].trim(),
-        setCode: mappedSetCode.toLowerCase(), // Use mapped code, lowercase for API
+        setCode: mappedSetCode.toLowerCase(),
         cardNumber: setNumberMatch[3],
       });
     } else if (numberOnlyMatch) {
@@ -114,14 +115,12 @@ async function getCardBySetAndNumber(
 ): Promise<QueriedCard | null> {
   try {
     // Build potential card ID formats
-    // TCGdex uses format: "{setId}-{localId}" (e.g., "sv08.5-035" or "sv08.5-35")
     const cardIdFormats = [
       `${setId}-${localId}`,
-      `${setId}-${parseInt(localId, 10)}`, // Without leading zeros
-      `${setId}-${localId.padStart(3, '0')}`, // With leading zeros
+      `${setId}-${parseInt(localId, 10)}`,
+      `${setId}-${localId.padStart(3, '0')}`,
     ];
     
-    // Try each format
     for (const cardId of cardIdFormats) {
       try {
         const card = await tcgdex.card.get(cardId);
@@ -131,7 +130,6 @@ async function getCardBySetAndNumber(
             const cardNameLower = card.name.toLowerCase();
             const expectedNameLower = expectedName.toLowerCase();
             
-            // Check for exact match or if expected name is contained in card name
             if (cardNameLower !== expectedNameLower && 
                 !cardNameLower.includes(expectedNameLower) &&
                 !expectedNameLower.includes(cardNameLower)) {
@@ -156,15 +154,10 @@ async function getCardBySetAndNumber(
 }
 
 /**
- * Search for cards by name only (fallback when set+number fails)
- * Special handling for Energy cards which may not have images in TCGDex
+ * Search for cards by name only
  */
 async function searchCardByName(name: string): Promise<QueriedCard | null> {
   try {
-    // Special case: Basic Energy cards often don't have individual card entries in TCGDex
-    // They might be in sets like "Energy" or not have images
-    const isBasicEnergy = /^(grass|fire|water|lightning|psychic|fighting|darkness|metal|fairy|dragon|colorless)\s+energy$/i.test(name);
-    
     const queryBuilder = Query.create().like('name', name);
     const matchingCards = await tcgdex.card.list(queryBuilder) || [];
     
@@ -185,12 +178,6 @@ async function searchCardByName(name: string): Promise<QueriedCard | null> {
       return 0;
     });
     
-    // For basic energy, accept any card with the name even without image
-    if (isBasicEnergy && sortedCards.length > 0) {
-      const energyCard = sortedCards.find(c => c.image) || sortedCards[0];
-      return energyCard as QueriedCard;
-    }
-    
     const cardWithImage = sortedCards.find(card => card.image);
     return cardWithImage ? (cardWithImage as QueriedCard) : null;
   } catch {
@@ -199,7 +186,7 @@ async function searchCardByName(name: string): Promise<QueriedCard | null> {
 }
 
 /**
- * Search for cards by name and set (fallback when direct get fails)
+ * Search for cards by name and set
  */
 async function searchCardByNameAndSet(name: string, setId: string): Promise<QueriedCard | null> {
   try {
@@ -234,20 +221,18 @@ async function searchCardByNameAndSet(name: string, setId: string): Promise<Quer
  * Automatically deduplicates cards to avoid redundant API requests.
  * 
  * Uses multiple fallback strategies:
- * 1. Try direct card get by set+number (handles special set IDs like sv08.5)
+ * 1. Try direct card get by set+number
  * 2. Try searching by name + set
  * 3. Try searching by name only
- * 4. Create a synthetic card entry (for energy cards, etc.)
+ * 4. Return error if all fallbacks fail
  */
 export async function resolveDeckCards(items: DeckListItem[]): Promise<ParsedDeckResult[]> {
-  // Deduplicate items by card name + setCode + cardNumber to avoid redundant API calls
   const uniqueKeyMap = new Map<string, DeckListItem & { totalQuantity: number; originalIndices: number[] }>();
   
   items.forEach((item, index) => {
     const key = `${item.cardName.toLowerCase()}|${item.setCode?.toLowerCase() || ''}|${item.cardNumber || ''}`;
     
     if (uniqueKeyMap.has(key)) {
-      // Accumulate quantity for duplicate entries
       const existing = uniqueKeyMap.get(key)!;
       existing.totalQuantity += item.quantity;
       existing.originalIndices.push(index);
@@ -262,7 +247,6 @@ export async function resolveDeckCards(items: DeckListItem[]): Promise<ParsedDec
   
   const uniqueItems = Array.from(uniqueKeyMap.values());
   const results: ParsedDeckResult[] = [];
-  // Initialize results array to maintain original order
   const resultsByIndex = new Map<number, ParsedDeckResult>();
 
   console.log(`[Deck Parser] Resolving ${uniqueItems.length} unique card(s)`);
@@ -274,7 +258,7 @@ export async function resolveDeckCards(items: DeckListItem[]): Promise<ParsedDec
     try {
       console.log(`[Deck Parser] Searching for: ${item.cardName} (set: ${item.setCode}, number: ${item.cardNumber})`);
       
-      // Strategy 1: Try direct card get by set+number (most reliable for specific cards)
+      // Strategy 1: Try direct card get by set+number
       if (item.setCode && item.cardNumber) {
         selectedCard = await getCardBySetAndNumber(item.setCode, item.cardNumber, item.cardName);
         if (selectedCard) {
@@ -298,33 +282,16 @@ export async function resolveDeckCards(items: DeckListItem[]): Promise<ParsedDec
         }
       }
       
-      // Strategy 4: Create synthetic card entry (for energy cards or unknown cards)
+      // Strategy 4: Return error - no synthetic placeholder
       if (!selectedCard) {
-        console.log(`[Deck Parser] Creating synthetic entry for: ${item.cardName}`);
-        
-        // For basic energy cards, create a more helpful placeholder
-        const isBasicEnergy = /^(grass|fire|water|lightning|psychic|fighting|darkness|metal|fairy|dragon|colorless)\s+energy$/i.test(item.cardName);
-        
-        selectedCard = {
-          id: `unknown-${item.cardName.toLowerCase().replace(/\s+/g, '-')}`.slice(0, 50),
-          name: item.cardName,
-          localId: item.cardNumber || '0',
-          image: undefined,
-          set: item.setCode ? { id: item.setCode, name: item.setCode.toUpperCase() } : undefined,
-        } as QueriedCard;
-        
-        if (isBasicEnergy) {
-          error = 'Basic Energy - print without image or use proxy';
-        } else {
-          error = 'Card image not available - using placeholder';
-        }
+        console.log(`[Deck Parser] Card not found: ${item.cardName}`);
+        error = `Card not found: ${item.cardName}${item.setCode ? ` (${item.setCode})` : ''}`;
       }
     } catch (err) {
       console.error(`[Deck Parser] Error searching for ${item.cardName}:`, err);
       error = 'Search failed';
     }
     
-    // Create result for each original index to maintain order
     const result: ParsedDeckResult = {
       item: {
         ...item,
@@ -334,14 +301,11 @@ export async function resolveDeckCards(items: DeckListItem[]): Promise<ParsedDec
       error,
     };
     
-    // Map result to all original indices
     for (const originalIndex of item.originalIndices) {
       resultsByIndex.set(originalIndex, result);
     }
   }
 
-  // Reconstruct results in original order, but only include each unique card once
-  // (even if it appeared multiple times in the input)
   const processedKeys = new Set<string>();
   
   for (let i = 0; i < items.length; i++) {
@@ -349,7 +313,6 @@ export async function resolveDeckCards(items: DeckListItem[]): Promise<ParsedDec
     if (result) {
       const key = `${result.item.cardName.toLowerCase()}|${result.item.setCode?.toLowerCase() || ''}|${result.item.cardNumber || ''}`;
       
-      // Only add this result if we haven't seen this card before
       if (!processedKeys.has(key)) {
         results.push(result);
         processedKeys.add(key);

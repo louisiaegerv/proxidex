@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { ProxyItem, PrintSettings, DEFAULT_PRINT_SETTINGS } from '@/types';
+import type { ProxyItem, PrintSettings } from '@/types';
 
 interface ProxyListState {
   // Proxy list
@@ -8,20 +8,36 @@ interface ProxyListState {
   addItem: (card: {
     cardId: string;
     name: string;
-    image: string | undefined;        // Processed image (corners stretched)
-    originalImage?: string | undefined; // Original TCGdex URL
+    image: string | undefined;
+    originalImage?: string | undefined;
     setName: string;
     setId: string;
     localId: string;
     variant?: 'normal' | 'holo' | 'reverse';
   }, quantity?: number) => void;
   removeItem: (id: string) => void;
+  removeItems: (ids: string[]) => void;
   updateQuantity: (id: string, quantity: number) => void;
   updateVariant: (id: string, variant: 'normal' | 'holo' | 'reverse') => void;
   reorderItems: (startIndex: number, endIndex: number) => void;
+  reorderItemsById: (activeId: string, overId: string) => void;
   updateItemCard: (id: string, cardData: Partial<ProxyItem>) => void;
   clearList: () => void;
   getTotalCards: () => number;
+  
+  // Selection state for bulk operations
+  selectedIds: Set<string>;
+  isBulkMode: boolean;
+  lastSelectedId: string | null;
+  toggleBulkMode: () => void;
+  selectItem: (id: string) => void;
+  deselectItem: (id: string) => void;
+  toggleSelection: (id: string) => void;
+  selectRange: (startId: string, endId: string) => void;
+  selectAll: () => void;
+  deselectAll: () => void;
+  clearSelection: () => void;
+  getSelectedCount: () => number;
   
   // Print settings
   settings: PrintSettings;
@@ -34,6 +50,9 @@ export const useProxyList = create<ProxyListState>()(
     (set, get) => ({
       // Initial state
       items: [],
+      selectedIds: new Set(),
+      isBulkMode: false,
+      lastSelectedId: null,
       settings: {
         pageSize: 'letter',
         cardsPerRow: 3,
@@ -53,8 +72,6 @@ export const useProxyList = create<ProxyListState>()(
       addItem: (card, quantity = 1) => {
         const items = get().items;
         
-        // Add each card as an individual item for maximum flexibility
-        // This allows dragging individual cards to reorder them
         const newItems: ProxyItem[] = [];
         const baseId = `${card.cardId}-${Date.now()}`;
         
@@ -63,12 +80,12 @@ export const useProxyList = create<ProxyListState>()(
             id: `${baseId}-${i}`,
             cardId: card.cardId,
             name: card.name,
-            image: card.image,        // Processed image (corners stretched)
-            originalImage: card.originalImage, // Original TCGdex URL
+            image: card.image,
+            originalImage: card.originalImage,
             setName: card.setName,
             setId: card.setId,
             localId: card.localId,
-            quantity: 1,              // Each item is a single card
+            quantity: 1,
             variant: card.variant || 'normal',
           });
         }
@@ -79,6 +96,14 @@ export const useProxyList = create<ProxyListState>()(
       removeItem: (id) => {
         set((state) => ({
           items: state.items.filter((item) => item.id !== id),
+          selectedIds: new Set([...state.selectedIds].filter((sid) => sid !== id)),
+        }));
+      },
+
+      removeItems: (ids) => {
+        set((state) => ({
+          items: state.items.filter((item) => !ids.includes(item.id)),
+          selectedIds: new Set([...state.selectedIds].filter((sid) => !ids.includes(sid))),
         }));
       },
 
@@ -107,7 +132,6 @@ export const useProxyList = create<ProxyListState>()(
         set({ items });
       },
       
-      // Reorder by item ID - used when we only know the IDs
       reorderItemsById: (activeId: string, overId: string) => {
         const items = [...get().items];
         const activeIndex = items.findIndex(item => item.id === activeId);
@@ -131,11 +155,89 @@ export const useProxyList = create<ProxyListState>()(
       },
 
       clearList: () => {
-        set({ items: [] });
+        set({ items: [], selectedIds: new Set(), isBulkMode: false, lastSelectedId: null });
       },
 
       getTotalCards: () => {
         return get().items.reduce((sum, item) => sum + item.quantity, 0);
+      },
+
+      // Selection actions
+      toggleBulkMode: () => {
+        set((state) => ({
+          isBulkMode: !state.isBulkMode,
+          selectedIds: !state.isBulkMode ? state.selectedIds : new Set(),
+          lastSelectedId: null,
+        }));
+      },
+
+      selectItem: (id) => {
+        set((state) => ({
+          selectedIds: new Set([...state.selectedIds, id]),
+          lastSelectedId: id,
+        }));
+      },
+
+      deselectItem: (id) => {
+        set((state) => {
+          const newSelected = new Set(state.selectedIds);
+          newSelected.delete(id);
+          return { selectedIds: newSelected };
+        });
+      },
+
+      toggleSelection: (id) => {
+        set((state) => {
+          const newSelected = new Set(state.selectedIds);
+          if (newSelected.has(id)) {
+            newSelected.delete(id);
+          } else {
+            newSelected.add(id);
+          }
+          return { 
+            selectedIds: newSelected,
+            lastSelectedId: id,
+          };
+        });
+      },
+
+      selectRange: (startId, endId) => {
+        const items = get().items;
+        const startIndex = items.findIndex(item => item.id === startId);
+        const endIndex = items.findIndex(item => item.id === endId);
+        
+        if (startIndex === -1 || endIndex === -1) return;
+        
+        const minIndex = Math.min(startIndex, endIndex);
+        const maxIndex = Math.max(startIndex, endIndex);
+        
+        const newSelected = new Set(get().selectedIds);
+        for (let i = minIndex; i <= maxIndex; i++) {
+          newSelected.add(items[i].id);
+        }
+        
+        set({ 
+          selectedIds: newSelected,
+          lastSelectedId: endId,
+        });
+      },
+
+      selectAll: () => {
+        set((state) => ({
+          selectedIds: new Set(state.items.map(item => item.id)),
+        }));
+      },
+
+      deselectAll: () => {
+        set({ selectedIds: new Set(), lastSelectedId: null });
+      },
+
+      clearSelection: () => {
+        set({ selectedIds: new Set(), isBulkMode: false, lastSelectedId: null });
+      },
+
+      getSelectedCount: () => {
+        return get().selectedIds.size;
       },
 
       updateSettings: (newSettings) => {
@@ -166,24 +268,27 @@ export const useProxyList = create<ProxyListState>()(
     {
       name: 'proxymon-proxy-list',
       partialize: (state) => ({ 
-        // Don't persist processed images (base64 is too large for localStorage)
-        // Only persist card metadata and original image URLs
         items: state.items.map(item => ({
           ...item,
-          image: undefined, // Don't persist processed base64 image
+          image: undefined,
         })),
         settings: state.settings,
+        // Don't persist selection state
+        selectedIds: new Set(),
+        isBulkMode: false,
+        lastSelectedId: null,
       }),
-      // Restore processed images on rehydrate
       onRehydrateStorage: () => (state) => {
         if (!state) return;
         
-        // Restore original image URLs to image field for compatibility
-        // The images will be re-processed when needed or displayed using original URL
         state.items = state.items.map(item => ({
           ...item,
           image: item.originalImage || item.image,
         }));
+        // Reset selection state
+        state.selectedIds = new Set();
+        state.isBulkMode = false;
+        state.lastSelectedId = null;
       },
     }
   )

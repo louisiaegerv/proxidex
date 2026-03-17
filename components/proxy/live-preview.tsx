@@ -1,15 +1,18 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect, useCallback } from "react"
 import { useProxyList } from "@/stores/proxy-list"
 import { getFullImageUrl } from "@/lib/tcgdex"
 import { PAGE_DIMENSIONS, BleedMethod } from "@/types"
 import { generateProxyPDF, downloadPDF } from "@/lib/pdf"
 import { Button } from "@/components/ui/button"
-import { Printer, Loader2, ZoomIn, ZoomOut, RotateCcw } from "lucide-react"
+import { Printer, Loader2, ZoomIn, ZoomOut, RotateCcw, CheckSquare, X } from "lucide-react"
 import { CardVariantModal } from "./card-variant-modal"
+import { BulkSelectionToolbar } from "./bulk-selection-toolbar"
+import { DeleteConfirmDialog, shouldSkipDeleteConfirm } from "./delete-confirm-dialog"
 import { cn } from "@/lib/utils"
 import { CardWithBleed } from "@/components/card-with-bleed"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   DndContext,
   DragEndEvent,
@@ -23,7 +26,6 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core"
-import { CSS } from "@dnd-kit/utilities"
 
 // mm to pixels for preview (at 96 DPI, 1mm ≈ 3.78px)
 const MM_TO_PX = 3.78
@@ -46,16 +48,38 @@ interface DisplayCard {
   imageHeight: number
 }
 
-export function LivePreview() {
-  const { items, getTotalCards, settings, reorderItems } = useProxyList()
+interface LivePreviewProps {
+  hideHeader?: boolean;
+  containerWidth?: number; // When provided, scales to fit this width
+}
+
+export function LivePreview({ hideHeader = false, containerWidth }: LivePreviewProps) {
+  const { 
+    items, 
+    getTotalCards, 
+    settings, 
+    reorderItems,
+    selectedIds,
+    isBulkMode,
+    toggleBulkMode,
+    toggleSelection,
+    selectRange,
+    selectAll,
+    deselectAll,
+    clearSelection,
+    removeItems,
+  } = useProxyList()
   const [isGenerating, setIsGenerating] = useState(false)
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null)
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null)
   const [zoomIndex, setZoomIndex] = useState(2)
   const [activeId, setActiveId] = useState<string | null>(null)
   const [overId, setOverId] = useState<string | null>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [localLastSelectedId, setLocalLastSelectedId] = useState<string | null>(null)
 
   const totalCards = getTotalCards()
+  const selectedCount = selectedIds.size
   const zoom = ZOOM_LEVELS[zoomIndex]
 
   // Use mouse sensor with activation constraint to prevent accidental drags
@@ -94,7 +118,17 @@ export function LivePreview() {
     const marginXMm = (pageDims.width - gridWidthMm) / 2 + settings.offsetX
     const marginYMm = (pageDims.height - gridHeightMm) / 2 + settings.offsetY
 
-    const baseScale = 0.8
+    // Calculate base scale (0.8 for desktop)
+    let baseScale = 0.8
+    
+    // If containerWidth is provided, calculate scale to fit
+    if (containerWidth && containerWidth > 0) {
+      const pageWidthPx = pageDims.width * MM_TO_PX
+      // Scale to fit with some padding (16px on each side)
+      const fitScale = (containerWidth - 32) / pageWidthPx
+      baseScale = Math.min(0.8, Math.max(0.3, fitScale))
+    }
+    
     const finalScale = baseScale * zoom
 
     return {
@@ -117,7 +151,6 @@ export function LivePreview() {
   }, [settings, zoom])
 
   // Build display cards with position info
-  // Each item is now a single card (quantity is always 1)
   const displayCards = useMemo(() => {
     const cards: DisplayCard[] = []
     items.forEach((item, itemIndex) => {
@@ -128,7 +161,7 @@ export function LivePreview() {
       const col = pageCardIndex % settings.cardsPerRow
 
       cards.push({
-        id: item.id,  // Use item.id directly since each item is one card
+        id: item.id,
         itemId: item.id,
         name: item.name,
         image: item.image,
@@ -149,13 +182,42 @@ export function LivePreview() {
     return displayCards.find((c) => c.id === activeId)
   }, [activeId, displayCards])
 
+  const handleDeleteSelected = useCallback(() => {
+    if (selectedCount === 0) return
+    
+    if (shouldSkipDeleteConfirm()) {
+      removeItems(Array.from(selectedIds))
+    } else {
+      setShowDeleteConfirm(true)
+    }
+  }, [selectedCount, selectedIds, removeItems])
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Escape - exit bulk mode and clear selection
+      if (e.key === "Escape") {
+        if (isBulkMode) {
+          clearSelection()
+        }
+      }
+      // Delete - delete selected cards (only when in bulk mode and cards are selected)
+      if ((e.key === "Delete" || e.key === "Backspace") && selectedCount > 0 && isBulkMode) {
+        e.preventDefault()
+        handleDeleteSelected()
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [isBulkMode, selectedCount, selectedIds, clearSelection, handleDeleteSelected])
+
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string)
     setOverId(null)
   }
 
   const handleDragMove = (event: DragMoveEvent) => {
-    // Track which card we're hovering over for live preview
     if (event.over) {
       setOverId(event.over.id as string)
     } else {
@@ -175,24 +237,40 @@ export function LivePreview() {
 
     if (!activeCard || !overCard) return
     if (activeCard.id === overCard.id) return
-    // Allow dragging even if same item (different instances of same card)
-    // since each card is now stored individually
 
-    // Swap items by their IDs - each card is now an individual item
     reorderItems(activeCard.itemIndex, overCard.itemIndex)
   }
 
-  const totalPages = Math.ceil(displayCards.length / preview.cardsPerPage) || 1
+  const handleCardClick = (card: DisplayCard, event: React.MouseEvent) => {
+    // If in bulk mode or shift is held, handle selection
+    if (isBulkMode || event.shiftKey) {
+      event.preventDefault()
+      event.stopPropagation()
+      
+      if (event.shiftKey && localLastSelectedId) {
+        // Range selection
+        selectRange(localLastSelectedId, card.id)
+      } else {
+        // Toggle selection
+        toggleSelection(card.id)
+      }
+      setLocalLastSelectedId(card.id)
+    } else {
+      // Normal click - open variant modal
+      setSelectedCardId(card.id)
+      setSelectedItemId(card.itemId)
+    }
+  }
+
+  const handleCheckboxChange = (cardId: string) => {
+    toggleSelection(cardId)
+    setLocalLastSelectedId(cardId)
+  }
 
   const handleZoomIn = () =>
     setZoomIndex((i) => Math.min(i + 1, ZOOM_LEVELS.length - 1))
   const handleZoomOut = () => setZoomIndex((i) => Math.max(i - 1, 0))
   const handleResetZoom = () => setZoomIndex(1)
-
-  const handleCardClick = (cardId: string, itemId: string) => {
-    setSelectedCardId(cardId)
-    setSelectedItemId(itemId)
-  }
 
   const handleCloseModal = () => {
     setSelectedCardId(null)
@@ -210,6 +288,16 @@ export function LivePreview() {
     } finally {
       setIsGenerating(false)
     }
+  }
+
+  const handleConfirmDelete = () => {
+    removeItems(Array.from(selectedIds))
+    setShowDeleteConfirm(false)
+  }
+
+  const handleExitBulkMode = () => {
+    clearSelection()
+    setLocalLastSelectedId(null)
   }
 
   if (items.length === 0) {
@@ -232,51 +320,77 @@ export function LivePreview() {
 
   return (
     <div className="flex h-full flex-col">
-      {/* Header */}
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-slate-100">
-            Print Preview
-          </h2>
-          <p className="text-sm text-slate-500">
-            {totalCards} cards · {totalPages} page{totalPages !== 1 ? "s" : ""}
-          </p>
-        </div>
+      {/* Header - hidden on mobile when hideHeader is true */}
+      {!hideHeader && (
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-100">
+              Print Preview
+            </h2>
+            <p className="text-sm text-slate-500">
+              {totalCards} cards · {selectedCount > 0 ? `${selectedCount} selected · ` : ""}
+              {Math.ceil(displayCards.length / preview.cardsPerPage)} page{Math.ceil(displayCards.length / preview.cardsPerPage) !== 1 ? "s" : ""}
+            </p>
+          </div>
 
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-900 p-1">
+          <div className="flex items-center gap-2">
+            {/* Bulk mode toggle */}
             <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={handleZoomOut}
-              disabled={zoomIndex === 0}
+              variant={isBulkMode ? "secondary" : "ghost"}
+              size="sm"
+              onClick={toggleBulkMode}
+              className={cn(
+                "h-8 px-3 gap-2",
+                isBulkMode && "bg-blue-600 text-white hover:bg-blue-700"
+              )}
             >
-              <ZoomOut className="h-4 w-4" />
+              {isBulkMode ? (
+                <>
+                  <X className="w-4 h-4" />
+                  Exit Selection
+                </>
+              ) : (
+                <>
+                  <CheckSquare className="w-4 h-4" />
+                  Select
+                </>
+              )}
             </Button>
-            <span className="w-12 text-center text-xs">
-              {Math.round(zoom * 100)}%
-            </span>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={handleZoomIn}
-              disabled={zoomIndex === ZOOM_LEVELS.length - 1}
-            >
-              <ZoomIn className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={handleResetZoom}
-            >
-              <RotateCcw className="h-4 w-4" />
-            </Button>
+
+            <div className="flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-900 p-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={handleZoomOut}
+                disabled={zoomIndex === 0}
+              >
+                <ZoomOut className="h-4 w-4" />
+              </Button>
+              <span className="w-12 text-center text-xs">
+                {Math.round(zoom * 100)}%
+              </span>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={handleZoomIn}
+                disabled={zoomIndex === ZOOM_LEVELS.length - 1}
+              >
+                <ZoomIn className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={handleResetZoom}
+              >
+                <RotateCcw className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Preview Pages */}
       <DndContext
@@ -285,15 +399,16 @@ export function LivePreview() {
         onDragMove={handleDragMove}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex-1 space-y-8 overflow-auto pb-8">
-          {Array.from({ length: totalPages }).map((_, pageIndex) => {
+        <div className="flex-1 space-y-8 overflow-auto pb-8 px-4">
+          {Array.from({ length: Math.ceil(displayCards.length / preview.cardsPerPage) }).map((_, pageIndex) => {
             const pageCards = displayCards.slice(
               pageIndex * preview.cardsPerPage,
               (pageIndex + 1) * preview.cardsPerPage
             )
+            const totalPages = Math.ceil(displayCards.length / preview.cardsPerPage)
 
             return (
-              <div key={pageIndex} className="flex flex-col items-center">
+              <div key={pageIndex} className="flex flex-col items-start">
                 <div className="mb-2 text-xs text-slate-500">
                   Page {pageIndex + 1} of {totalPages}
                 </div>
@@ -311,6 +426,7 @@ export function LivePreview() {
                   {pageCards.map((card) => {
                     const isActive = card.id === activeId
                     const isOver = card.id === overId
+                    const isSelected = selectedIds.has(card.id)
                     const imageUrl = getFullImageUrl(card.image, "low", "webp")
 
                     return (
@@ -319,8 +435,11 @@ export function LivePreview() {
                         card={card}
                         isActive={isActive}
                         isOver={isOver}
+                        isSelected={isSelected}
                         activeId={activeId}
-                        onClick={() => handleCardClick(card.id, card.itemId)}
+                        isBulkMode={isBulkMode}
+                        onClick={(e) => handleCardClick(card, e)}
+                        onSelectChange={() => handleCheckboxChange(card.id)}
                       >
                         {imageUrl ? (
                           <CardWithBleed
@@ -458,8 +577,32 @@ export function LivePreview() {
             cut
           </div>
         )}
+        {isBulkMode && (
+          <div className="text-blue-400 mt-1">
+            Click cards to select · Shift+click for range selection · Press Delete to remove selected
+          </div>
+        )}
       </div>
 
+      {/* Bulk Selection Toolbar */}
+      <BulkSelectionToolbar
+        selectedCount={selectedCount}
+        totalCount={items.length}
+        onDelete={handleDeleteSelected}
+        onSelectAll={selectAll}
+        onDeselectAll={deselectAll}
+        onExitBulkMode={handleExitBulkMode}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleConfirmDelete}
+        cardCount={selectedCount}
+      />
+
+      {/* Card Variant Modal */}
       <CardVariantModal
         isOpen={!!selectedCardId}
         onClose={handleCloseModal}
@@ -475,20 +618,25 @@ interface DraggableCardProps {
   card: DisplayCard
   isActive: boolean
   isOver: boolean
+  isSelected: boolean
   activeId: string | null
+  isBulkMode: boolean
   children: React.ReactNode
-  onClick?: () => void
+  onClick?: (event: React.MouseEvent) => void
+  onSelectChange?: () => void
 }
 
 function DraggableCard({
   card,
   isActive,
   isOver,
+  isSelected,
   activeId,
+  isBulkMode,
   children,
   onClick,
+  onSelectChange,
 }: DraggableCardProps) {
-  // Make card draggable
   const {
     attributes,
     listeners,
@@ -497,29 +645,26 @@ function DraggableCard({
   } = useDraggable({
     id: card.id,
     data: { card },
+    disabled: isBulkMode, // Disable dragging in bulk mode
   })
 
-  // Make card droppable (can receive drops from other cards)
   const { setNodeRef: setDroppableRef } = useDroppable({
     id: card.id,
     data: { card },
+    disabled: isBulkMode, // Disable dropping in bulk mode
   })
 
-  // Calculate visual shift based on drag-over state
-  // When a card is being dragged over this card, shift this card
-  // to indicate where the drop will place the dragged card
-  const getShift = () => {
-    if (!isOver || !activeId) return { x: 0, y: 0 }
-    // Subtle shift to indicate this is the drop target
-    return { x: 0, y: 0 }
+  const handleClick = (e: React.MouseEvent) => {
+    // Prevent drag from interfering with click
+    if (!isDragging && onClick) {
+      onClick(e)
+    }
   }
-
-  const shift = getShift()
 
   const style = {
     opacity: isDragging ? 0.3 : isActive ? 0.5 : 1,
-    zIndex: isDragging ? 50 : isOver ? 40 : undefined,
-    cursor: isDragging ? "grabbing" : "grab",
+    zIndex: isDragging ? 50 : isOver ? 40 : isBulkMode ? 30 : undefined,
+    cursor: isBulkMode ? "pointer" : isDragging ? "grabbing" : "grab",
     touchAction: "none",
   }
 
@@ -528,11 +673,12 @@ function DraggableCard({
       ref={setDroppableRef}
       className={cn(
         "absolute transition-all duration-200",
-        isOver && "z-40 scale-105 ring-2 ring-green-400 ring-offset-2"
+        isOver && !isBulkMode && "z-40 scale-105 ring-2 ring-green-400 ring-offset-2",
+        isSelected && "ring-2 ring-blue-500 ring-offset-2 z-30"
       )}
       style={{
-        left: card.imageX + shift.x,
-        top: card.imageY + shift.y,
+        left: card.imageX,
+        top: card.imageY,
         width: card.imageWidth,
         height: card.imageHeight,
       }}
@@ -540,16 +686,47 @@ function DraggableCard({
       <div
         ref={setDraggableRef}
         {...attributes}
-        {...listeners}
-        onClick={onClick}
+        {...(isBulkMode ? {} : listeners)}
+        onClick={handleClick}
         className={cn(
-          "h-full w-full transition-all hover:brightness-110",
+          "h-full w-full transition-all",
+          !isBulkMode && "hover:brightness-110",
           isDragging && "ring-2 ring-blue-400"
         )}
         style={style}
       >
         {children}
       </div>
+
+      {/* Selection checkbox overlay */}
+      {isBulkMode && (
+        <div 
+          className="absolute top-2 left-2 z-50"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Checkbox
+            checked={isSelected}
+            onCheckedChange={onSelectChange}
+            className={cn(
+              "w-5 h-5 border-2 shadow-lg",
+              isSelected 
+                ? "bg-blue-600 border-blue-600 data-[state=checked]:bg-blue-600" 
+                : "bg-white/90 border-slate-400 hover:bg-white"
+            )}
+          />
+        </div>
+      )}
+
+      {/* Selected indicator (subtle when not in bulk mode) */}
+      {isSelected && !isBulkMode && (
+        <div className="absolute top-2 left-2 z-40">
+          <div className="w-4 h-4 rounded-sm bg-blue-600 shadow-lg flex items-center justify-center">
+            <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
