@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bleed Edge Pixel Extender</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+      }
+      .checkerboard {
+        background-image:
+          linear-gradient(45deg, #e5e7eb 25%, transparent 25%),
+          linear-gradient(-45deg, #e5e7eb 25%, transparent 25%),
+          linear-gradient(45deg, transparent 75%, #e5e7eb 75%),
+          linear-gradient(-45deg, transparent 75%, #e5e7eb 75%);
+        background-size: 20px 20px;
+        background-position:
+          0 0,
+          0 10px,
+          10px -10px,
+          -10px 0px;
+      }
+      .canvas-container {
+        box-shadow:
+          0 20px 25px -5px rgba(0, 0, 0, 0.1),
+          0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      }
+      input[type="range"] {
+        -webkit-appearance: none;
+        appearance: none;
+        background: transparent;
+        cursor: pointer;
+      }
+      input[type="range"]::-webkit-slider-track {
+        background: #e5e7eb;
+        height: 6px;
+        border-radius: 3px;
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        margin-top: -5px;
+        background-color: #3b82f6;
+        height: 16px;
+        width: 16px;
+        border-radius: 50%;
+        border: 2px solid white;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      }
+    </style>
+  </head>
+  <body class="min-h-screen bg-gray-50 p-4 md:p-8">
+    <div class="mx-auto max-w-6xl">
+      <div class="mb-8 text-center">
+        <h1 class="mb-2 text-3xl font-bold text-gray-900 md:text-4xl">
+          Bleed Edge Pixel Extender
+        </h1>
+        <p class="mx-auto max-w-2xl text-gray-600">
+          Smart bleed extension for trading cards. Automatically fills
+          transparent rounded corners before extending edges.
+          <span class="font-semibold text-blue-600"
+            >No more transparent gaps</span
+          >.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div class="space-y-4 lg:col-span-1">
+          <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+            <label class="mb-2 block text-sm font-semibold text-gray-700"
+              >Upload Image</label
+            >
+            <div
+              class="relative cursor-pointer rounded-lg border-2 border-dashed border-gray-300 p-6 text-center transition-colors hover:border-blue-400"
+              id="dropZone"
+            >
+              <input
+                type="file"
+                id="fileInput"
+                accept="image/*"
+                class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+              />
+              <svg
+                class="mx-auto h-12 w-12 text-gray-400"
+                stroke="currentColor"
+                fill="none"
+                viewBox="0 0 48 48"
+              >
+                <path
+                  d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              <p class="mt-2 text-sm text-gray-600">Click or drag image here</p>
+              <p class="mt-1 text-xs text-gray-400">
+                Transparent rounded corners will be auto-filled
+              </p>
+            </div>
+            <div
+              id="fileName"
+              class="mt-2 hidden truncate text-sm font-medium text-gray-600"
+            ></div>
+          </div>
+
+          <div
+            class="space-y-5 rounded-xl border border-gray-200 bg-white p-6 shadow-sm"
+          >
+            <div>
+              <div class="mb-2 flex items-center justify-between">
+                <label class="text-sm font-semibold text-gray-700"
+                  >Bleed Edge</label
+                >
+                <span class="text-sm font-bold text-blue-600" id="bleedValue"
+                  >3 mm</span
+                >
+              </div>
+              <input
+                type="range"
+                id="bleedMm"
+                min="0"
+                max="50"
+                value="3"
+                step="0.5"
+                class="w-full"
+              />
+              <div class="mt-1 flex justify-between text-xs text-gray-400">
+                <span>0mm</span>
+                <span>50mm</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="mb-2 block text-sm font-semibold text-gray-700"
+                >DPI (Print Resolution)</label
+              >
+              <select
+                id="dpi"
+                class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              >
+                <option value="300" selected>300 DPI (Standard Print)</option>
+                <option value="150">150 DPI (Draft)</option>
+                <option value="600">600 DPI (High Quality)</option>
+                <option value="72">72 DPI (Screen/Web)</option>
+              </select>
+            </div>
+
+            <div class="flex items-center justify-between pt-2">
+              <label class="text-sm font-semibold text-gray-700"
+                >Show Bleed Guides</label
+              >
+              <input
+                type="checkbox"
+                id="showGuides"
+                checked
+                class="h-4 w-4 rounded text-blue-600 focus:ring-blue-500"
+              />
+            </div>
+
+            <div class="border-t border-gray-200 pt-4">
+              <div class="space-y-1 text-xs text-gray-500">
+                <div class="flex justify-between">
+                  <span>Original:</span>
+                  <span id="origDims" class="font-mono">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>With Bleed:</span>
+                  <span id="newDims" class="font-mono text-blue-600">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>Bleed pixels:</span>
+                  <span id="bleedPixels" class="font-mono">-</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="space-y-3 rounded-xl border border-gray-200 bg-white p-6 shadow-sm"
+          >
+            <button
+              id="downloadBtn"
+              class="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled
+            >
+              <svg
+                class="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                ></path>
+              </svg>
+              Download PNG
+            </button>
+            <button
+              id="resetBtn"
+              class="w-full rounded-lg bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-200"
+            >
+              Reset All
+            </button>
+          </div>
+        </div>
+
+        <div class="lg:col-span-2">
+          <div
+            class="flex h-full flex-col rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
+          >
+            <div class="mb-4 flex items-center justify-between">
+              <h2 class="text-lg font-semibold text-gray-800">Preview</h2>
+              <div class="flex gap-2">
+                <button
+                  id="zoomOut"
+                  class="rounded-lg p-2 text-gray-600 hover:bg-gray-100"
+                  title="Zoom Out"
+                >
+                  −
+                </button>
+                <span
+                  id="zoomLevel"
+                  class="self-center font-mono text-sm text-gray-600"
+                  >100%</span
+                >
+                <button
+                  id="zoomIn"
+                  class="rounded-lg p-2 text-gray-600 hover:bg-gray-100"
+                  title="Zoom In"
+                >
+                  +
+                </button>
+                <button
+                  id="fitScreen"
+                  class="ml-2 rounded-lg bg-gray-100 px-3 py-1 text-sm text-gray-700 hover:bg-gray-200"
+                >
+                  Fit
+                </button>
+              </div>
+            </div>
+
+            <div
+              class="checkerboard relative min-h-[600px] flex-1 overflow-auto rounded-lg border border-gray-200 bg-gray-100"
+              id="canvasWrapper"
+            >
+              <div
+                class="absolute inset-0 flex items-center justify-center text-gray-400"
+                id="placeholder"
+              >
+                <div class="text-center">
+                  <svg
+                    class="mx-auto mb-2 h-16 w-16 opacity-50"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="1.5"
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    ></path>
+                  </svg>
+                  <p>Upload a trading card image</p>
+                  <p class="mt-1 text-sm opacity-75">
+                    Rounded corners will be squared off automatically
+                  </p>
+                </div>
+              </div>
+              <canvas
+                id="previewCanvas"
+                class="canvas-container absolute top-1/2 left-1/2 hidden -translate-x-1/2 -translate-y-1/2 transform"
+              ></canvas>
+            </div>
+
+            <div
+              class="mt-3 flex items-center justify-between text-xs text-gray-500"
+            >
+              <span
+                >Transparent corners are pre-filled to create sharp edges for
+                clean bleed extension</span
+              >
+              <span
+                id="processingTime"
+                class="hidden font-medium text-green-600"
+                >Processed in 0ms</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let originalImage = null // The preprocessed (squared) image
+      let currentZoom = 1
+      let processedCanvas = null
+
+      const fileInput = document.getElementById("fileInput")
+      const dropZone = document.getElementById("dropZone")
+      const fileName = document.getElementById("fileName")
+      const bleedMmInput = document.getElementById("bleedMm")
+      const bleedValue = document.getElementById("bleedValue")
+      const dpiSelect = document.getElementById("dpi")
+      const showGuides = document.getElementById("showGuides")
+      const previewCanvas = document.getElementById("previewCanvas")
+      const canvasWrapper = document.getElementById("canvasWrapper")
+      const placeholder = document.getElementById("placeholder")
+      const downloadBtn = document.getElementById("downloadBtn")
+      const resetBtn = document.getElementById("resetBtn")
+      const origDims = document.getElementById("origDims")
+      const newDims = document.getElementById("newDims")
+      const bleedPixels = document.getElementById("bleedPixels")
+      const processingTime = document.getElementById("processingTime")
+
+      fileInput.addEventListener("change", handleFileSelect)
+
+      dropZone.addEventListener("dragover", (e) => {
+        e.preventDefault()
+        dropZone.classList.add("border-blue-400", "bg-blue-50")
+      })
+      dropZone.addEventListener("dragleave", () => {
+        dropZone.classList.remove("border-blue-400", "bg-blue-50")
+      })
+      dropZone.addEventListener("drop", (e) => {
+        e.preventDefault()
+        dropZone.classList.remove("border-blue-400", "bg-blue-50")
+        const files = e.dataTransfer.files
+        if (files.length > 0) processFile(files[0])
+      })
+
+      bleedMmInput.addEventListener("input", (e) => {
+        bleedValue.textContent = e.target.value + " mm"
+        if (originalImage) processImage()
+      })
+
+      dpiSelect.addEventListener("change", () => {
+        if (originalImage) processImage()
+      })
+
+      showGuides.addEventListener("change", () => {
+        if (originalImage) processImage()
+      })
+
+      downloadBtn.addEventListener("click", downloadImage)
+      resetBtn.addEventListener("click", resetAll)
+
+      document.getElementById("zoomIn").addEventListener("click", () => {
+        currentZoom = Math.min(currentZoom * 1.2, 5)
+        updateZoom()
+      })
+      document.getElementById("zoomOut").addEventListener("click", () => {
+        currentZoom = Math.max(currentZoom / 1.2, 0.1)
+        updateZoom()
+      })
+      document
+        .getElementById("fitScreen")
+        .addEventListener("click", fitToScreen)
+
+      function handleFileSelect(e) {
+        const file = e.target.files[0]
+        if (file) processFile(file)
+      }
+
+      function processFile(file) {
+        if (!file.type.startsWith("image/")) {
+          alert("Please upload an image file")
+          return
+        }
+
+        fileName.textContent = file.name
+        fileName.classList.remove("hidden")
+
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          const img = new Image()
+          img.onload = () => {
+            // STEP 1: Preprocess - Fill transparent corners to make them square
+            originalImage = preprocessImage(img)
+
+            placeholder.classList.add("hidden")
+            previewCanvas.classList.remove("hidden")
+            downloadBtn.disabled = false
+            fitToScreen()
+            processImage()
+          }
+          img.src = e.target.result
+        }
+        reader.readAsDataURL(file)
+      }
+
+      // Preprocess: Fill transparent edges/corners to create a "squared" image
+      function preprocessImage(img) {
+        const canvas = document.createElement("canvas")
+        canvas.width = img.width
+        canvas.height = img.height
+        const ctx = canvas.getContext("2d")
+
+        // Draw original
+        ctx.drawImage(img, 0, 0)
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+        const data = imageData.data
+        const w = canvas.width
+        const h = canvas.height
+
+        // Helper to get pixel
+        const getPixel = (x, y) => {
+          if (x < 0 || x >= w || y < 0 || y >= h) return null
+          const idx = (y * w + x) * 4
+          return {
+            r: data[idx],
+            g: data[idx + 1],
+            b: data[idx + 2],
+            a: data[idx + 3],
+          }
+        }
+
+        // Helper to set pixel
+        const setPixel = (x, y, r, g, b, a) => {
+          const idx = (y * w + x) * 4
+          data[idx] = r
+          data[idx + 1] = g
+          data[idx + 2] = b
+          data[idx + 3] = a
+        }
+
+        // Find nearest non-transparent pixel searching inward
+        const findColor = (startX, startY, dirX, dirY) => {
+          let x = startX
+          let y = startY
+          for (let i = 0; i < 100; i++) {
+            const p = getPixel(x, y)
+            if (p && p.a > 10) return p
+            x += dirX
+            y += dirY
+          }
+          return { r: 255, g: 255, b: 255, a: 255 } // Fallback white
+        }
+
+        // Process each row (left and right edges)
+        for (let y = 0; y < h; y++) {
+          // Left edge: scan right until we hit visible pixel
+          for (let x = 0; x < w; x++) {
+            const p = getPixel(x, y)
+            if (p.a > 10) break // Found visible pixel, stop
+            // Fill with color from further right
+            const color = findColor(x + 1, y, 1, 0)
+            setPixel(x, y, color.r, color.g, color.b, color.a)
+          }
+
+          // Right edge: scan left
+          for (let x = w - 1; x >= 0; x--) {
+            const p = getPixel(x, y)
+            if (p.a > 10) break
+            const color = findColor(x - 1, y, -1, 0)
+            setPixel(x, y, color.r, color.g, color.b, color.a)
+          }
+        }
+
+        // Process each column (top and bottom edges) - this handles corners properly
+        for (let x = 0; x < w; x++) {
+          // Top edge: scan down
+          for (let y = 0; y < h; y++) {
+            const p = getPixel(x, y)
+            if (p.a > 10) break
+            const color = findColor(x, y + 1, 0, 1)
+            setPixel(x, y, color.r, color.g, color.b, color.a)
+          }
+
+          // Bottom edge: scan up
+          for (let y = h - 1; y >= 0; y--) {
+            const p = getPixel(x, y)
+            if (p.a > 10) break
+            const color = findColor(x, y - 1, 0, -1)
+            setPixel(x, y, color.r, color.g, color.b, color.a)
+          }
+        }
+
+        ctx.putImageData(imageData, 0, 0)
+        return canvas
+      }
+
+      function mmToPixels(mm, dpi) {
+        return Math.round((mm * dpi) / 25.4)
+      }
+
+      function processImage() {
+        if (!originalImage) return
+
+        const startTime = performance.now()
+        const bleedMm = parseFloat(bleedMmInput.value)
+        const dpi = parseInt(dpiSelect.value)
+        const bleedPx = mmToPixels(bleedMm, dpi)
+
+        const w = originalImage.width
+        const h = originalImage.height
+        const newW = w + bleedPx * 2
+        const newH = h + bleedPx * 2
+
+        origDims.textContent = `${w} × ${h}px`
+        newDims.textContent = `${newW} × ${newH}px`
+        bleedPixels.textContent = `${bleedPx}px (${bleedMm}mm @ ${dpi}DPI)`
+
+        const canvas = document.createElement("canvas")
+        canvas.width = newW
+        canvas.height = newH
+        const ctx = canvas.getContext("2d")
+
+        // Fill white background (safety)
+        ctx.fillStyle = "#FFFFFF"
+        ctx.fillRect(0, 0, newW, newH)
+
+        if (bleedPx > 0) {
+          // Stretch 1px from left edge outward
+          ctx.drawImage(originalImage, 0, 0, 1, h, 0, bleedPx, bleedPx, h)
+          // Stretch 1px from right edge outward
+          ctx.drawImage(
+            originalImage,
+            w - 1,
+            0,
+            1,
+            h,
+            bleedPx + w,
+            bleedPx,
+            bleedPx,
+            h
+          )
+          // Stretch 1px from top edge outward
+          ctx.drawImage(originalImage, 0, 0, w, 1, bleedPx, 0, w, bleedPx)
+          // Stretch 1px from bottom edge outward
+          ctx.drawImage(
+            originalImage,
+            0,
+            h - 1,
+            w,
+            1,
+            bleedPx,
+            bleedPx + h,
+            w,
+            bleedPx
+          )
+
+          // Fill corners with single pixel stretch (now that corners are opaque)
+          ctx.drawImage(originalImage, 0, 0, 1, 1, 0, 0, bleedPx, bleedPx)
+          ctx.drawImage(
+            originalImage,
+            w - 1,
+            0,
+            1,
+            1,
+            bleedPx + w,
+            0,
+            bleedPx,
+            bleedPx
+          )
+          ctx.drawImage(
+            originalImage,
+            0,
+            h - 1,
+            1,
+            1,
+            0,
+            bleedPx + h,
+            bleedPx,
+            bleedPx
+          )
+          ctx.drawImage(
+            originalImage,
+            w - 1,
+            h - 1,
+            1,
+            1,
+            bleedPx + w,
+            bleedPx + h,
+            bleedPx,
+            bleedPx
+          )
+        }
+
+        // Draw original image in center
+        ctx.drawImage(originalImage, bleedPx, bleedPx)
+
+        // Draw guides if enabled
+        if (showGuides.checked && bleedPx > 0) {
+          ctx.strokeStyle = "rgba(255, 0, 0, 0.5)"
+          ctx.lineWidth = 1
+          ctx.setLineDash([5, 5])
+          ctx.strokeRect(bleedPx, bleedPx, w, h)
+
+          ctx.strokeStyle = "rgba(0, 255, 0, 0.5)"
+          ctx.strokeRect(0, 0, newW, newH)
+          ctx.setLineDash([])
+        }
+
+        processedCanvas = canvas
+        updatePreview()
+
+        const endTime = performance.now()
+        processingTime.textContent = `Processed in ${Math.round(endTime - startTime)}ms`
+        processingTime.classList.remove("hidden")
+      }
+
+      function updatePreview() {
+        if (!processedCanvas) return
+
+        previewCanvas.width = processedCanvas.width
+        previewCanvas.height = processedCanvas.height
+        const ctx = previewCanvas.getContext("2d")
+        ctx.drawImage(processedCanvas, 0, 0)
+
+        updateZoom()
+      }
+
+      function updateZoom() {
+        if (!processedCanvas) return
+        const scale = currentZoom
+        previewCanvas.style.width = processedCanvas.width * scale + "px"
+        previewCanvas.style.height = processedCanvas.height * scale + "px"
+        document.getElementById("zoomLevel").textContent =
+          Math.round(scale * 100) + "%"
+      }
+
+      function fitToScreen() {
+        if (!processedCanvas) return
+        const wrapper = canvasWrapper
+        const padding = 40
+        const availableW = wrapper.clientWidth - padding
+        const availableH = wrapper.clientHeight - padding
+
+        const scaleW = availableW / processedCanvas.width
+        const scaleH = availableH / processedCanvas.height
+        currentZoom = Math.min(scaleW, scaleH, 1)
+
+        updateZoom()
+      }
+
+      function downloadImage() {
+        if (!processedCanvas) return
+
+        const link = document.createElement("a")
+        const bleedMm = bleedMmInput.value
+        link.download = `bleed-${bleedMm}mm-${fileName.textContent || "image"}.png`
+        link.href = processedCanvas.toDataURL("image/png")
+        link.click()
+      }
+
+      function resetAll() {
+        originalImage = null
+        processedCanvas = null
+        fileInput.value = ""
+        fileName.classList.add("hidden")
+        placeholder.classList.remove("hidden")
+        previewCanvas.classList.add("hidden")
+        downloadBtn.disabled = true
+        origDims.textContent = "-"
+        newDims.textContent = "-"
+        bleedPixels.textContent = "-"
+        processingTime.classList.add("hidden")
+        bleedMmInput.value = 3
+        bleedValue.textContent = "3 mm"
+        currentZoom = 1
+      }
+
+      window.addEventListener("resize", () => {
+        if (originalImage) fitToScreen()
+      })
+    </script>
+  </body>
+</html>

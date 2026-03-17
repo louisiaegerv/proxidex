@@ -1,0 +1,644 @@
+<!-- This app does several things, but you just need to focus on the logic which takes the transparent corners for rounded card images and stretches them to the edges of the image. This is the logic we want to build into our app. -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bleed Edge Pixel Extension</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --bg: #f5f4f0;
+        --surface: #ffffff;
+        --border: #d8d6d0;
+        --border2: #b8b6b0;
+        --text: #1a1917;
+        --muted: #6b6966;
+        --faint: #9b9895;
+        --accent: #1a1917;
+        --radius: 10px;
+        --mono: "Courier New", Courier, monospace;
+      }
+
+      body {
+        font-family: var(--mono);
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        padding: 2.5rem 1rem 4rem;
+      }
+
+      .wrap {
+        width: 100%;
+        max-width: 680px;
+      }
+
+      h1 {
+        font-size: 17px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        margin-bottom: 4px;
+      }
+      .sub {
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 1.75rem;
+      }
+
+      /* Drop zone */
+      .dz {
+        border: 1.5px dashed var(--border2);
+        border-radius: var(--radius);
+        padding: 2.5rem 1.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition:
+          border-color 0.15s,
+          background 0.15s;
+        background: var(--surface);
+        margin-bottom: 1.25rem;
+        user-select: none;
+      }
+      .dz:hover,
+      .dz.over {
+        border-color: var(--text);
+        background: #fafaf8;
+      }
+      .dz.ok {
+        padding: 1rem 1.5rem;
+      }
+      .dz-ico {
+        font-size: 22px;
+        margin-bottom: 8px;
+      }
+      .dz-lbl {
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .dz-sub {
+        font-size: 11px;
+        color: var(--faint);
+        margin-top: 4px;
+      }
+
+      /* Controls */
+      .ctrls {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 1.25rem;
+      }
+      .field label {
+        display: block;
+        font-size: 10px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 5px;
+      }
+      .field input {
+        width: 100%;
+        font-family: var(--mono);
+        font-size: 13px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 7px 10px;
+        color: var(--text);
+        outline: none;
+        transition: border-color 0.12s;
+      }
+      .field input:focus {
+        border-color: var(--text);
+      }
+
+      /* Readout */
+      .ro {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 9px 12px;
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 1.25rem;
+        display: none;
+      }
+      .ro b {
+        color: var(--text);
+        font-weight: 700;
+      }
+
+      /* Buttons */
+      .brow {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 1.25rem;
+        flex-wrap: wrap;
+      }
+      .btn {
+        font-family: var(--mono);
+        font-size: 12px;
+        padding: 9px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        border: 1px solid var(--border2);
+        background: transparent;
+        color: var(--text);
+        transition:
+          background 0.1s,
+          opacity 0.1s;
+      }
+      .btn:hover {
+        background: #ebebeb;
+      }
+      .btn:active {
+        transform: scale(0.98);
+      }
+      .btn:disabled {
+        opacity: 0.3;
+        cursor: default;
+        transform: none;
+      }
+      .btn.primary {
+        background: var(--text);
+        color: #fff;
+        border-color: transparent;
+      }
+      .btn.primary:hover {
+        opacity: 0.85;
+      }
+      .prog {
+        font-size: 11px;
+        color: var(--muted);
+        display: none;
+      }
+
+      /* Preview */
+      .pvw {
+        display: none;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+        background: repeating-conic-gradient(#bbb 0% 25%, #e8e8e8 0% 50%) 0 0 /
+          14px 14px;
+      }
+      #cv {
+        display: block;
+        max-width: 100%;
+        height: auto;
+      }
+      .info-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        padding: 8px 12px;
+        background: var(--surface);
+        border-top: 1px solid var(--border);
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .info-bar b {
+        color: var(--text);
+        font-weight: 700;
+      }
+
+      @media (max-width: 480px) {
+        .ctrls {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>Bleed Edge Pixel Extension</h1>
+      <p class="sub">
+        Stretch edge pixels outward for print bleed &nbsp;·&nbsp; handles
+        transparent rounded corners &nbsp;·&nbsp; 100% local, nothing uploaded
+      </p>
+
+      <div id="dz" class="dz">
+        <div class="dz-ico">&#8679;</div>
+        <div class="dz-lbl">Drop image here or click to upload</div>
+        <div class="dz-sub">
+          PNG &nbsp;·&nbsp; JPG &nbsp;·&nbsp; WEBP &nbsp;·&nbsp; any size
+        </div>
+        <input type="file" id="fi" accept="image/*" style="display: none" />
+      </div>
+
+      <div class="ctrls">
+        <div class="field">
+          <label>Bleed (mm)</label
+          ><input
+            type="number"
+            id="mm"
+            value="5"
+            min="0"
+            max="200"
+            step="0.5"
+          />
+        </div>
+        <div class="field">
+          <label>Image DPI</label
+          ><input
+            type="number"
+            id="dpi"
+            value="300"
+            min="72"
+            max="1200"
+            step="1"
+          />
+        </div>
+        <div class="field">
+          <label>Or bleed (px)</label
+          ><input
+            type="number"
+            id="bpx"
+            placeholder="auto"
+            min="0"
+            max="3000"
+            step="1"
+          />
+        </div>
+      </div>
+
+      <div id="ro" class="ro"></div>
+
+      <div class="brow">
+        <button class="btn primary" id="go" disabled>Apply bleed</button>
+        <button class="btn" id="dl" style="display: none">
+          &#8595; Download PNG
+        </button>
+        <span class="prog" id="pr">Processing&hellip;</span>
+      </div>
+
+      <div id="pvw" class="pvw">
+        <canvas id="cv"></canvas>
+        <div class="info-bar" id="ib"></div>
+      </div>
+    </div>
+
+    <script>
+      ;(function () {
+        const ALPHA_THRESH = 30
+        const MAX_SCAN = 120
+        const INNER = 120
+
+        let img = null,
+          W = 0,
+          H = 0,
+          lastFilename = "image.png"
+
+        const dz = document.getElementById("dz")
+        const fi = document.getElementById("fi")
+        const mmEl = document.getElementById("mm")
+        const dpiEl = document.getElementById("dpi")
+        const bpxEl = document.getElementById("bpx")
+        const goBtn = document.getElementById("go")
+        const dlBtn = document.getElementById("dl")
+        const prEl = document.getElementById("pr")
+        const pvw = document.getElementById("pvw")
+        const cv = document.getElementById("cv")
+        const ib = document.getElementById("ib")
+        const ro = document.getElementById("ro")
+
+        function getBP() {
+          if (bpxEl.value.trim()) return Math.max(0, Math.round(+bpxEl.value))
+          return Math.max(0, Math.round((+mmEl.value * +dpiEl.value) / 25.4))
+        }
+
+        function updateRO() {
+          if (!img) return
+          const bp = getBP()
+          ro.style.display = "block"
+          ro.innerHTML =
+            "Original <b>" +
+            W +
+            "&thinsp;&times;&thinsp;" +
+            H +
+            "px</b> &rarr; Output <b>" +
+            (W + 2 * bp) +
+            "&thinsp;&times;&thinsp;" +
+            (H + 2 * bp) +
+            "px</b> &nbsp;&middot;&nbsp; Bleed <b>" +
+            bp +
+            "px</b> per side"
+        }
+
+        ;[mmEl, dpiEl, bpxEl].forEach((el) =>
+          el.addEventListener("input", updateRO)
+        )
+
+        dz.addEventListener("click", () => fi.click())
+        dz.addEventListener("dragover", (e) => {
+          e.preventDefault()
+          dz.classList.add("over")
+        })
+        dz.addEventListener("dragleave", () => dz.classList.remove("over"))
+        dz.addEventListener("drop", (e) => {
+          e.preventDefault()
+          dz.classList.remove("over")
+          if (e.dataTransfer.files[0]) load(e.dataTransfer.files[0])
+        })
+        fi.addEventListener("change", (e) => {
+          if (e.target.files[0]) load(e.target.files[0])
+        })
+
+        function load(f) {
+          if (!f.type.startsWith("image/")) return
+          lastFilename = f.name.replace(/\.[^.]+$/, "") + "_bleed.png"
+          const url = URL.createObjectURL(f)
+          const i = new Image()
+          i.onload = () => {
+            img = i
+            W = i.width
+            H = i.height
+            URL.revokeObjectURL(url)
+            dz.classList.add("ok")
+            dz.querySelector(".dz-ico").textContent = "✓"
+            dz.querySelector(".dz-lbl").textContent = f.name
+            dz.querySelector(".dz-sub").textContent =
+              W + " × " + H + "px · " + Math.round(f.size / 1024) + " KB"
+            goBtn.disabled = false
+            dlBtn.style.display = "none"
+            pvw.style.display = "none"
+            updateRO()
+          }
+          i.src = url
+        }
+
+        goBtn.addEventListener("click", () => {
+          if (!img) return
+          goBtn.disabled = true
+          prEl.style.display = "block"
+          dlBtn.style.display = "none"
+          requestAnimationFrame(() => requestAnimationFrame(run))
+        })
+
+        function run() {
+          const bp = getBP()
+          const inner = Math.min(INNER, Math.min(W, H) >> 1)
+          const nW = W + 2 * bp
+          const nH = H + 2 * bp
+
+          // Read source pixels
+          const tmp = document.createElement("canvas")
+          tmp.width = W
+          tmp.height = H
+          const tc = tmp.getContext("2d")
+          tc.drawImage(img, 0, 0)
+          const src = tc.getImageData(0, 0, W, H).data
+
+          // Build effective edge arrays — scan inward past transparent pixels
+          const topEff = new Array(W)
+          const botEff = new Array(W)
+          const lefEff = new Array(H)
+          const rigEff = new Array(H)
+
+          for (let x = 0; x < W; x++) {
+            let p = [src[x * 4], src[x * 4 + 1], src[x * 4 + 2], 255]
+            for (let y = 0; y < Math.min(H, MAX_SCAN); y++) {
+              const i = (y * W + x) * 4
+              if (src[i + 3] >= ALPHA_THRESH) {
+                p = [src[i], src[i + 1], src[i + 2], 255]
+                break
+              }
+            }
+            topEff[x] = p
+          }
+          for (let x = 0; x < W; x++) {
+            let p = [
+              src[((H - 1) * W + x) * 4],
+              src[((H - 1) * W + x) * 4 + 1],
+              src[((H - 1) * W + x) * 4 + 2],
+              255,
+            ]
+            for (let y = H - 1; y >= Math.max(0, H - MAX_SCAN); y--) {
+              const i = (y * W + x) * 4
+              if (src[i + 3] >= ALPHA_THRESH) {
+                p = [src[i], src[i + 1], src[i + 2], 255]
+                break
+              }
+            }
+            botEff[x] = p
+          }
+          for (let y = 0; y < H; y++) {
+            let p = [
+              src[y * W * 4],
+              src[y * W * 4 + 1],
+              src[y * W * 4 + 2],
+              255,
+            ]
+            for (let x = 0; x < Math.min(W, MAX_SCAN); x++) {
+              const i = (y * W + x) * 4
+              if (src[i + 3] >= ALPHA_THRESH) {
+                p = [src[i], src[i + 1], src[i + 2], 255]
+                break
+              }
+            }
+            lefEff[y] = p
+          }
+          for (let y = 0; y < H; y++) {
+            let p = [
+              src[(y * W + W - 1) * 4],
+              src[(y * W + W - 1) * 4 + 1],
+              src[(y * W + W - 1) * 4 + 2],
+              255,
+            ]
+            for (let x = W - 1; x >= Math.max(0, W - MAX_SCAN); x--) {
+              const i = (y * W + x) * 4
+              if (src[i + 3] >= ALPHA_THRESH) {
+                p = [src[i], src[i + 1], src[i + 2], 255]
+                break
+              }
+            }
+            rigEff[y] = p
+          }
+
+          // Setup output canvas
+          cv.width = nW
+          cv.height = nH
+          const ctx = cv.getContext("2d")
+          ctx.imageSmoothingEnabled = false
+
+          function lrp(a, b, t) {
+            return [
+              (a[0] + (b[0] - a[0]) * t) | 0,
+              (a[1] + (b[1] - a[1]) * t) | 0,
+              (a[2] + (b[2] - a[2]) * t) | 0,
+              255,
+            ]
+          }
+
+          // Edge strips (extended INNER px into image area to fill under transparent corners)
+          function hStrip(eff, len, thick) {
+            const id = new ImageData(len, thick),
+              d = id.data
+            for (let y = 0; y < thick; y++)
+              for (let x = 0; x < len; x++) {
+                const p = eff[x],
+                  i = (y * len + x) * 4
+                d[i] = p[0]
+                d[i + 1] = p[1]
+                d[i + 2] = p[2]
+                d[i + 3] = p[3]
+              }
+            return id
+          }
+          function vStrip(eff, len, thick) {
+            const id = new ImageData(thick, len),
+              d = id.data
+            for (let y = 0; y < len; y++)
+              for (let x = 0; x < thick; x++) {
+                const p = eff[y],
+                  i = (y * thick + x) * 4
+                d[i] = p[0]
+                d[i + 1] = p[1]
+                d[i + 2] = p[2]
+                d[i + 3] = p[3]
+              }
+            return id
+          }
+
+          ctx.putImageData(hStrip(topEff, W, bp + inner), bp, 0)
+          ctx.putImageData(hStrip(botEff, W, bp + inner), bp, nH - bp - inner)
+          ctx.putImageData(vStrip(lefEff, H, bp + inner), 0, bp)
+          ctx.putImageData(vStrip(rigEff, H, bp + inner), nW - bp - inner, bp)
+
+          // Corner fan tiles — diagonal angle-weighted blend, extended INNER px into image
+          function fillCorner(
+            ox,
+            oy,
+            imgCX,
+            imgCY,
+            hArr,
+            hLen,
+            hFlip,
+            vArr,
+            vLen,
+            vFlip
+          ) {
+            const tw = bp + inner,
+              th = bp + inner
+            const id = new ImageData(tw, th),
+              d = id.data
+            for (let cy = 0; cy < th; cy++) {
+              for (let cx = 0; cx < tw; cx++) {
+                const px = ox + cx,
+                  py = oy + cy
+                const rawDx = hFlip ? px - imgCX : imgCX - px
+                const rawDy = vFlip ? py - imgCY : imgCY - py
+                const fdx = rawDx > 0 ? rawDx : 0
+                const fdy = rawDy > 0 ? rawDy : 0
+                const hIdx = hFlip
+                  ? Math.max(0, hLen - 1 - Math.min(hLen - 1, Math.round(fdx)))
+                  : Math.min(hLen - 1, Math.round(fdx))
+                const vIdx = vFlip
+                  ? Math.max(0, vLen - 1 - Math.min(vLen - 1, Math.round(fdy)))
+                  : Math.min(vLen - 1, Math.round(fdy))
+                const pH = hArr[hIdx],
+                  pV = vArr[vIdx]
+                const t = fdx + fdy > 0 ? fdy / (fdx + fdy) : 0.5
+                const m = lrp(pH, pV, t)
+                const pi = (cy * tw + cx) * 4
+                d[pi] = m[0]
+                d[pi + 1] = m[1]
+                d[pi + 2] = m[2]
+                d[pi + 3] = 255
+              }
+            }
+            ctx.putImageData(id, ox, oy)
+          }
+
+          fillCorner(0, 0, bp, bp, topEff, W, false, lefEff, H, false) // top-left
+          fillCorner(
+            nW - bp - inner,
+            0,
+            bp + W,
+            bp,
+            topEff,
+            W,
+            true,
+            rigEff,
+            H,
+            false
+          ) // top-right
+          fillCorner(
+            0,
+            nH - bp - inner,
+            bp,
+            bp + H,
+            botEff,
+            W,
+            false,
+            lefEff,
+            H,
+            true
+          ) // bottom-left
+          fillCorner(
+            nW - bp - inner,
+            nH - bp - inner,
+            bp + W,
+            bp + H,
+            botEff,
+            W,
+            true,
+            rigEff,
+            H,
+            true
+          ) // bottom-right
+
+          // Draw original image on top last — transparent corners reveal bleed beneath
+          ctx.drawImage(img, bp, bp)
+
+          // Info bar
+          const mmOut = ((bp * 25.4) / +dpiEl.value).toFixed(2)
+          ib.innerHTML =
+            "Original <b>" +
+            W +
+            "&thinsp;&times;&thinsp;" +
+            H +
+            "</b> &nbsp;&middot;&nbsp; " +
+            "Output <b>" +
+            nW +
+            "&thinsp;&times;&thinsp;" +
+            nH +
+            "</b> &nbsp;&middot;&nbsp; " +
+            "Bleed <b>" +
+            bp +
+            "px</b> (" +
+            mmOut +
+            "mm @ " +
+            dpiEl.value +
+            " dpi)"
+
+          pvw.style.display = "block"
+          prEl.style.display = "none"
+          goBtn.disabled = false
+
+          // Download: toBlob → object URL → <a> click
+          cv.toBlob((blob) => {
+            const url = URL.createObjectURL(blob)
+            dlBtn.onclick = () => {
+              const a = document.createElement("a")
+              a.href = url
+              a.download = lastFilename
+              a.click()
+            }
+            dlBtn.style.display = "inline-block"
+          }, "image/png")
+        }
+      })()
+    </script>
+  </body>
+</html>

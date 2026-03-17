@@ -1,0 +1,2553 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dragapult - Cards – Limitless</title>
+    <meta
+      name="description"
+      content="Dragapult (ex) - detailed card usage by format and variant"
+    />
+
+    <meta property="og:title" content="Dragapult - Cards – Limitless" />
+    <meta
+      property="og:description"
+      content="Dragapult (ex) - detailed card usage by format and variant"
+    />
+    <meta
+      property="og:image"
+      content="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/TWM/TWM_130_R_EN_SM.png"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Limitless TCG" />
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="@LimitlessTCG" />
+    <meta name="twitter:title" content="Dragapult - Cards – Limitless" />
+    <meta
+      name="twitter:description"
+      content="Dragapult (ex) - detailed card usage by format and variant"
+    />
+    <meta
+      name="twitter:image"
+      content="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/TWM/TWM_130_R_EN_SM.png"
+    />
+
+    <link rel="manifest" href="/app.webmanifest" />
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=UA-102651668-1"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || []
+      function gtag() {
+        dataLayer.push(arguments)
+      }
+      gtag("js", new Date())
+
+      gtag("config", "UA-102651668-1", { anonymize_ip: true })
+    </script>
+    <link
+      rel="stylesheet"
+      id="kumo-css"
+      href="https://kumo.network-n.com/dist/css/limitlesstcg.css"
+    />
+    <script>
+      window.AdSlots = window.AdSlots || { cmd: [] }
+    </script>
+    <script
+      async
+      src="https://kumo.network-n.com/dist/app.js"
+      site="limitlesstcg"
+    ></script>
+
+    <style>
+      @media (max-width: 767px) {
+        .nn-sticky .close-btn {
+          width: 38px !important;
+          height: 38px !important;
+          right: 0 !important;
+          top: 0 !important;
+          margin-top: -38px !important;
+          opacity: 0.9;
+        }
+      }
+
+      .nn-sticky,
+      .nn-player-floating,
+      #ogy-ad-slot,
+      .snigel-adhesive {
+        z-index: 10 !important;
+      }
+
+      @media print {
+        .nn-sticky,
+        .nn-player-floating,
+        #ogy-ad-slot,
+        .snigel-adhesive {
+          display: none !important;
+        }
+      }
+
+      .top-banner {
+        min-width: 320px;
+        min-height: 50px;
+        position: relative;
+      }
+
+      @media (min-width: 768px) {
+        .top-banner {
+          min-width: 728px;
+          min-height: 90px;
+        }
+      }
+
+      .top-banner .patreon-note {
+        width: 100%;
+        height: 100%;
+        background-color: var(--bg-color-two);
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .top-banner .patreon-note a {
+        padding: 0.25rem 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 14px;
+      }
+
+      @media (min-width: 768px) {
+        .top-banner .patreon-note a {
+          font-size: 16px;
+        }
+      }
+
+      .top-banner .patreon-note img {
+        height: 22px;
+        width: auto;
+      }
+
+      .top-banner .patreon-note a:hover {
+        color: var(--link-color-blue);
+      }
+
+      .top-banner > :not(.patreon-note) {
+        position: relative;
+        z-index: 1;
+      }
+    </style>
+    <link
+      rel="preload"
+      as="style"
+      href="https://limitlesstcg.com/build/assets/main-935fd743.css"
+    />
+    <link
+      rel="modulepreload"
+      href="https://limitlesstcg.com/build/assets/main-efb830f5.js"
+    />
+    <link
+      rel="modulepreload"
+      href="https://limitlesstcg.com/build/assets/dom-7f7df130.js"
+    />
+    <link
+      rel="modulepreload"
+      href="https://limitlesstcg.com/build/assets/limitless-38d3eac6.js"
+    />
+    <link
+      rel="modulepreload"
+      href="https://limitlesstcg.com/build/assets/fetch-a833fccf.js"
+    />
+    <link
+      rel="modulepreload"
+      href="https://limitlesstcg.com/build/assets/tables-bcf04db3.js"
+    />
+    <link
+      rel="modulepreload"
+      href="https://limitlesstcg.com/build/assets/ws-search-e6ffb889.js"
+    />
+    <link
+      rel="modulepreload"
+      href="https://limitlesstcg.com/build/assets/suggest-4ff36e79.js"
+    />
+    <link
+      rel="stylesheet"
+      href="https://limitlesstcg.com/build/assets/main-935fd743.css"
+    />
+    <script
+      type="module"
+      src="https://limitlesstcg.com/build/assets/main-efb830f5.js"
+    ></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400..700&family=Open+Sans+Condensed:wght@700&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400..700&family=Open+Sans+Condensed:wght@700&display=swap"
+    />
+    <link rel="stylesheet" href="/inc/fontawesome/css/all.min.css?v=5.11.2" />
+
+    <link
+      rel="modulepreload"
+      href="https://limitlesstcg.com/build/assets/decklist-11f9e903.js"
+    />
+    <link
+      rel="modulepreload"
+      href="https://limitlesstcg.com/build/assets/dom-7f7df130.js"
+    />
+    <link
+      rel="modulepreload"
+      href="https://limitlesstcg.com/build/assets/limitless-38d3eac6.js"
+    />
+    <script
+      type="module"
+      src="https://limitlesstcg.com/build/assets/decklist-11f9e903.js"
+    ></script>
+    <script>
+      var LS_SEARCH_RESULTS = "~ search results",
+        LS_NO_SEARCH_RESULTS = "no search results found"
+    </script>
+    <script>
+      var LMT_RNT = false
+    </script>
+  </head>
+
+  <body>
+    <header>
+      <div class="header-top" data-mini-bar>
+        <div class="top container">
+          <div class="flex items-center gap-4">
+            <div class="site-news">
+              Latest Updates: <a href="/tournaments/547">Fukuoka</a> •
+              <a href="/cards/jp/M4?translate=en">Ninja Spinner</a> •
+              <a href="/tournaments/543">Curitiba</a>
+            </div>
+          </div>
+
+          <div class="site-settings">
+            <select class="language-switch" data-site-language>
+              <option value="en_US" selected>English</option>
+              <option value="jp_JP">日本語</option>
+              <option value="de_DE">Deutsch</option>
+              <option value="fr_FR">Français</option>
+              <option value="es_ES">Español</option>
+              <option value="it_IT">Italiano</option>
+              <option value="pt_BR">Português</option>
+            </select>
+
+            <button
+              class="darkmode-toggle"
+              aria-label="darkmode toggle"
+              data-site-theme
+              data-tooltip="Toggle Darkmode"
+            >
+              <i class="fas fa-lg fa-moon" data-icon></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="header container">
+        <a class="site-logo" href="/">
+          <img
+            src="https://limitless3.nyc3.cdn.digitaloceanspaces.com/limitless/logo.png"
+            alt="Limitless"
+          />
+        </a>
+
+        <form class="site-search" method="get" action="/" data-lang="en">
+          <div class="category-label">
+            <span class="selected-category">Decks</span>
+            <i class="fas fa-sm fa-caret-down"></i>
+          </div>
+
+          <select name="type" class="category-select">
+            <option value="cards">Cards</option>
+            <option value="tournaments">Tournaments</option>
+            <option value="decks" selected>Decks</option>
+            <option value="players">Players</option>
+          </select>
+
+          <input
+            type="text"
+            name="q"
+            placeholder="Search database"
+            autocomplete="off"
+            autocapitalize="off"
+            autocorrect="off"
+          />
+
+          <button type="submit" aria-label="submit search">
+            <i class="fas fa-lg fa-search"></i>
+          </button>
+
+          <div class="search-suggestions" data-suggestions>
+            <span class="suggestions-message" data-message></span>
+            <div class="suggestions-list" data-options></div>
+          </div>
+        </form>
+
+        <nav class="site-nav resp-nav" data-site-nav>
+          <button class="nav-toggle">
+            <i data-open class="fas fa-lg fa-bars"></i>
+            <i data-close class="fas fa-lg fa-times" style="display: none"></i>
+          </button>
+
+          <ul class="links">
+            <li><a href="/tournaments">Tournaments</a></li>
+            <li><a href="/decks">Decks</a></li>
+            <li class="sub-category">
+              <a href="/cards">Cards</a>
+              <ul class="sub-menu">
+                <li><a href="/cards/advanced">Advanced Search</a></li>
+                <li><a href="/cards/syntax">Search Syntax</a></li>
+                <li><a href="/translations">Translations</a></li>
+              </ul>
+            </li>
+            <li class="sub-category">
+              <a href="/tools">Tools</a>
+              <ul class="sub-menu shift">
+                <li><a href="/tools/proxies">Proxy Printer</a></li>
+                <li><a href="/tools/swisscalc">Swiss Calculator</a></li>
+                <li><a href="/tools/imggen">Image Generator</a></li>
+                <li><a href="/tools/drawcalc">DrawCalc</a></li>
+                <li><a href="/tools/tabletop">Tabletop</a></li>
+                <li>
+                  <a href="https://my.limitlesstcg.com/builder"
+                    >Deck Builder (Beta)</a
+                  >
+                </li>
+                <li><a href="https://labs.limitlesstcg.com">Labs</a></li>
+                <li><a href="/tools/mfy">Metafy Hub</a></li>
+              </ul>
+            </li>
+            <li class="sub-category more">
+              <a class="expand">More</a>
+              <ul class="sub-menu shift">
+                <li><a href="/players">Rankings</a></li>
+                <li><a href="/blog">Blog</a></li>
+                <li><a href="https://play.limitlesstcg.com">Play</a></li>
+              </ul>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+    <div class="before-content"></div>
+
+    <div class="dont-print top-banner container">
+      <div class="patreon-note">
+        <a
+          href="https://www.patreon.com/limitlesstcg/membership"
+          target="_blank"
+        >
+          <img
+            src="https://limitless3.nyc3.cdn.digitaloceanspaces.com/web/patreon.png"
+            alt="Patreon"
+            class="invert"
+          />
+          You can support us on Patreon to remove ads.
+        </a>
+      </div>
+      <div id="nn_lb1"></div>
+      <div id="nn_mobile_lb1"></div>
+      <div id="nn_skinl"></div>
+      <div id="nn_skinr"></div>
+    </div>
+
+    <main>
+      <div class="content container">
+        <div class="deck-info">
+          <div class="stats">
+            <h1 class="name">Dragapult</h1>
+            <div class="flex flex-col gap-2">
+              <div>Totals: 1,124,000$ | 14116 Points</div>
+              <div class="flex flex-col gap-1">
+                <div>
+                  Regional Top 8: <span class="bold">172</span>, including 23
+                  wins
+                </div>
+                <div>
+                  International Top 8: <span class="bold">37</span>, including 3
+                  wins
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="picture">
+            <img
+              class="card xs shadow"
+              src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/TWM/TWM_130_R_EN_XS.png"
+              data-lightbox="on"
+              data-src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/TWM/TWM_130_R_EN.png"
+            />
+          </div>
+
+          <div class="options">
+            <div class="variants">
+              <label for="variant-select">Variant</label>
+              <select
+                id="variant-select"
+                name="variant"
+                data-reload
+                data-reset="format"
+              >
+                <option value="null" selected>All</option>
+                <option value="0">None</option>
+                <option value="1">Dragapult LZ Box</option>
+                <option value="2">Dragapult Pidgeot</option>
+                <option value="3">Dragapult Dusknoir</option>
+                <option value="4">Dragapult Iron Thorns</option>
+                <option value="5">Dragapult Gholdengo</option>
+                <option value="6">Dragapult Charizard</option>
+                <option value="7">Dragapult Froslass</option>
+                <option value="8">Dragapult Zoroark</option>
+                <option value="9">Dragapult Blaziken</option>
+                <option value="11">Dragapult Noctowl</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <section>
+          <h2>Average card counts</h2>
+
+          <div class="decklist-head">
+            <div class="dropdown">
+              <div class="dropdown-select" data-reload data-key="format">
+                Scarlet &amp; Violet - Ascended Heroes
+                <span class="sub">70 decklists</span>
+                <i class="fas fa-chevron-down chevron"></i>
+              </div>
+              <ul class="dropdown-options scrollable">
+                <li data-value="SVI-ASC">
+                  Scarlet &amp; Violet - Ascended Heroes - 70 decklists
+                </li>
+                <li data-value="SVI-PFL">
+                  Scarlet &amp; Violet - Phantasmal Flames - 629 decklists
+                </li>
+                <li data-value="SVI-MEG">
+                  Scarlet &amp; Violet - Mega Evolution - 323 decklists
+                </li>
+                <li data-value="SVI-BLK">
+                  Scarlet &amp; Violet - Black Bolt - 308 decklists
+                </li>
+                <li data-value="SVI-DRI">
+                  Scarlet &amp; Violet - Destined Rivals - 104 decklists
+                </li>
+                <li data-value="SVI-JTG">
+                  Scarlet &amp; Violet - Journey Together - 491 decklists
+                </li>
+                <li data-value="BRS-PRE">
+                  Brilliant Stars - Prismatic Evolutions - 243 decklists
+                </li>
+                <li data-value="BRS-SSP">
+                  Brilliant Stars - Surging Sparks - 99 decklists
+                </li>
+                <li data-value="BRS-SCR">
+                  Brilliant Stars - Stellar Crown - 58 decklists
+                </li>
+                <li data-value="BRS-SFA">
+                  Brilliant Stars - Shrouded Fable - 5 decklists
+                </li>
+                <li data-value="BRS-TWM">
+                  Brilliant Stars - Twilight Masquerade - 24 decklists
+                </li>
+              </ul>
+            </div>
+            <div class="decklist-desc">Most popular variant (60 decklists)</div>
+          </div>
+          <div class="decklist" data-id="1">
+            <div class="decklist-top">
+              <div class="decklist-title">
+                Dragapult Dusknoir
+                <a
+                  class="decklist-price card-price usd external"
+                  href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fmassentry%3Fproductline%3DPokemon%26c%3D4-550172%7C%7C4-550173%7C%7C4-542659%7C%7C4-654458%7C%7C4-497557%7C%7C3-676010%7C%7C3-550174%7C%7C3-654470%7C%7C3-497564%7C%7C3-523841%7C%7C3-654453%7C%7C2-676008%7C%7C2-610390%7C%7C2-675828%7C%7C2-656267%7C%7C2-610391%7C%7C2-550197%7C%7C1-656264%7C%7C1-610392%7C%7C1-642200%7C%7C1-488007%7C%7C1-675954%7C%7C1-589983%7C%7C1-550139%7C%7C1-542682%7C%7C1-550185"
+                  target="_blank"
+                  data-tooltip="Buy on TCGplayer"
+                >
+                  56.50$
+                  <img
+                    class="md-only"
+                    src="https://limitless3.nyc3.cdn.digitaloceanspaces.com/markets/icons/tcgplayer.png"
+                  />
+                </a>
+                <span class="decklist-price card-price eur hidden">39.05€</span>
+              </div>
+
+              <div class="decklist-options">
+                <div class="vv-buttons hidden">
+                  <button data-export data-tooltip="Copy to Clipboard">
+                    <i data-copy class="far fa-copy"></i
+                    ><i data-success class="fas fa-check hidden"></i>
+                  </button>
+                  <button class="builder" data-tooltip="Open in Builder">
+                    <i class="fas fa-tools"></i>
+                  </button>
+                </div>
+                <div class="flex gap-1">
+                  <select
+                    class="blend"
+                    data-query="lang"
+                    data-tooltip="Change the language of the cards"
+                  >
+                    <option value="en" selected>English</option>
+                    <option value="jp">Japanese</option>
+                    <option value="de">German</option>
+                    <option value="fr">French</option>
+                    <option value="es">Spanish</option>
+                    <option value="it">Italian</option>
+                    <option value="pt">Portuguese</option>
+                  </select>
+                  <select
+                    class="blend"
+                    data-query="mode"
+                    data-tooltip="Change the displayed version of the cards"
+                  >
+                    <option
+                      value="regular"
+                      data-tooltip="the, at the time of the tournament, most recent regular version of each card"
+                      selected
+                    >
+                      Regular
+                    </option>
+                    <option
+                      value="bling"
+                      data-tooltip="the rarest version of each card"
+                    >
+                      Max Rarity
+                    </option>
+                    <option
+                      value="cheapest"
+                      data-tooltip="the least expensive version of each card"
+                    >
+                      Cheapest
+                    </option>
+                    <option
+                      value="chaos"
+                      data-tooltip="a randomly selected print of each card"
+                    >
+                      Random
+                    </option>
+                  </select>
+                </div>
+
+                <div class="decklist-toggles flex gap-1">
+                  <div class="decklist-option-toggle" data-currency-select>
+                    <div class="decklist-option-toggle-tab usd active">USD</div>
+                    <div class="decklist-option-toggle-tab eur">EUR</div>
+                  </div>
+
+                  <div class="decklist-option-toggle" data-view-select>
+                    <div
+                      class="decklist-option-toggle-tab wide active"
+                      data-view-text
+                    >
+                      <i class="fas fa-bars"></i>
+                    </div>
+                    <div
+                      class="decklist-option-toggle-tab wide"
+                      data-view-image
+                    >
+                      <i class="fas fa-th"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div data-text-decklist>
+              <div class="decklist-main">
+                <div class="decklist-cards layout1">
+                  <div class="decklist-column">
+                    <div class="decklist-column-heading">Pokémon (22.81)</div>
+                    <div
+                      class="decklist-card"
+                      data-set="TWM"
+                      data-number="128"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/TWM/128">
+                        <span class="card-count">4.00</span>
+                        <span class="card-name">Dreepy</span>
+                        <img
+                          class="set"
+                          alt="TWM"
+                          src="https://s3.limitlesstcg.com/sets/en/TWM_SM.png"
+                          data-tooltip="Twilight Masquerade"
+                        />
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F550172%2Fpokemon-sv06-twilight-masquerade-dreepy"
+                        target="_blank"
+                        >$0.64</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Twilight-Masquerade/Dreepy-TWM128?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.24€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="TWM"
+                      data-number="129"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/TWM/129">
+                        <span class="card-count">4.00</span>
+                        <span class="card-name">Drakloak</span>
+                        <img
+                          class="set"
+                          alt="TWM"
+                          src="https://s3.limitlesstcg.com/sets/en/TWM_SM.png"
+                          data-tooltip="Twilight Masquerade"
+                        />
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F550173%2Fpokemon-sv06-twilight-masquerade-drakloak"
+                        target="_blank"
+                        >$0.80</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Twilight-Masquerade/Drakloak-TWM129?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.36€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="TWM"
+                      data-number="130"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/TWM/130">
+                        <span class="card-count">2.87</span>
+                        <span class="card-name">Dragapult ex</span>
+                        <img
+                          class="set"
+                          alt="TWM"
+                          src="https://s3.limitlesstcg.com/sets/en/TWM_SM.png"
+                          data-tooltip="Twilight Masquerade"
+                        />
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F550174%2Fpokemon-sv06-twilight-masquerade-dragapult-ex-130-167"
+                        target="_blank"
+                        >$5.22</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Twilight-Masquerade/Dragapult-ex-V1-TWM130?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >3.81€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="PRE"
+                      data-number="35"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/PRE/35">
+                        <span class="card-count">2.00</span>
+                        <span class="card-name">Duskull</span>
+                        <img
+                          class="set"
+                          alt="PRE"
+                          src="https://s3.limitlesstcg.com/sets/en/PRE_SM.png"
+                          data-tooltip="Prismatic Evolutions"
+                        />
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F610390%2Fpokemon-sv-prismatic-evolutions-duskull"
+                        target="_blank"
+                        >$0.24</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Prismatic-Evolutions/Duskull-PRE035?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.10€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="ASC"
+                      data-number="16"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/ASC/16">
+                        <span class="card-count">2.00</span>
+                        <span class="card-name">Budew</span>
+                        <img
+                          class="set"
+                          alt="ASC"
+                          src="https://s3.limitlesstcg.com/sets/en/ASC_SM.png"
+                          data-tooltip="Ascended Heroes"
+                        />
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F675828%2Fpokemon-me-ascended-heroes-budew-016-217"
+                        target="_blank"
+                        >$0.16</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Ascended-Heroes/Budew-V1-ASC016?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.10€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="PRE"
+                      data-number="36"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/PRE/36">
+                        <span class="card-count">1.92</span>
+                        <span class="card-name">Dusclops</span>
+                        <img
+                          class="set"
+                          alt="PRE"
+                          src="https://s3.limitlesstcg.com/sets/en/PRE_SM.png"
+                          data-tooltip="Prismatic Evolutions"
+                        />
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F610391%2Fpokemon-sv-prismatic-evolutions-dusclops"
+                        target="_blank"
+                        >$0.28</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Prismatic-Evolutions/Dusclops-PRE036?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.11€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="PRE"
+                      data-number="37"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/PRE/37">
+                        <span class="card-count">1.03</span>
+                        <span class="card-name">Dusknoir</span>
+                        <img
+                          class="set"
+                          alt="PRE"
+                          src="https://s3.limitlesstcg.com/sets/en/PRE_SM.png"
+                          data-tooltip="Prismatic Evolutions"
+                        />
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F610392%2Fpokemon-sv-prismatic-evolutions-dusknoir"
+                        target="_blank"
+                        >$0.12</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Prismatic-Evolutions/Dusknoir-PRE037?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.12€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="SVI"
+                      data-number="118"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/SVI/118">
+                        <span class="card-count">0.98</span>
+                        <span class="card-name">Hawlucha</span>
+                        <img
+                          class="set"
+                          alt="SVI"
+                          src="https://s3.limitlesstcg.com/sets/en/SVI_SM.png"
+                          data-tooltip="Scarlet & Violet"
+                        />
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F488007%2Fsv01-scarlet-and-violet-base-set-hawlucha-118-198"
+                        target="_blank"
+                        >$0.20</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Scarlet-Violet/Hawlucha-SV1en118?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.14€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="ASC"
+                      data-number="142"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/ASC/142">
+                        <span class="card-count">0.97</span>
+                        <span class="card-name">Fezandipiti ex</span>
+                        <img
+                          class="set"
+                          alt="ASC"
+                          src="https://s3.limitlesstcg.com/sets/en/ASC_SM.png"
+                          data-tooltip="Ascended Heroes"
+                        />
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F675954%2Fpokemon-me-ascended-heroes-fezandipiti-ex-142-217"
+                        target="_blank"
+                        >$3.88</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Ascended-Heroes/Fezandipiti-ex-V1-ASC142?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >2.27€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="SSP"
+                      data-number="76"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/SSP/76">
+                        <span class="card-count">0.93</span>
+                        <span class="card-name">Latias ex</span>
+                        <img
+                          class="set"
+                          alt="SSP"
+                          src="https://s3.limitlesstcg.com/sets/en/SSP_SM.png"
+                          data-tooltip="Surging Sparks"
+                        />
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F589983%2Fpokemon-sv08-surging-sparks-latias-ex-076-191"
+                        target="_blank"
+                        >$3.14</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Surging-Sparks/Latias-ex-V1-SSP076?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >4.38€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="TWM"
+                      data-number="95"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/TWM/95">
+                        <span class="card-count">0.93</span>
+                        <span class="card-name">Munkidori</span>
+                        <img
+                          class="set"
+                          alt="TWM"
+                          src="https://s3.limitlesstcg.com/sets/en/TWM_SM.png"
+                          data-tooltip="Twilight Masquerade"
+                        />
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F550139%2Fpokemon-sv06-twilight-masquerade-munkidori"
+                        target="_blank"
+                        >$0.26</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Twilight-Masquerade/Munkidori-TWM095?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.43€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="TWM"
+                      data-number="141"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/TWM/141">
+                        <span class="card-count">0.90</span>
+                        <span class="card-name">Bloodmoon Ursaluna ex</span>
+                        <img
+                          class="set"
+                          alt="TWM"
+                          src="https://s3.limitlesstcg.com/sets/en/TWM_SM.png"
+                          data-tooltip="Twilight Masquerade"
+                        />
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F550185%2Fpokemon-sv06-twilight-masquerade-bloodmoon-ursaluna-ex-141-167"
+                        target="_blank"
+                        >$1.67</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Twilight-Masquerade/Bloodmoon-Ursaluna-ex-V1-TWM141?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >1.60€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="DRI"
+                      data-number="10"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/DRI/10">
+                        <span class="card-count">0.20</span>
+                        <span class="card-name">Shaymin</span>
+                        <img
+                          class="set"
+                          alt="DRI"
+                          src="https://s3.limitlesstcg.com/sets/en/DRI_SM.png"
+                          data-tooltip="Destined Rivals"
+                        />
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F632836%2Fpokemon-sv10-destined-rivals-shaymin-010-182"
+                        target="_blank"
+                        >$0.04</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Destined-Rivals/Shaymin-V1-DRI010?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.03€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="PFL"
+                      data-number="14"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/PFL/14">
+                        <span class="card-count">0.05</span>
+                        <span class="card-name">Moltres</span>
+                        <img
+                          class="set"
+                          alt="PFL"
+                          src="https://s3.limitlesstcg.com/sets/en/PFL_SM.png"
+                          data-tooltip="Phantasmal Flames"
+                        />
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F662201%2Fpokemon-me02-phantasmal-flames-moltres"
+                        target="_blank"
+                        >$0.00</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Phantasmal-Flames/Moltres-PFL014?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.00€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="SVI"
+                      data-number="96"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/SVI/96">
+                        <span class="card-count">0.03</span>
+                        <span class="card-name">Klefki</span>
+                        <img
+                          class="set"
+                          alt="SVI"
+                          src="https://s3.limitlesstcg.com/sets/en/SVI_SM.png"
+                          data-tooltip="Scarlet & Violet"
+                        />
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F486602%2Fsv01-scarlet-and-violet-base-set-klefki-096-198"
+                        target="_blank"
+                        >$0.00</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Scarlet-Violet/Klefki-SV1en096?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.00€</a
+                      >
+                    </div>
+                  </div>
+                  <div class="decklist-column">
+                    <div class="decklist-column-heading">Trainer (30.23)</div>
+                    <div
+                      class="decklist-card"
+                      data-set="TEF"
+                      data-number="144"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/TEF/144">
+                        <span class="card-count">3.97</span>
+                        <span class="card-name">Buddy-Buddy Poffin</span>
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F542659%2Fpokemon-sv05-temporal-forces-buddy-buddy-poffin"
+                        target="_blank"
+                        >$0.79</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Temporal-Forces/Buddy-Buddy-Poffin-TEF144?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.43€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="MEG"
+                      data-number="119"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/MEG/119">
+                        <span class="card-count">3.95</span>
+                        <span class="card-name">Lillie's Determination</span>
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F654458%2Fpokemon-me01-mega-evolution-lillies-determination-119-132"
+                        target="_blank"
+                        >$1.46</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Mega-Evolution/Lillies-Determination-V1-MEG119?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >1.30€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="PAL"
+                      data-number="185"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/PAL/185">
+                        <span class="card-count">3.88</span>
+                        <span class="card-name">Iono</span>
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F497557%2Fpokemon-sv02-paldea-evolved-iono-185-193"
+                        target="_blank"
+                        >$1.16</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Paldea-Evolved/Iono-V1-PAL185?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.54€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="ASC"
+                      data-number="198"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/ASC/198">
+                        <span class="card-count">3.10</span>
+                        <span class="card-name">Poké Pad</span>
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F676010%2Fpokemon-me-ascended-heroes-poke-pad"
+                        target="_blank"
+                        >$13.67</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Ascended-Heroes/Poke-Pad-ASC198?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >7.50€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="MEG"
+                      data-number="131"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/MEG/131">
+                        <span class="card-count">2.83</span>
+                        <span class="card-name">Ultra Ball</span>
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F654470%2Fpokemon-me01-mega-evolution-ultra-ball"
+                        target="_blank"
+                        >$0.36</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Mega-Evolution/Ultra-Ball-MEG131?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.31€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="PAR"
+                      data-number="160"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/PAR/160">
+                        <span class="card-count">2.80</span>
+                        <span class="card-name">Counter Catcher</span>
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F523841%2Fpokemon-sv04-paradox-rift-counter-catcher"
+                        target="_blank"
+                        >$1.93</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Paradox-Rift/Counter-Catcher-V1-PAR160?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >1.12€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="MEG"
+                      data-number="114"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/MEG/114">
+                        <span class="card-count">2.78</span>
+                        <span class="card-name">Boss's Orders</span>
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F654453%2Fpokemon-me01-mega-evolution-bosss-orders-ghetsis"
+                        target="_blank"
+                        >$0.44</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Mega-Evolution/Bosss-Orders-Ghetsis-MEG114?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.41€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="ASC"
+                      data-number="196"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/ASC/196">
+                        <span class="card-count">2.13</span>
+                        <span class="card-name">Night Stretcher</span>
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F676008%2Fpokemon-me-ascended-heroes-night-stretcher"
+                        target="_blank"
+                        >$0.44</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Ascended-Heroes/Night-Stretcher-ASC196?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.29€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="TWM"
+                      data-number="153"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/TWM/153">
+                        <span class="card-count">1.87</span>
+                        <span class="card-name">Jamming Tower</span>
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F550197%2Fpokemon-sv06-twilight-masquerade-jamming-tower"
+                        target="_blank"
+                        >$0.22</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Twilight-Masquerade/Jamming-Tower-TWM153?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.22€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="WHT"
+                      data-number="84"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/WHT/84">
+                        <span class="card-count">1.03</span>
+                        <span class="card-name">Hilda</span>
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F642200%2Fpokemon-sv-white-flare-hilda"
+                        target="_blank"
+                        >$1.46</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/White-Flare/Hilda-V1-WHT084?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >1.13€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="PAR"
+                      data-number="171"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/PAR/171">
+                        <span class="card-count">0.48</span>
+                        <span class="card-name">Professor Turo's Scenario</span>
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F523852%2Fpokemon-sv04-paradox-rift-professor-turos-scenario"
+                        target="_blank"
+                        >$0.13</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Paradox-Rift/Professor-Turos-Scenario-V1-PAR171?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.04€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="MEG"
+                      data-number="125"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/MEG/125">
+                        <span class="card-count">0.40</span>
+                        <span class="card-name">Rare Candy</span>
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F654464%2Fpokemon-me01-mega-evolution-rare-candy-125-132"
+                        target="_blank"
+                        >$0.04</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Mega-Evolution/Rare-Candy-V1-MEG125?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.04€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="PFL"
+                      data-number="87"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/PFL/87">
+                        <span class="card-count">0.18</span>
+                        <span class="card-name">Dawn</span>
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F660414%2Fpokemon-me02-phantasmal-flames-dawn"
+                        target="_blank"
+                        >$0.02</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Phantasmal-Flames/Dawn-V1-PFL087?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.02€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="OBF"
+                      data-number="186"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/OBF/186">
+                        <span class="card-count">0.15</span>
+                        <span class="card-name">Arven</span>
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F509778%2Fpokemon-sv03-obsidian-flames-arven"
+                        target="_blank"
+                        >$0.05</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Obsidian-Flames/Arven-OBF186?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.06€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="DRI"
+                      data-number="180"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/DRI/180">
+                        <span class="card-count">0.10</span>
+                        <span class="card-name">Team Rocket's Watchtower</span>
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F632980%2Fpokemon-sv10-destined-rivals-team-rockets-watchtower"
+                        target="_blank"
+                        >$0.01</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Destined-Rivals/Team-Rockets-Watchtower-DRI180?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.01€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="SVI"
+                      data-number="181"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/SVI/181">
+                        <span class="card-count">0.10</span>
+                        <span class="card-name">Nest Ball</span>
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F488087%2Fsv01-scarlet-and-violet-base-set-nest-ball-181-198"
+                        target="_blank"
+                        >$0.02</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Scarlet-Violet/Nest-Ball-V1-SV1en181?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.08€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="SCR"
+                      data-number="133"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/SCR/133">
+                        <span class="card-count">0.08</span>
+                        <span class="card-name">Crispin</span>
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F567390%2Fpokemon-sv07-stellar-crown-crispin-133-142"
+                        target="_blank"
+                        >$0.01</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Stellar-Crown/Crispin-V1-SCR133?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.01€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="MEG"
+                      data-number="130"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/MEG/130">
+                        <span class="card-count">0.07</span>
+                        <span class="card-name">Switch</span>
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F654469%2Fpokemon-me01-mega-evolution-switch"
+                        target="_blank"
+                        >$0.01</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Mega-Evolution/Switch-MEG130?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.00€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="ASC"
+                      data-number="181"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/ASC/181">
+                        <span class="card-count">0.05</span>
+                        <span class="card-name">Air Balloon</span>
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F675993%2Fpokemon-me-ascended-heroes-air-balloon"
+                        target="_blank"
+                        >$0.00</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Ascended-Heroes/Air-Balloon-ASC181?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.00€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="PAR"
+                      data-number="178"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/PAR/178">
+                        <span class="card-count">0.05</span>
+                        <span class="card-name"
+                          >Technical Machine: Evolution</span
+                        >
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F523859%2Fpokemon-sv04-paradox-rift-technical-machine-evolution"
+                        target="_blank"
+                        >$0.01</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Paradox-Rift/Technical-Machine-Evolution-PAR178?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.00€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="SCR"
+                      data-number="142"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/SCR/142">
+                        <span class="card-count">0.05</span>
+                        <span class="card-name">Sparkling Crystal</span>
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F567416%2Fpokemon-sv07-stellar-crown-sparkling-crystal"
+                        target="_blank"
+                        >$0.02</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Stellar-Crown/Sparkling-Crystal-SCR142?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.02€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="PAR"
+                      data-number="163"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/PAR/163">
+                        <span class="card-count">0.03</span>
+                        <span class="card-name">Earthen Vessel</span>
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F523844%2Fpokemon-sv04-paradox-rift-earthen-vessel"
+                        target="_blank"
+                        >$0.00</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Paradox-Rift/Earthen-Vessel-PAR163?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.00€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="JTG"
+                      data-number="146"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/JTG/146">
+                        <span class="card-count">0.03</span>
+                        <span class="card-name">Brock's Scouting</span>
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F623573%2Fpokemon-sv09-journey-together-brocks-scouting-146-159"
+                        target="_blank"
+                        >$0.00</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Journey-Together/Brocks-Scouting-V1-JTG146?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.00€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="JTG"
+                      data-number="155"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/JTG/155">
+                        <span class="card-count">0.03</span>
+                        <span class="card-name">Professor's Research</span>
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F623582%2Fpokemon-sv09-journey-together-professors-research"
+                        target="_blank"
+                        >$0.00</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Journey-Together/Professors-Research-Professor-Sada-JTG155?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.00€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="TWM"
+                      data-number="165"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/TWM/165">
+                        <span class="card-count">0.03</span>
+                        <span class="card-name">Unfair Stamp</span>
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F550209%2Fpokemon-sv06-twilight-masquerade-unfair-stamp"
+                        target="_blank"
+                        >$0.28</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Twilight-Masquerade/Unfair-Stamp-TWM165?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.25€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="PAL"
+                      data-number="173"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/PAL/173">
+                        <span class="card-count">0.02</span>
+                        <span class="card-name">Bravery Charm</span>
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F497545%2Fpokemon-sv02-paldea-evolved-bravery-charm"
+                        target="_blank"
+                        >$0.01</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Paldea-Evolved/Bravery-Charm-PAL173?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.00€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="PAL"
+                      data-number="171"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/PAL/171">
+                        <span class="card-count">0.02</span>
+                        <span class="card-name">Artazon</span>
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F497541%2Fpokemon-sv02-paldea-evolved-artazon"
+                        target="_blank"
+                        >$0.00</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Paldea-Evolved/Artazon-PAL171?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.00€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="OBF"
+                      data-number="196"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/OBF/196">
+                        <span class="card-count">0.02</span>
+                        <span class="card-name">Town Store</span>
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F509788%2Fpokemon-sv03-obsidian-flames-town-store"
+                        target="_blank"
+                        >$0.00</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Obsidian-Flames/Town-Store-OBF196?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.00€</a
+                      >
+                    </div>
+                  </div>
+                  <div class="decklist-column">
+                    <div class="decklist-column-heading">Energy (6.94)</div>
+                    <div
+                      class="decklist-card"
+                      data-set="PAL"
+                      data-number="191"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/PAL/191">
+                        <span class="card-count">2.83</span>
+                        <span class="card-name">Luminous Energy</span>
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F497564%2Fpokemon-sv02-paldea-evolved-luminous-energy"
+                        target="_blank"
+                        >$1.01</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Paldea-Evolved/Luminous-Energy-PAL191?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >1.69€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="MEE"
+                      data-number="5"
+                      data-lang="en"
+                      data-basic-energy="5"
+                    >
+                      <a class="card-link" href="/cards/MEE/5">
+                        <span class="card-count">1.97</span>
+                        <span class="card-name">Psychic Energy</span>
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F656267%2Fpokemon-mee-mega-evolution-energies-basic-psychic-energy-005"
+                        target="_blank"
+                        >$0.25</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Mega-Evolution-Energies/Basic-Psychic-Energy-V1-MEE005?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.09€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="MEE"
+                      data-number="2"
+                      data-lang="en"
+                      data-basic-energy="2"
+                    >
+                      <a class="card-link" href="/cards/MEE/2">
+                        <span class="card-count">1.20</span>
+                        <span class="card-name">Fire Energy</span>
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F656264%2Fpokemon-mee-mega-evolution-energies-basic-fire-energy-002"
+                        target="_blank"
+                        >$0.25</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Mega-Evolution-Energies/Basic-Fire-Energy-V1-MEE002?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.03€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="TEF"
+                      data-number="162"
+                      data-lang="en"
+                    >
+                      <a class="card-link" href="/cards/TEF/162">
+                        <span class="card-count">0.92</span>
+                        <span class="card-name">Neo Upper Energy</span>
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F542682%2Fpokemon-sv05-temporal-forces-neo-upper-energy"
+                        target="_blank"
+                        >$15.59</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Temporal-Forces/Neo-Upper-Energy-TEF162?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >9.59€</a
+                      >
+                    </div>
+                    <div
+                      class="decklist-card"
+                      data-set="MEE"
+                      data-number="7"
+                      data-lang="en"
+                      data-basic-energy="7"
+                    >
+                      <a class="card-link" href="/cards/MEE/7">
+                        <span class="card-count">0.02</span>
+                        <span class="card-name">Darkness Energy</span>
+                      </a>
+                      <a
+                        class="card-price usd"
+                        href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F656269%2Fpokemon-mee-mega-evolution-energies-basic-darkness-energy-007"
+                        target="_blank"
+                        >$0.00</a
+                      >
+                      <a
+                        class="card-price eur hidden"
+                        href="https://www.cardmarket.com/en/Pokemon/Products/Singles/Mega-Evolution-Energies/Basic-Darkness-Energy-V1-MEE007?utm_source=limitlesstcg&utm_medium=text&utm_campaign=card_prices"
+                        target="_blank"
+                        >0.00€</a
+                      >
+                    </div>
+                  </div>
+                </div>
+                <div class="decklist-extras">
+                  <script>
+                    var LS_COPY = "Copy to Clipboard",
+                      LS_COPY_SUCCESS = "Copied!"
+                  </script>
+                  <div class="decklist-card-preview">
+                    <img
+                      class="card resp-w"
+                      width="353"
+                      height="491"
+                      src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/TWM/TWM_128_R_EN_MD.png"
+                      loading="lazy"
+                    />
+                  </div>
+                  <button class="export">Copy to Clipboard</button>
+                  <button class="tool-link" data-target="/tools/proxies">
+                    Print Proxies
+                  </button>
+                  <button class="tool-link" data-target="/tools/imggen">
+                    Open as Image
+                  </button>
+                  <button class="builder">Open in Builder</button>
+                  <input
+                    type="hidden"
+                    name="_token"
+                    value=""
+                    autocomplete="off"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="hidden" data-image-decklist>
+              <div class="decklist-visual embed light">
+                <div class="card-grid">
+                  <div class="decklist-visual-card">
+                    <a href="/cards/TWM/128">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/TWM/TWM_128_R_EN_XS.png"
+                        alt="Dreepy"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">4.00</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/TWM/129">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/TWM/TWM_129_R_EN_XS.png"
+                        alt="Drakloak"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">4.00</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/TWM/130">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/TWM/TWM_130_R_EN_XS.png"
+                        alt="Dragapult ex"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">2.87</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/PRE/35">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/PRE/PRE_035_R_EN_XS.png"
+                        alt="Duskull"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">2.00</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/ASC/16">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/ASC/ASC_016_R_EN_XS.png"
+                        alt="Budew"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">2.00</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/PRE/36">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/PRE/PRE_036_R_EN_XS.png"
+                        alt="Dusclops"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">1.92</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/PRE/37">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/PRE/PRE_037_R_EN_XS.png"
+                        alt="Dusknoir"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">1.03</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/SVI/118">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/SVI/SVI_118_R_EN_XS.png"
+                        alt="Hawlucha"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">0.98</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/ASC/142">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/ASC/ASC_142_R_EN_XS.png"
+                        alt="Fezandipiti ex"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">0.97</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/SSP/76">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/SSP/SSP_076_R_EN_XS.png"
+                        alt="Latias ex"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">0.93</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/TWM/95">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/TWM/TWM_095_R_EN_XS.png"
+                        alt="Munkidori"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">0.93</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/TWM/141">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/TWM/TWM_141_R_EN_XS.png"
+                        alt="Bloodmoon Ursaluna ex"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">0.90</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/DRI/10">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/DRI/DRI_010_R_EN_XS.png"
+                        alt="Shaymin"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">0.20</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/PFL/14">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/PFL/PFL_014_R_EN_XS.png"
+                        alt="Moltres"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">0.05</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/SVI/96">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/SVI/SVI_096_R_EN_XS.png"
+                        alt="Klefki"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">0.03</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/TEF/144">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/TEF/TEF_144_R_EN_XS.png"
+                        alt="Buddy-Buddy Poffin"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">3.97</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/MEG/119">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/MEG/MEG_119_R_EN_XS.png"
+                        alt="Lillie&#039;s Determination"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">3.95</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/PAL/185">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/PAL/PAL_185_R_EN_XS.png"
+                        alt="Iono"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">3.88</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/ASC/198">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/ASC/ASC_198_R_EN_XS.png"
+                        alt="Poké Pad"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">3.10</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/MEG/131">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/MEG/MEG_131_R_EN_XS.png"
+                        alt="Ultra Ball"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">2.83</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/PAR/160">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/PAR/PAR_160_R_EN_XS.png"
+                        alt="Counter Catcher"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">2.80</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/MEG/114">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/MEG/MEG_114_R_EN_XS.png"
+                        alt="Boss&#039;s Orders"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">2.78</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/ASC/196">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/ASC/ASC_196_R_EN_XS.png"
+                        alt="Night Stretcher"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">2.13</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/TWM/153">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/TWM/TWM_153_R_EN_XS.png"
+                        alt="Jamming Tower"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">1.87</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/WHT/84">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/WHT/WHT_084_R_EN_XS.png"
+                        alt="Hilda"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">1.03</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/PAR/171">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/PAR/PAR_171_R_EN_XS.png"
+                        alt="Professor Turo&#039;s Scenario"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">0.48</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/MEG/125">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/MEG/MEG_125_R_EN_XS.png"
+                        alt="Rare Candy"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">0.40</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/PFL/87">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/PFL/PFL_087_R_EN_XS.png"
+                        alt="Dawn"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">0.18</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/OBF/186">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/OBF/OBF_186_R_EN_XS.png"
+                        alt="Arven"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">0.15</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/DRI/180">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/DRI/DRI_180_R_EN_XS.png"
+                        alt="Team Rocket&#039;s Watchtower"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">0.10</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/SVI/181">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/SVI/SVI_181_R_EN_XS.png"
+                        alt="Nest Ball"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">0.10</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/SCR/133">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/SCR/SCR_133_R_EN_XS.png"
+                        alt="Crispin"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">0.08</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/MEG/130">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/MEG/MEG_130_R_EN_XS.png"
+                        alt="Switch"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">0.07</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/ASC/181">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/ASC/ASC_181_R_EN_XS.png"
+                        alt="Air Balloon"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">0.05</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/PAR/178">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/PAR/PAR_178_R_EN_XS.png"
+                        alt="Technical Machine: Evolution"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">0.05</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/SCR/142">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/SCR/SCR_142_R_EN_XS.png"
+                        alt="Sparkling Crystal"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">0.05</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/PAR/163">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/PAR/PAR_163_R_EN_XS.png"
+                        alt="Earthen Vessel"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">0.03</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/JTG/146">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/JTG/JTG_146_R_EN_XS.png"
+                        alt="Brock&#039;s Scouting"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">0.03</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/JTG/155">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/JTG/JTG_155_R_EN_XS.png"
+                        alt="Professor&#039;s Research"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">0.03</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/TWM/165">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/TWM/TWM_165_R_EN_XS.png"
+                        alt="Unfair Stamp"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">0.03</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/PAL/173">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/PAL/PAL_173_R_EN_XS.png"
+                        alt="Bravery Charm"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">0.02</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/PAL/171">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/PAL/PAL_171_R_EN_XS.png"
+                        alt="Artazon"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">0.02</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/OBF/196">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/OBF/OBF_196_R_EN_XS.png"
+                        alt="Town Store"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">0.02</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/PAL/191">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/PAL/PAL_191_R_EN_XS.png"
+                        alt="Luminous Energy"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">2.83</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/MEE/5">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/MEE/MEE_005_R_EN_XS.png"
+                        alt="Psychic Energy"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">1.97</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/MEE/2">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/MEE/MEE_002_R_EN_XS.png"
+                        alt="Fire Energy"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">1.20</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/TEF/162">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/TEF/TEF_162_R_EN_XS.png"
+                        alt="Neo Upper Energy"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">0.92</span>
+                    </a>
+                  </div>
+                  <div class="decklist-visual-card">
+                    <a href="/cards/MEE/7">
+                      <img
+                        class="card-picture card"
+                        src="https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/MEE/MEE_007_R_EN_XS.png"
+                        alt="Darkness Energy"
+                        loading="lazy"
+                        width="136"
+                        height="189"
+                      />
+                      <span class="card-count card-count-custom">0.02</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <a class="button text-button" href="/decks/284"
+            >Return to deck profile</a
+          >
+        </section>
+      </div>
+    </main>
+
+    <div class="dont-print container">
+      <div id="nn_mobile_mpu1"></div>
+      <div id="nn_lb3"></div>
+    </div>
+
+    <div class="after-content"></div>
+
+    <footer>
+      <div class="footer container">
+        <div class="menus">
+          <div class="column">
+            <h2><a href="https://limitlesstcg.com">Limitless TCG</a></h2>
+            <ul>
+              <li><a href="/about">About</a></li>
+              <li><a href="/contact">Contact</a></li>
+              <li><a href="/privacy">Privacy Policy</a></li>
+              <li><a href="/legal">Site Notice</a></li>
+            </ul>
+          </div>
+          <div class="column">
+            <h2>Our Other Sites</h2>
+            <ul>
+              <li><a href="https://my.limitlesstcg.com">Deck Builder</a></li>
+              <li>
+                <a href="https://play.limitlesstcg.com">Tournament Platform</a>
+              </li>
+              <li>
+                <a href="https://onepiece.limitlesstcg.com"
+                  >One Piece Database</a
+                >
+              </li>
+              <li>
+                <a href="https://pocket.limitlesstcg.com">Pocket Database</a>
+              </li>
+              <li><a href="https://limitlessvgc.com">Limitless VGC</a></li>
+            </ul>
+          </div>
+          <div class="column">
+            <h2>Follow</h2>
+            <ul>
+              <li>
+                <a href="https://twitter.com/limitlesstcg"
+                  ><i class="fab fa-twitter"></i> Twitter</a
+                >
+              </li>
+              <li>
+                <a href="https://facebook.com/LimitlessTCG/"
+                  ><i class="fab fa-facebook"></i> Facebook</a
+                >
+              </li>
+              <li>
+                <a href="https://twitch.tv/limitless_tcg"
+                  ><i class="fab fa-twitch"></i> Twitch</a
+                >
+              </li>
+              <li>
+                <a href="https://www.patreon.com/limitlesstcg"
+                  ><i class="fab fa-patreon"></i> Patreon</a
+                >
+              </li>
+            </ul>
+          </div>
+          <div class="column full">
+            <h2>TCGplayer</h2>
+            <a
+              class="promo"
+              href="https://partner.tcgplayer.com/LIMITLESS?u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fpokemon%2Fproduct"
+              target="_blank"
+            >
+              <img
+                src="https://limitless3.nyc3.cdn.digitaloceanspaces.com/markets/promo/tcgplayer.png"
+                alt="TCGplayer logo"
+              />
+              <p>
+                You can support us by using our Affiliate Link when buying on
+                TCGplayer!
+              </p>
+            </a>
+          </div>
+
+          <a href="#" class="cookie-link nn-cmp-show">Manage Cookies</a>
+        </div>
+
+        <div class="disclaimer">
+          The literal and graphical information presented on this website about
+          the Pokémon Trading Card Game, including card images and text, is
+          copyright The Pokémon Company (Pokémon), Nintendo, Game Freak and/or
+          Creatures. This website is not produced by, endorsed by, supported by,
+          or affiliated with Pokémon, Nintendo, Game Freak or Creatures.
+        </div>
+      </div>
+    </footer>
+
+    <div id="jsg">
+      <div class="overlay"></div>
+    </div>
+  </body>
+</html>
