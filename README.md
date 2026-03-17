@@ -40,9 +40,32 @@ The application integrates with the comprehensive TCGdex database, offering real
   - `"4 Charmander"` (card name only)
   - Standard tournament formats
 - **Auto-Resolution**: Automatically resolves cards from the TCGdex database
+- **Smart Fallbacks**: Multiple resolution strategies when exact matches aren't found
+- **Set Code Mapping**: Automatic conversion of Limitless TCG set codes to TCGdex format
 - **Deduplication**: Intelligently combines duplicate entries
 - **Error Handling**: Clear feedback for unresolvable cards
 - **Batch Processing**: Import entire deck lists in seconds
+
+### 🏆 Limitless TCG Integration
+
+- **Meta Deck Browser**: Browse top 50 tournament decks from Limitless TCG
+- **Pokemon Sprites**: Visual Pokemon icons for easy deck identification
+- **Import by URL**: Paste any Limitless TCG deck URL to load cards
+- **Variant Support**: Import specific deck variants (e.g., `?variant=5`)
+- **Source-to-Editor Workflow**: Review and edit imported decks before adding to proxy list
+- **Load Confirmation**: Choose to replace existing cards or add to current list
+- **Recent Imports**: Quick access to previously imported decks
+
+### 👁️ Live Preview
+
+- **Drag-and-Drop Reordering**: Intuitive card arrangement with smooth animations
+- **Individual Card Movement**: Move single cards independently (not grouped by type)
+- **Zoom Controls**: Flexible zoom levels from 50% to 200%
+- **Multi-Page Support**: Preview across multiple pages as needed
+- **Cut Line Overlay**: Visual guide showing where cards will be cut
+- **Bleed Visualization**: See exactly how bleed areas extend beyond trim size
+- **Click-to-Change-Variant**: Click any card in preview to quickly change its variant
+- **Real-time Updates**: All changes reflected instantly in the preview
 
 ### 🎨 Card Variant Selection
 
@@ -280,10 +303,27 @@ pnpm format
 
 #### Import Deck List
 
-1. Click the "Import Deck List" button
+1. Switch to the "Deck List" tab
 2. Paste your deck list in supported format
-3. Click "Import" to process the list
+3. Click "Add to Proxy List" to process
 4. Review and resolve any unresolvable cards
+
+#### Import from Limitless TCG (Meta Decks)
+
+1. Switch to the "Meta Decks" tab
+2. Browse the top 50 tournament decks
+3. Use Pokemon sprites to visually identify decks
+4. Search or sort to find specific decks
+5. Click "Load" on any deck to import it
+6. Choose to replace existing cards or add to current list
+
+#### Import by URL
+
+1. Switch to the "Import URL" tab
+2. Paste a Limitless TCG deck URL (e.g., `https://limitlesstcg.com/decks/284/cards`)
+3. Variant URLs are supported (e.g., `?variant=5`)
+4. Click "Load into Editor" to fetch the deck
+5. Review in the Deck List tab before adding
 
 ### 2. Selecting Card Variants
 
@@ -384,6 +424,7 @@ proxymon/
 ├── app/                          # Next.js app directory
 │   ├── api/                      # API routes
 │   │   ├── generate-bleed/       # Bleed generation endpoint
+│   │   ├── limitless/            # Limitless TCG proxy endpoint
 │   │   └── process-corners/      # Corner processing endpoint
 │   ├── bleed-comparison/         # Bleed comparison tool
 │   ├── layout.tsx                # Root layout
@@ -393,14 +434,21 @@ proxymon/
 │   ├── card-with-bleed.tsx       # Card with bleed display
 │   ├── print-sheet.tsx           # Print sheet component
 │   ├── deck/                     # Deck-related components
+│   │   ├── deck-input-tabs.tsx   # Tabbed input container
+│   │   ├── deck-list-input.tsx   # Deck list text input
+│   │   ├── deck-url-import.tsx   # URL import component
+│   │   ├── load-confirm-dialog.tsx # Load confirmation dialog
+│   │   └── meta-deck-selector.tsx # Meta decks browser
 │   ├── proxy/                    # Proxy-related components
 │   ├── search/                   # Search-related components
 │   └── ui/                       # shadcn/ui components
 ├── hooks/                        # Custom React hooks
 ├── lib/                          # Utility libraries
-│   ├── deck-parser.ts            # Deck list parsing
+│   ├── deck-parser.ts            # Deck list parsing with fallbacks
 │   ├── image-processing.ts       # Image processing utilities
+│   ├── limitless.ts              # Limitless TCG integration
 │   ├── pdf.ts                    # PDF generation
+│   ├── set-code-mappings.json    # Set code mappings (Limitless→TCGdex)
 │   ├── tcgdex.ts                 # TCGdex integration
 │   └── utils.ts                  # General utilities
 ├── stores/                       # Zustand state stores
@@ -431,6 +479,16 @@ Three advanced methods for generating bleed areas:
 1. **Replicate**: Extends solid colors from card edges
 2. **Mirror**: Creates seamless extensions by mirroring edge pixels
 3. **Edge**: Stretches 1px border with automatic border detection
+
+### Smart Card Resolution
+
+When importing deck lists, the system uses multiple fallback strategies to find cards:
+
+1. **Direct Lookup**: Try exact set + card number match
+2. **Name Validation**: Verify card name matches to prevent wrong cards (e.g., avoiding Venusaur EX when looking for Darkness Energy)
+3. **Search by Name + Set**: Query TCGdex with card name and set
+4. **Search by Name Only**: Broad search across all sets
+5. **Synthetic Placeholder**: Create placeholder for energy cards or unknown cards
 
 ### Performance Optimizations
 
@@ -520,6 +578,11 @@ If you need help or have questions:
 
 Future enhancements planned for Proxymon:
 
+- [x] **Limitless TCG Integration** - Browse and import meta decks
+- [x] **URL Import with Variants** - Import any Limitless deck by URL
+- [x] **Pokemon Sprites** - Visual deck identification in meta list
+- [x] **Smart Card Resolution** - Multiple fallback strategies for card lookup
+- [x] **Individual Card Movement** - Drag single cards independently
 - [ ] Multi-language support
 - [ ] Dark mode theme
 - [ ] Export to other formats (PNG, JPG)
@@ -530,6 +593,8 @@ Future enhancements planned for Proxymon:
 - [ ] Mobile app version
 - [ ] Advanced deck analysis tools
 - [ ] Community deck sharing
+- [ ] Deck price estimation
+- [ ] Tournament result tracking
 
 ---
 
