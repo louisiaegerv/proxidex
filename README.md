@@ -4,7 +4,7 @@
 
 
 
-### Pokémon TCG Proxy Card Generator
+### Pokémon TCG Proxy Card PDF Generator
 
 [![Next.js](https://img.shields.io/badge/Next.js-16.1.6-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.2.4-blue?style=for-the-badge&logo=react)](https://react.dev/)
