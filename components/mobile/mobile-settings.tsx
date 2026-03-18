@@ -1,7 +1,19 @@
 'use client';
 
-import { useState } from 'react';
-import { Settings2, RotateCcw, ChevronDown, ChevronUp, Info } from 'lucide-react';
+import { useState, useCallback } from 'react';
+import { 
+  Settings2, 
+  RotateCcw, 
+  ChevronDown, 
+  ChevronUp, 
+  Info, 
+  Printer, 
+  Copy, 
+  Check,
+  ChevronsDownUp,
+  ChevronsUpDown,
+  Download,
+} from 'lucide-react';
 import { useProxyList } from '@/stores/proxy-list';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -17,6 +29,7 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { BleedMethod } from '@/types';
+import { generateProxyPDF, downloadPDF } from '@/lib/pdf';
 
 // Expandable section component
 interface ExpandableSectionProps {
@@ -24,15 +37,15 @@ interface ExpandableSectionProps {
   icon: React.ReactNode;
   children: React.ReactNode;
   defaultExpanded?: boolean;
+  expanded: boolean;
+  onToggle: () => void;
 }
 
-function ExpandableSection({ title, icon, children, defaultExpanded = false }: ExpandableSectionProps) {
-  const [expanded, setExpanded] = useState(defaultExpanded);
-
+function ExpandableSection({ title, icon, children, expanded, onToggle }: ExpandableSectionProps) {
   return (
     <div className="border-b border-slate-800 last:border-0">
       <button
-        onClick={() => setExpanded(!expanded)}
+        onClick={onToggle}
         className="flex w-full items-center justify-between px-4 py-4 active:bg-slate-800/50 transition-colors"
       >
         <div className="flex items-center gap-3">
@@ -57,13 +70,107 @@ function ExpandableSection({ title, icon, children, defaultExpanded = false }: E
   );
 }
 
+const ALL_SECTIONS = ['layout', 'bleed', 'quality', 'offset', 'export'];
+
 export function MobileSettings() {
-  const { settings, updateSettings, resetSettings } = useProxyList();
+  const { settings, updateSettings, resetSettings, items, getTotalCards } = useProxyList();
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [expandedSections, setExpandedSections] = useState<string[]>(['layout']);
+
+  const totalCards = getTotalCards();
+
+  const allExpanded = expandedSections.length === ALL_SECTIONS.length;
+
+  const toggleAll = useCallback(() => {
+    if (allExpanded) {
+      setExpandedSections([]);
+    } else {
+      setExpandedSections([...ALL_SECTIONS]);
+    }
+  }, [allExpanded]);
+
+  const toggleSection = (section: string) => {
+    setExpandedSections(prev => 
+      prev.includes(section) 
+        ? prev.filter(s => s !== section)
+        : [...prev, section]
+    );
+  };
 
   const handleReset = () => {
     resetSettings();
     setShowResetConfirm(false);
+  };
+
+  const handleGeneratePDF = async () => {
+    if (items.length === 0) return;
+    setIsGenerating(true);
+    try {
+      const pdfBytes = await generateProxyPDF(items, settings);
+      downloadPDF(pdfBytes, `proxymon-${totalCards}-cards.pdf`);
+    } catch (error) {
+      console.error("Failed to generate PDF:", error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleCopyCardList = async () => {
+    if (items.length === 0) return;
+    
+    const getSetId = (item: typeof items[0]): string => {
+      if (item.setId) return item.setId;
+      const imageUrl = item.originalImage || item.image;
+      if (imageUrl) {
+        const match = imageUrl.match(/\/en\/[^/]+\/([^/]+)\//);
+        if (match) return match[1];
+      }
+      return "";
+    };
+    
+    const getCardKey = (item: typeof items[0]): string => {
+      return `${item.name}|${getSetId(item)}|${item.localId}`;
+    };
+    
+    const mergedLines: string[] = [];
+    let currentKey: string | null = null;
+    let currentQuantity = 0;
+    let currentName = "";
+    let currentSetId = "";
+    let currentLocalId = "";
+    
+    for (const item of items) {
+      const key = getCardKey(item);
+      
+      if (key === currentKey) {
+        currentQuantity += item.quantity;
+      } else {
+        if (currentKey !== null) {
+          mergedLines.push(`${currentQuantity} ${currentName} ${currentSetId} ${currentLocalId}`);
+        }
+        currentKey = key;
+        currentQuantity = item.quantity;
+        currentName = item.name;
+        currentSetId = getSetId(item);
+        currentLocalId = item.localId;
+      }
+    }
+    
+    if (currentKey !== null) {
+      mergedLines.push(`${currentQuantity} ${currentName} ${currentSetId} ${currentLocalId}`);
+    }
+    
+    const cardList = mergedLines.join("\n");
+    
+    try {
+      await navigator.clipboard.writeText(cardList);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error("Failed to copy to clipboard:", error);
+    }
   };
 
   return (
@@ -75,6 +182,17 @@ export function MobileSettings() {
             <h1 className="text-lg font-bold text-slate-100">Settings</h1>
             <p className="text-xs text-slate-500">Customize your print output</p>
           </div>
+          <button
+            onClick={toggleAll}
+            className="rounded-md p-2 text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-200"
+            title={allExpanded ? "Collapse All" : "Expand All"}
+          >
+            {allExpanded ? (
+              <ChevronsDownUp className="h-5 w-5" />
+            ) : (
+              <ChevronsUpDown className="h-5 w-5" />
+            )}
+          </button>
         </div>
       </div>
 
@@ -84,7 +202,8 @@ export function MobileSettings() {
         <ExpandableSection
           title="Page Layout"
           icon={<Settings2 className="h-5 w-5" />}
-          defaultExpanded={true}
+          expanded={expandedSections.includes('layout')}
+          onToggle={() => toggleSection('layout')}
         >
           <div className="space-y-6">
             {/* Page Size */}
@@ -170,6 +289,8 @@ export function MobileSettings() {
         <ExpandableSection
           title="Bleed & Cut Lines"
           icon={<div className="h-5 w-5 border-2 border-dashed border-slate-400 rounded" />}
+          expanded={expandedSections.includes('bleed')}
+          onToggle={() => toggleSection('bleed')}
         >
           <div className="space-y-6">
             {/* Bleed Area */}
@@ -186,11 +307,10 @@ export function MobileSettings() {
                 step={0.5}
                 className="py-2"
               />
-              <p className="text-xs text-slate-500">Extra border for clean cutting</p>
             </div>
 
             {/* Bleed Method */}
-            <div className="space-y-3">
+            <div className="space-y-2">
               <Label className="text-sm text-slate-300">Bleed Method</Label>
               <RadioGroup
                 value={settings.bleedMethod}
@@ -257,6 +377,8 @@ export function MobileSettings() {
         <ExpandableSection
           title="Image Quality"
           icon={<div className="h-5 w-5 rounded bg-gradient-to-br from-blue-400 to-purple-500" />}
+          expanded={expandedSections.includes('quality')}
+          onToggle={() => toggleSection('quality')}
         >
           <div className="space-y-4">
             {/* High Quality Toggle */}
@@ -289,6 +411,8 @@ export function MobileSettings() {
         <ExpandableSection
           title="Print Offset"
           icon={<div className="h-5 w-5 border border-slate-400 rounded flex items-center justify-center text-[8px] text-slate-400">+</div>}
+          expanded={expandedSections.includes('offset')}
+          onToggle={() => toggleSection('offset')}
         >
           <div className="space-y-6">
             <div className="rounded-lg bg-slate-800/50 p-3">
@@ -326,6 +450,61 @@ export function MobileSettings() {
                 className="py-2"
               />
             </div>
+          </div>
+        </ExpandableSection>
+
+        {/* Export Section */}
+        <ExpandableSection
+          title="Export"
+          icon={<Download className="h-5 w-5" />}
+          expanded={expandedSections.includes('export')}
+          onToggle={() => toggleSection('export')}
+        >
+          <div className="space-y-4">
+            {/* Copy Card List Button */}
+            <Button
+              className="w-full h-12 border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
+              variant="outline"
+              disabled={items.length === 0}
+              onClick={handleCopyCardList}
+            >
+              {copied ? (
+                <>
+                  <Check className="mr-2 h-5 w-5 text-green-500" />
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <Copy className="mr-2 h-5 w-5" />
+                  Copy Card List
+                </>
+              )}
+            </Button>
+
+            {/* Download PDF Button */}
+            <Button
+              className="w-full h-12 bg-blue-600 text-white hover:bg-blue-500"
+              disabled={items.length === 0 || isGenerating}
+              onClick={handleGeneratePDF}
+            >
+              {isGenerating ? (
+                <>
+                  <RotateCcw className="mr-2 h-5 w-5 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Printer className="mr-2 h-5 w-5" />
+                  Download PDF
+                </>
+              )}
+            </Button>
+
+            {items.length > 0 && (
+              <p className="text-center text-xs text-slate-500">
+                {totalCards} cards ready
+              </p>
+            )}
           </div>
         </ExpandableSection>
 
