@@ -13,6 +13,7 @@ import {
   ChevronsDownUp,
   ChevronsUpDown,
   Download,
+  FileCode,
 } from "lucide-react"
 import { useProxyList } from "@/stores/proxy-list"
 import { Button } from "@/components/ui/button"
@@ -28,8 +29,9 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
+import { HTMLExportModal } from "@/components/proxy/html-export-modal"
 import { BleedMethod } from "@/types"
-import { generateProxyPDF, downloadPDF, clearImageCache } from "@/lib/pdf"
+import { generateProxyPDF, downloadPDF, clearImageCache, generatePrintHTML, downloadPrintHTML, batchGenerateBleedImages } from "@/lib/pdf"
 
 // Expandable section component
 interface ExpandableSectionProps {
@@ -89,6 +91,11 @@ export function MobileSettings() {
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [copied, setCopied] = useState(false)
   const [expandedSections, setExpandedSections] = useState<string[]>(["layout"])
+  
+  // HTML export with bleed modal state
+  const [htmlExportOpen, setHtmlExportOpen] = useState(false)
+  const [htmlExportProgress, setHtmlExportProgress] = useState({ current: 0, total: 0 })
+  const [isProcessingHtml, setIsProcessingHtml] = useState(false)
 
   const totalCards = getTotalCards()
 
@@ -123,7 +130,7 @@ export function MobileSettings() {
       const pdfBytes = await generateProxyPDF(items, settings, (progress) => {
         setGenerationProgress(progress)
       })
-      downloadPDF(pdfBytes, `proxymon-${totalCards}-cards.pdf`)
+      downloadPDF(pdfBytes, `proxidex-${totalCards}-cards.pdf`)
     } catch (error) {
       console.error("Failed to generate PDF:", error)
     } finally {
@@ -131,6 +138,46 @@ export function MobileSettings() {
       setGenerationProgress(null)
       // Clear image cache to free memory after generation
       clearImageCache()
+    }
+  }
+
+  const handleGenerateHTML = async () => {
+    if (items.length === 0) return
+    
+    // If no bleed, use fast export
+    if (settings.bleed === 0) {
+      const html = generatePrintHTML(items, settings)
+      downloadPrintHTML(html, `proxidex-${totalCards}-cards.html`)
+      return
+    }
+    
+    // With bleed - show modal and process in background
+    setHtmlExportOpen(true)
+    setIsProcessingHtml(true)
+    setHtmlExportProgress({ current: 0, total: 0 })
+    
+    try {
+      // Get unique cards count for progress
+      const uniqueImages = new Set(items.map(item => item.image).filter(Boolean))
+      setHtmlExportProgress({ current: 0, total: uniqueImages.size })
+      
+      // Batch process all cards with bleed (use JPEG for smaller HTML file size)
+      await batchGenerateBleedImages(items, settings, (current, total) => {
+        setHtmlExportProgress({ current, total })
+      }, 'jpeg')
+      
+      // Generate and download HTML
+      const html = generatePrintHTML(items, settings)
+      downloadPrintHTML(html, `proxidex-${totalCards}-cards.html`)
+      
+    } catch (error) {
+      console.error("Failed to generate HTML with bleed:", error)
+    } finally {
+      setIsProcessingHtml(false)
+      // Close modal after a short delay so user sees 100%
+      setTimeout(() => {
+        setHtmlExportOpen(false)
+      }, 1500)
     }
   }
 
@@ -546,18 +593,56 @@ export function MobileSettings() {
           onToggle={() => toggleSection("quality")}
         >
           <div className="space-y-4">
-            {/* High Quality Toggle */}
+            {/* Image Size Selection */}
+            <div className="space-y-2">
+              <Label className="text-sm text-slate-300">Image Size</Label>
+              <Select
+                value={settings.imageSize ?? "lg"}
+                onValueChange={(value: "sm" | "md" | "lg") =>
+                  updateSettings({ imageSize: value })
+                }
+              >
+                <SelectTrigger className="h-12 border-slate-700 bg-slate-800 text-base text-slate-100">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="border-slate-700 bg-slate-900">
+                  <SelectItem
+                    value="sm"
+                    className="h-12 text-slate-100 focus:bg-slate-800"
+                  >
+                    Draft (288×400) - Fastest
+                  </SelectItem>
+                  <SelectItem
+                    value="md"
+                    className="h-12 text-slate-100 focus:bg-slate-800"
+                  >
+                    Optimized (575×800) - Balanced
+                  </SelectItem>
+                  <SelectItem
+                    value="lg"
+                    className="h-12 text-slate-100 focus:bg-slate-800"
+                  >
+                    High Quality (1150×1600)
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-slate-500">
+                Draft = fastest, Optimized = balanced, High Quality = best detail
+              </p>
+            </div>
+
+            {/* Black and White Toggle */}
             <div className="flex items-center justify-between py-2">
               <div className="space-y-0.5">
-                <Label className="text-base text-slate-200">High Quality</Label>
+                <Label className="text-base text-slate-200">Black & White</Label>
                 <p className="text-xs text-slate-500">
-                  Better quality, larger file
+                  Saves color ink on draft prints
                 </p>
               </div>
               <Switch
-                checked={settings.imageQuality === "high"}
+                checked={settings.blackAndWhite ?? false}
                 onCheckedChange={(checked) =>
-                  updateSettings({ imageQuality: checked ? "high" : "low" })
+                  updateSettings({ blackAndWhite: checked })
                 }
                 className="data-[state=checked]:bg-blue-600"
               />
@@ -567,8 +652,8 @@ export function MobileSettings() {
             <div className="flex gap-3 rounded-lg bg-slate-800/50 p-3">
               <Info className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-400" />
               <p className="text-xs text-slate-400">
-                High quality uses 300 DPI images for crisp printing. Low quality
-                uses 150 DPI for faster downloads.
+                Draft mode + B&W prints up to 4× faster and saves ink.
+                Use for test prints before final output.
               </p>
             </div>
           </div>
@@ -661,6 +746,17 @@ export function MobileSettings() {
               )}
             </Button>
 
+            {/* Download HTML Button */}
+            <Button
+              className="h-12 w-full border-emerald-700 bg-emerald-900/50 text-emerald-400 hover:bg-emerald-900"
+              variant="outline"
+              disabled={items.length === 0 || isProcessingHtml}
+              onClick={handleGenerateHTML}
+            >
+              <FileCode className="mr-2 h-5 w-5" />
+              Export HTML
+            </Button>
+
             {/* Download PDF Button */}
             <Button
               className="h-12 w-full bg-blue-600 text-white hover:bg-blue-500"
@@ -733,6 +829,15 @@ export function MobileSettings() {
           </div>
         </div>
       )}
+
+      {/* HTML Export Progress Modal */}
+      <HTMLExportModal
+        isOpen={htmlExportOpen}
+        onClose={() => setHtmlExportOpen(false)}
+        current={htmlExportProgress.current}
+        total={htmlExportProgress.total}
+        isProcessing={isProcessingHtml}
+      />
     </div>
   )
 }

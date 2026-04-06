@@ -159,7 +159,7 @@ export function MetaDeckSelector({ onSelectDeck }: MetaDeckSelectorProps) {
       )}
 
       {/* Deck List */}
-      <ScrollArea className="flex-1">
+      <div className="overflow-y-auto pr-2 no-scrollbar">
         {isLoading ? (
           <div className="flex h-40 items-center justify-center">
             <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
@@ -266,7 +266,7 @@ export function MetaDeckSelector({ onSelectDeck }: MetaDeckSelectorProps) {
             ))}
           </div>
         )}
-      </ScrollArea>
+      </div>
     </div>
   )
 }

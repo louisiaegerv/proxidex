@@ -16,7 +16,7 @@ const fontMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "Proxymon - Pokemon Proxy Card Generator",
+  title: "Proxidex - Pokemon Proxy Card Generator",
   description: "Generate high-quality printable proxy cards for Pokemon TCG",
 }
 

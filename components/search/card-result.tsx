@@ -2,17 +2,29 @@
 
 import { Plus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { getFullImageUrl } from '@/lib/tcgdex';
-import type { CardResume } from '@tcgdex/sdk';
+import { getCardImageUrl } from '@/lib/images';
+
+// Local card result from our database
+interface LocalCardResult {
+  id: string;
+  name: string;
+  set_code: string;
+  set_name: string;
+  local_id: string;
+  folder_name: string;
+  variants: string;
+  sizes: string;
+}
 
 interface CardResultProps {
-  card: CardResume;
+  card: LocalCardResult;
   onAdd: () => void;
   isProcessing?: boolean;
 }
 
 export function CardResult({ card, onAdd, isProcessing }: CardResultProps) {
-  const imageUrl = getFullImageUrl(card.image, 'low', 'webp');
+  // Use local image URL (sm size for thumbnails)
+  const imageUrl = getCardImageUrl(card, 'sm');
 
   return (
     <div className="group relative flex flex-col gap-2">
@@ -65,7 +77,7 @@ export function CardResult({ card, onAdd, isProcessing }: CardResultProps) {
           {card.name}
         </p>
         <p className="truncate text-xs text-slate-500">
-          #{card.localId}
+          {card.set_name} ({card.set_code}) #{card.local_id}
         </p>
       </div>
     </div>

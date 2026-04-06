@@ -8,7 +8,6 @@ import { LivePreview } from "@/components/proxy/live-preview"
 
 export function MobilePreview() {
   const [scale, setScale] = useState(1)
-  const [isPinching, setIsPinching] = useState(false)
   const [showHint, setShowHint] = useState(true)
   const [contentHeight, setContentHeight] = useState(0)
   const [containerWidth, setContainerWidth] = useState(0)
@@ -16,18 +15,24 @@ export function MobilePreview() {
   const contentRef = useRef<HTMLDivElement>(null)
   const measureRef = useRef<HTMLDivElement>(null)
 
-  // Track gesture state
-  const gestureRef = useRef({
-    initialDistance: 0,
-    initialScale: 1,
-    lastScale: 1,
-  })
-
   // Hide hint after 3 seconds
   useEffect(() => {
     const timer = setTimeout(() => setShowHint(false), 3000)
     return () => clearTimeout(timer)
   }, [])
+
+  // Update hint text after initial show
+  useEffect(() => {
+    if (!showHint) {
+      // Re-show hint when scale changes significantly
+      const timer = setTimeout(() => setShowHint(true), 100)
+      const hideTimer = setTimeout(() => setShowHint(false), 3000)
+      return () => {
+        clearTimeout(timer)
+        clearTimeout(hideTimer)
+      }
+    }
+  }, [scale])
 
   // Measure content height and update when scale changes
   useEffect(() => {
@@ -74,79 +79,7 @@ export function MobilePreview() {
     return () => observer.disconnect()
   }, [])
 
-  // Calculate distance between two touch points
-  const getDistance = (
-    touch1: { clientX: number; clientY: number },
-    touch2: { clientX: number; clientY: number }
-  ): number => {
-    const dx = touch1.clientX - touch2.clientX
-    const dy = touch1.clientY - touch2.clientY
-    return Math.sqrt(dx * dx + dy * dy)
-  }
 
-  // Handle touch start
-  const onTouchStart = useCallback(
-    (e: React.TouchEvent) => {
-      if (e.touches.length === 2) {
-        // Pinch start
-        const distance = getDistance(e.touches[0], e.touches[1])
-        gestureRef.current = {
-          initialDistance: distance,
-          initialScale: scale,
-          lastScale: scale,
-        }
-        setIsPinching(true)
-      }
-    },
-    [scale]
-  )
-
-  // Handle touch move
-  const onTouchMove = useCallback(
-    (e: React.TouchEvent) => {
-      if (e.touches.length === 2 && isPinching) {
-        const distance = getDistance(e.touches[0], e.touches[1])
-        const scaleRatio = distance / gestureRef.current.initialDistance
-        let newScale = gestureRef.current.initialScale * scaleRatio
-
-        // Clamp scale
-        newScale = Math.max(0.5, Math.min(3, newScale))
-
-        setScale(newScale)
-        gestureRef.current.lastScale = newScale
-      }
-    },
-    [isPinching]
-  )
-
-  // Handle touch end
-  const onTouchEnd = useCallback(() => {
-    setIsPinching(false)
-  }, [])
-
-  // Handle wheel zoom with non-passive listener
-  useEffect(() => {
-    const container = containerRef.current
-    if (!container) return
-
-    const handleWheel = (e: WheelEvent) => {
-      if (e.ctrlKey || e.metaKey) {
-        e.preventDefault()
-        const delta = e.deltaY > 0 ? 0.9 : 1.1
-        setScale((prev) => {
-          const newScale = prev * delta
-          return Math.max(0.5, Math.min(3, newScale))
-        })
-      }
-    }
-
-    // Add non-passive listener
-    container.addEventListener("wheel", handleWheel, { passive: false })
-
-    return () => {
-      container.removeEventListener("wheel", handleWheel)
-    }
-  }, [])
 
   // Double tap to reset
   const onDoubleClick = useCallback(() => {
@@ -173,7 +106,7 @@ export function MobilePreview() {
           <div>
             <h1 className="text-lg font-bold text-slate-100">Preview</h1>
             <p className="text-xs text-slate-500">
-              Pinch to zoom • Double-tap to reset
+              Use buttons to zoom • Double-tap to reset
             </p>
           </div>
           <div className="flex items-center gap-1">
@@ -212,16 +145,12 @@ export function MobilePreview() {
       <div
         ref={containerRef}
         className="relative flex-1 overflow-auto bg-slate-950"
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
         onDoubleClick={onDoubleClick}
-        style={{ touchAction: isPinching ? "none" : "pan-y" }}
       >
-        {/* Pinch zoom hint */}
+        {/* Zoom hint */}
         {showHint && (
           <div className="animate-fade-out pointer-events-none absolute top-4 left-1/2 z-50 -translate-x-1/2 rounded-full border border-slate-700 bg-slate-900/90 px-4 py-2 backdrop-blur-sm">
-            <p className="text-xs text-slate-300">Pinch to zoom in/out</p>
+            <p className="text-xs text-slate-300">Use buttons to zoom in/out</p>
           </div>
         )}
 
@@ -243,10 +172,7 @@ export function MobilePreview() {
         >
           <div
             ref={contentRef}
-            className={cn(
-              "origin-top",
-              isPinching ? "duration-0" : "transition-transform duration-100 ease-out"
-            )}
+            className="origin-top transition-transform duration-100 ease-out"
             style={{
               transform: `scale(${scale})`,
               transformOrigin: "top center",

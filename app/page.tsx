@@ -32,7 +32,7 @@ export default function Home() {
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-600">
               <span className="text-sm font-bold text-white">P</span>
             </div>
-            <h1 className="text-lg font-bold text-slate-100">Proxymon</h1>
+            <h1 className="text-lg font-bold text-slate-100">Proxidex</h1>
           </div>
         </header>
         <main className="flex flex-1 overflow-hidden">
@@ -68,7 +68,7 @@ export default function Home() {
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-600">
             <span className="text-sm font-bold text-white">P</span>
           </div>
-          <h1 className="text-lg font-bold text-slate-100">Proxymon</h1>
+          <h1 className="text-lg font-bold text-slate-100">Proxidex</h1>
         </div>
         <div className="flex items-center gap-4">
           <span className="text-xs text-slate-500">

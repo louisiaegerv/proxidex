@@ -1,51 +1,36 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
-import { getProcessedCardImage } from "@/lib/tcgdex"
 import type { ProxyItem, PrintSettings, Deck } from "@/types"
 
 /**
- * Re-process images for all items that have an originalImage but no processed image.
- * This runs after rehydration to restore sharp corners.
+ * Ensure all items have their image set.
+ * Images are now pre-processed, so we just use originalImage directly.
  */
-async function reprocessImagesAfterRehydration(
+function ensureImagesAfterRehydration(
   items: ProxyItem[],
   updateItemCard: (id: string, cardData: Partial<ProxyItem>) => void
 ) {
-  // Find items that need re-processing (have originalImage but image equals originalImage)
-  const itemsToProcess = items.filter(
+  // Find items that need image restored (have originalImage but no processed image)
+  const itemsToFix = items.filter(
     (item) =>
       item.originalImage && (item.image === item.originalImage || !item.image)
   )
 
-  if (itemsToProcess.length === 0) return
+  if (itemsToFix.length === 0) return
 
   console.log(
-    "[reprocessImages] Starting re-processing for",
-    itemsToProcess.length,
+    "[ensureImages] Restoring images for",
+    itemsToFix.length,
     "items"
   )
 
-  // Process items sequentially to avoid overwhelming the API
-  for (const item of itemsToProcess) {
+  // Images are pre-processed, just use originalImage directly
+  for (const item of itemsToFix) {
     if (!item.originalImage) continue
-
-    console.log("[reprocessImages] Processing:", item.name)
-    // Use getProcessedCardImage which properly transforms TCGdex URLs
-    const processedImage = await getProcessedCardImage(
-      item.originalImage,
-      "high"
-    )
-
-    if (processedImage) {
-      updateItemCard(item.id, { image: processedImage })
-      console.log("[reprocessImages] Updated:", item.name)
-    } else {
-      console.warn("[reprocessImages] Failed to process:", item.name)
-      // Keep the originalImage as fallback - no change needed
-    }
+    updateItemCard(item.id, { image: item.originalImage })
   }
 
-  console.log("[reprocessImages] Re-processing complete")
+  console.log("[ensureImages] Complete")
 }
 
 interface ProxyListState {
@@ -204,7 +189,7 @@ export const useProxyList = create<ProxyListState>()(
           // Use setTimeout to ensure this runs after the state update
           setTimeout(() => {
             const store = useProxyList.getState()
-            reprocessImagesAfterRehydration(
+            ensureImagesAfterRehydration(
               itemsNeedingReprocess,
               store.updateItemCard
             )
@@ -628,7 +613,7 @@ export const useProxyList = create<ProxyListState>()(
       },
     }),
     {
-      name: "proxymon-proxy-list",
+      name: "proxidex-proxy-list",
       version: STORAGE_VERSION,
       migrate: (persistedState, version) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -857,7 +842,7 @@ export const useProxyList = create<ProxyListState>()(
               )
               // Now useProxyList is guaranteed to be initialized
               const store = useProxyList.getState()
-              reprocessImagesAfterRehydration(
+              ensureImagesAfterRehydration(
                 itemsNeedingReprocess,
                 store.updateItemCard
               )

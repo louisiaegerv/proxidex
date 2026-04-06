@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { AlertTriangle } from 'lucide-react';
 
-const SKIP_DELETE_CONFIRM_KEY = 'proxymon-skip-delete-confirm';
+const SKIP_DELETE_CONFIRM_KEY = 'proxidex-skip-delete-confirm';
 
 interface DeleteConfirmDialogProps {
   isOpen: boolean;

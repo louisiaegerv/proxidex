@@ -112,6 +112,10 @@ export interface PrintSettings {
   bleedMethod: BleedMethod // Method to extend canvas for bleed area
   // Color for replicate method (if not provided, auto-detected from border)
   bleedColor?: { r: number; g: number; b: number }
+  // Image size for PDF generation: 'sm' = draft, 'md' = optimized, 'lg' = high quality
+  imageSize?: "sm" | "md" | "lg"
+  // Black and white mode for draft printing (saves color ink)
+  blackAndWhite?: boolean
 }
 
 export const OFFSET_LIMITS = {
@@ -137,6 +141,8 @@ export const DEFAULT_PRINT_SETTINGS: PrintSettings = {
   offsetX: 0,
   offsetY: 0,
   bleedMethod: "replicate",
+  imageSize: "lg",
+  blackAndWhite: false,
 }
 
 // Page dimensions in mm

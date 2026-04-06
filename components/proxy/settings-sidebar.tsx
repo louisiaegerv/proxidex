@@ -15,9 +15,10 @@ import {
   ChevronsUpDown,
   Copy,
   Check,
+  FileCode,
 } from "lucide-react"
 import { useProxyList } from "@/stores/proxy-list"
-import { generateProxyPDF, downloadPDF, clearImageCache } from "@/lib/pdf"
+import { generateProxyPDF, downloadPDF, clearImageCache, generatePrintHTML, downloadPrintHTML, batchGenerateBleedImages } from "@/lib/pdf"
 import { OFFSET_LIMITS } from "@/types"
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
@@ -25,6 +26,7 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { NumberInput } from "@/components/ui/number-input"
 import { ProfileManager } from "./profile-manager"
+import { HTMLExportModal } from "./html-export-modal"
 import { useState, useCallback } from "react"
 import {
   Select,
@@ -65,6 +67,11 @@ export function SettingsSidebar() {
     "page-layout",
     "spacing-bleed",
   ])
+  
+  // HTML export with bleed modal state
+  const [htmlExportOpen, setHtmlExportOpen] = useState(false)
+  const [htmlExportProgress, setHtmlExportProgress] = useState({ current: 0, total: 0 })
+  const [isProcessingHtml, setIsProcessingHtml] = useState(false)
 
   const totalCards = getTotalCards()
 
@@ -86,7 +93,7 @@ export function SettingsSidebar() {
       const pdfBytes = await generateProxyPDF(items, settings, (progress) => {
         setGenerationProgress(progress)
       })
-      downloadPDF(pdfBytes, `proxymon-${totalCards}-cards.pdf`)
+      downloadPDF(pdfBytes, `proxidex-${totalCards}-cards.pdf`)
     } catch (error) {
       console.error("Failed to generate PDF:", error)
     } finally {
@@ -94,6 +101,46 @@ export function SettingsSidebar() {
       setGenerationProgress(null)
       // Clear image cache to free memory after generation
       clearImageCache()
+    }
+  }
+
+  const handleGenerateHTML = async () => {
+    if (items.length === 0) return
+    
+    // If no bleed, use fast export
+    if (settings.bleed === 0) {
+      const html = generatePrintHTML(items, settings)
+      downloadPrintHTML(html, `proxidex-${totalCards}-cards.html`)
+      return
+    }
+    
+    // With bleed - show modal and process in background
+    setHtmlExportOpen(true)
+    setIsProcessingHtml(true)
+    setHtmlExportProgress({ current: 0, total: 0 })
+    
+    try {
+      // Get unique cards count for progress
+      const uniqueImages = new Set(items.map(item => item.image).filter(Boolean))
+      setHtmlExportProgress({ current: 0, total: uniqueImages.size })
+      
+      // Batch process all cards with bleed (use JPEG for smaller HTML file size)
+      await batchGenerateBleedImages(items, settings, (current, total) => {
+        setHtmlExportProgress({ current, total })
+      }, 'jpeg')
+      
+      // Generate and download HTML
+      const html = generatePrintHTML(items, settings)
+      downloadPrintHTML(html, `proxidex-${totalCards}-cards.html`)
+      
+    } catch (error) {
+      console.error("Failed to generate HTML with bleed:", error)
+    } finally {
+      setIsProcessingHtml(false)
+      // Close modal after a short delay so user sees 100%
+      setTimeout(() => {
+        setHtmlExportOpen(false)
+      }, 1500)
     }
   }
 
@@ -578,14 +625,56 @@ export function SettingsSidebar() {
               </div>
             </AccordionTrigger>
             <AccordionContent className="space-y-4 pb-4">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-400">
-                  High quality images
-                </span>
+              {/* Image Size / Quality */}
+              <div className="space-y-2">
+                <Label className="text-xs text-slate-400">Image Size</Label>
+                <Select
+                  value={settings.imageSize ?? "lg"}
+                  onValueChange={(value: "sm" | "md" | "lg") =>
+                    updateSettings({ imageSize: value })
+                  }
+                >
+                  <SelectTrigger className="h-8 border-slate-700 bg-slate-900/50 text-xs text-slate-100">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="border-slate-700 bg-slate-900">
+                    <SelectItem
+                      value="sm"
+                      className="text-xs text-slate-100 focus:bg-slate-800"
+                    >
+                      Draft (288×400) - Fastest
+                    </SelectItem>
+                    <SelectItem
+                      value="md"
+                      className="text-xs text-slate-100 focus:bg-slate-800"
+                    >
+                      Optimized (575×800) - Balanced
+                    </SelectItem>
+                    <SelectItem
+                      value="lg"
+                      className="text-xs text-slate-100 focus:bg-slate-800"
+                    >
+                      High Quality (1150×1600)
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-[10px] text-slate-600">
+                  Draft = fastest, Optimized = balanced, High Quality = best detail
+                </p>
+              </div>
+
+              {/* Black and White Toggle */}
+              <div className="flex items-center justify-between pt-2">
+                <div className="space-y-0.5">
+                  <span className="text-xs text-slate-400">Black & White</span>
+                  <p className="text-[10px] text-slate-600">
+                    Saves color ink on draft prints
+                  </p>
+                </div>
                 <Switch
-                  checked={settings.imageQuality === "high"}
+                  checked={settings.blackAndWhite ?? false}
                   onCheckedChange={(checked) =>
-                    updateSettings({ imageQuality: checked ? "high" : "low" })
+                    updateSettings({ blackAndWhite: checked })
                   }
                 />
               </div>
@@ -629,6 +718,17 @@ export function SettingsSidebar() {
           )}
         </Button>
 
+        {/* Download HTML Button */}
+        <Button
+          className="w-full border-emerald-700 bg-emerald-900/50 text-emerald-400 hover:bg-emerald-900"
+          variant="outline"
+          disabled={items.length === 0 || isProcessingHtml}
+          onClick={handleGenerateHTML}
+        >
+          <FileCode className="mr-2 h-4 w-4" />
+          Export HTML
+        </Button>
+
         {/* Download PDF Button */}
         <Button
           className="w-full bg-blue-600 text-white hover:bg-blue-500"
@@ -654,6 +754,15 @@ export function SettingsSidebar() {
           </p>
         )}
       </div>
+
+      {/* HTML Export Progress Modal */}
+      <HTMLExportModal
+        isOpen={htmlExportOpen}
+        onClose={() => setHtmlExportOpen(false)}
+        current={htmlExportProgress.current}
+        total={htmlExportProgress.total}
+        isProcessing={isProcessingHtml}
+      />
     </div>
   )
 }

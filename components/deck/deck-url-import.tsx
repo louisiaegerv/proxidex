@@ -20,7 +20,7 @@ interface DeckUrlImportProps {
 }
 
 // Recent URLs storage
-const RECENT_URLS_KEY = "proxymon-recent-deck-urls"
+const RECENT_URLS_KEY = "Proxidex-recent-deck-urls"
 const MAX_RECENT_URLS = 5
 
 interface RecentUrl {
@@ -166,68 +166,68 @@ export function DeckUrlImport({ onImport }: DeckUrlImportProps) {
 
   return (
     <div className="flex h-full flex-col gap-4">
-      {/* URL Input */}
-      <div className="space-y-3">
-        <div className="relative">
+      {/* URL Input + Import Button - stacked on mobile, side-by-side on md+ */}
+      <div className="flex flex-col gap-3 md:flex-row md:items-center">
+        <div className="relative flex-1">
           <Link className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <Input
             placeholder="https://limitlesstcg.com/decks/..."
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleImport()}
-            className="border-slate-700 bg-slate-900/50 pl-10 text-sm text-slate-100 placeholder:text-slate-600"
+            className="h-10 border-slate-700 bg-slate-900/50 pl-10 text-sm text-slate-100 placeholder:text-slate-600"
             disabled={isLoading}
           />
         </div>
 
-        {/* Status Message */}
-        {status.type && (
-          <div
-            className={cn(
-              "rounded-md px-3 py-2 text-xs",
-              status.type === "error" && "bg-red-900/30 text-red-400",
-              status.type === "success" && "bg-green-900/30 text-green-400",
-              status.type === "info" && "bg-blue-900/30 text-blue-400"
-            )}
-          >
-            <div className="flex items-center gap-2">
-              {status.type === "error" && (
-                <AlertCircle className="h-3.5 w-3.5" />
-              )}
-              {status.type === "success" && <Check className="h-3.5 w-3.5" />}
-              {status.type === "info" && isLoading && (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              )}
-              {status.message}
-            </div>
-          </div>
-        )}
-
         <Button
-          className="w-full bg-blue-600 text-white hover:bg-blue-500"
+          className="h-10 bg-blue-600 px-4 text-white hover:bg-blue-500 md:w-auto"
           onClick={handleImport}
           disabled={isLoading || !url.trim()}
         >
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Loading Deck...
+              Loading...
             </>
           ) : (
             <>
               <ArrowRight className="mr-2 h-4 w-4" />
-              Import Deck
+              Import
             </>
           )}
         </Button>
       </div>
 
+      {/* Status Message */}
+      {status.type && (
+        <div
+          className={cn(
+            "rounded-md px-3 py-2 text-sm",
+            status.type === "error" && "bg-red-900/30 text-red-400",
+            status.type === "success" && "bg-green-900/30 text-green-400",
+            status.type === "info" && "bg-blue-900/30 text-blue-400"
+          )}
+        >
+          <div className="flex items-center gap-2">
+            {status.type === "error" && (
+              <AlertCircle className="h-3.5 w-3.5" />
+            )}
+            {status.type === "success" && <Check className="h-3.5 w-3.5" />}
+            {status.type === "info" && isLoading && (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            )}
+            {status.message}
+          </div>
+        </div>
+      )}
+
       {/* Supported Formats */}
       <div className="rounded-lg border border-slate-800 bg-slate-900/30 p-3">
-        <h3 className="mb-2 text-xs font-medium text-slate-400">
+        <h3 className="mb-2 text-md font-medium text-slate-400">
           Supported URL formats:
         </h3>
-        <ul className="space-y-1 text-[10px] text-slate-500">
+        <ul className="space-y-1 text-sm text-slate-500">
           <li className="font-mono">limitlesstcg.com/decks/1</li>
           <li className="font-mono">limitlesstcg.com/decks/1/cards</li>
           <li className="font-mono">
@@ -239,7 +239,7 @@ export function DeckUrlImport({ onImport }: DeckUrlImportProps) {
       {/* Recent Imports */}
       {recentUrls.length > 0 && (
         <div className="space-y-2">
-          <h3 className="text-xs font-medium text-slate-400">Recent Imports</h3>
+          <h3 className="text-md font-medium text-slate-400">Recent Imports</h3>
           <div className="space-y-2">
             {recentUrls.map((recent) => (
               <div
@@ -264,10 +264,10 @@ export function DeckUrlImport({ onImport }: DeckUrlImportProps) {
 
                 {/* Text Info */}
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-xs font-medium text-slate-300">
+                  <p className="truncate text-sm font-medium text-slate-300">
                     {recent.name}
                   </p>
-                  <p className="truncate text-[10px] text-slate-600">
+                  <p className="truncate text-sm text-slate-600">
                     {recent.url}
                   </p>
                 </div>
@@ -289,13 +289,13 @@ export function DeckUrlImport({ onImport }: DeckUrlImportProps) {
 
       {/* Examples */}
       <div className="space-y-2">
-        <h3 className="text-xs font-medium text-slate-400">Examples</h3>
+        <h3 className="text-md font-medium text-slate-400">Examples</h3>
         <div className="space-y-1">
           {exampleUrls.map((exampleUrl) => (
             <button
               key={exampleUrl}
               onClick={() => setUrl(exampleUrl)}
-              className="w-full truncate rounded-md border border-slate-800 bg-slate-900/30 px-3 py-2 text-left text-[10px] text-slate-500 transition-colors hover:border-slate-700 hover:bg-slate-800/50 hover:text-slate-400"
+              className="w-full truncate rounded-md border border-slate-800 bg-slate-900/30 px-3 py-2 text-left text-sm text-slate-500 transition-colors hover:border-slate-700 hover:bg-slate-800/50 hover:text-slate-400"
             >
               {exampleUrl}
             </button>

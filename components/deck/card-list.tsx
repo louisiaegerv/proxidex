@@ -14,6 +14,7 @@ import {
   closestCenter,
   KeyboardSensor,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -123,6 +124,7 @@ function CardRow({
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    touchAction: "pan-y",
   }
 
   // Format card number
@@ -149,11 +151,12 @@ function CardRow({
       )}
       onClick={(e) => toggleSelection(item.id, e)}
     >
-      {/* Drag Handle */}
+      {/* Drag Handle - touchAction:none allows drag after delay */}
       <div
         {...attributes}
         {...listeners}
         className="flex h-6 w-6 shrink-0 cursor-grab items-center justify-center rounded text-slate-500 hover:bg-slate-800 hover:text-slate-400 active:cursor-grabbing"
+        style={{ touchAction: "none" }}
         onClick={(e) => e.stopPropagation()}
       >
         <GripVertical className="h-4 w-4" />
@@ -261,11 +264,17 @@ export function CardList({ items, onReorder, onRemove }: CardListProps) {
   const clipboardRef = useRef<ProxyItem[]>([])
   const [clipboardCount, setClipboardCount] = useState(0)
 
-  // Sensors for drag and drop
+  // Sensors for drag and drop - TouchSensor with delay prevents scroll interference
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 8,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 300,
+        tolerance: 8,
       },
     }),
     useSensor(KeyboardSensor, {

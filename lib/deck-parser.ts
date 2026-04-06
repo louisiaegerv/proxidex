@@ -1,34 +1,36 @@
-import { findCard } from "./tcgdex"
-import type { CardResume } from "@tcgdex/sdk"
+import { getImageUrl } from "./images"
 import setCodeMappings from "./set-code-mappings.json"
+import type { CardResult } from "./db"
 
-// Set code mapping from Limitless to TCGDex
-const LIMITLESS_TO_TCGDEX: Record<string, string> = setCodeMappings
-
-// Set of valid Limitless set codes for validation
-const VALID_SET_CODES = new Set(Object.keys(LIMITLESS_TO_TCGDEX))
-
-// Also include TCGDex set IDs as valid set codes
-const VALID_TCGDEX_SET_IDS = new Set(Object.values(LIMITLESS_TO_TCGDEX))
-
-/**
- * Check if a string is a valid set code
- */
-function isValidSetCode(code: string): boolean {
-  const upperCode = code.toUpperCase()
-  return (
-    VALID_SET_CODES.has(upperCode) ||
-    VALID_TCGDEX_SET_IDS.has(code.toLowerCase())
-  )
+// Set code mapping: Limitless code -> TCGDex code
+// We need to reverse this for lookups: TCGDex code -> Limitless/Local code
+const TCGDEX_TO_LOCAL: Record<string, string> = {}
+for (const [localCode, tcgdxCode] of Object.entries(setCodeMappings)) {
+  TCGDEX_TO_LOCAL[tcgdxCode.toLowerCase()] = localCode.toUpperCase()
 }
 
-// Extended card type that includes fields returned by Query
-interface QueriedCard extends CardResume {
-  name: string
-  set?: {
-    id: string
-    name: string
+// Valid set codes (both Limitless/local and TCGDex)
+const VALID_LOCAL_CODES = new Set(Object.keys(setCodeMappings))
+
+/**
+ * Normalize a set code to our local format
+ * Handles: Limitless codes (OBF), TCGDex codes (sv03), or local codes
+ */
+function normalizeSetCode(code: string): string | undefined {
+  const upperCode = code.toUpperCase()
+  const lowerCode = code.toLowerCase()
+  
+  // If it's already a valid local code, return as-is
+  if (VALID_LOCAL_CODES.has(upperCode)) {
+    return upperCode
   }
+  
+  // If it's a TCGDex code, convert to local
+  if (TCGDEX_TO_LOCAL[lowerCode]) {
+    return TCGDEX_TO_LOCAL[lowerCode]
+  }
+  
+  return undefined
 }
 
 export interface DeckListItem {
@@ -40,7 +42,7 @@ export interface DeckListItem {
 
 export interface ParsedDeckResult {
   item: DeckListItem
-  card: QueriedCard | null
+  card: CardResult | null
   error?: string
 }
 
@@ -52,6 +54,7 @@ export interface ParsedDeckResult {
  * - "4x Charmander"
  * - "Charmander OBF 26" (assumes quantity 1)
  * - "Charmander" (assumes quantity 1)
+ * - "Dialga, DP" (name + set with comma, card number looked up)
  *
  * Also handles special characters and variants like:
  * - "3 Charmeleon ex"
@@ -66,13 +69,32 @@ export function parseDeckList(deckText: string): DeckListItem[] {
     const trimmed = line.trim()
     if (!trimmed) continue
 
-    // Skip category headers (Pokemon, Trainer, Energy, etc.)
+    // Skip category headers (Pokemon: 12, Trainer: 15, Energy: 8, etc.)
     if (
-      /^(pok[ée]mon|trainer|item|supporter|stadium|tool|pokémon tool)$/i.test(
+      /^(pok[ée]mon|trainer|item|supporter|stadium|tool|energy|pokémon tool)\s*:/i.test(
         trimmed
       )
     ) {
       continue
+    }
+
+    // Check for comma format first: "Dialga, DP" or "4 Dialga, DP"
+    const commaMatch = trimmed.match(/^(\d+)?(?:x)?\s*(.+?),\s*([A-Za-z0-9]+)$/i)
+    if (commaMatch) {
+      const quantity = commaMatch[1] ? parseInt(commaMatch[1], 10) : 1
+      const cardName = commaMatch[2].trim()
+      const rawSetCode = commaMatch[3].toUpperCase()
+      const normalizedSetCode = normalizeSetCode(rawSetCode)
+      
+      if (normalizedSetCode) {
+        items.push({
+          quantity,
+          cardName,
+          setCode: normalizedSetCode,
+          // No cardNumber - will be looked up by name + set
+        })
+        continue
+      }
     }
 
     // Try to match: "4 Charmander OBF 26" or "4x Charmander OBF 26"
@@ -101,16 +123,16 @@ export function parseDeckList(deckText: string): DeckListItem[] {
     const numberOnlyMatch = rest.match(/^(.*?)\s+(\d{1,3})$/)
 
     if (setNumberMatch) {
-      const rawSetCode = setNumberMatch[2].toUpperCase()
+      const rawSetCode = setNumberMatch[2]
 
-      // Validate that the extracted code is actually a known set code
-      if (isValidSetCode(rawSetCode)) {
-        // Map Limitless set code to TCGDex set code if available
-        const mappedSetCode = LIMITLESS_TO_TCGDEX[rawSetCode] || rawSetCode
+      // Normalize the set code to our local format
+      const normalizedSetCode = normalizeSetCode(rawSetCode)
+      
+      if (normalizedSetCode) {
         items.push({
           quantity,
           cardName: setNumberMatch[1].trim(),
-          setCode: mappedSetCode.toLowerCase(),
+          setCode: normalizedSetCode,
           cardNumber: setNumberMatch[3],
         })
       } else {
@@ -138,104 +160,13 @@ export function parseDeckList(deckText: string): DeckListItem[] {
 }
 
 /**
- * Search for cards and auto-select the first result for each deck item.
- * Automatically deduplicates cards to avoid redundant API requests.
- *
- * Uses multiple fallback strategies:
- * 1. Try direct card get by set+number
- * 2. Try searching by name + set
- * 3. Try searching by name only
- * 4. Return error if all fallbacks fail
+ * Get image URL for a resolved card
  */
-export async function resolveDeckCards(
-  items: DeckListItem[]
-): Promise<ParsedDeckResult[]> {
-  const uniqueKeyMap = new Map<
-    string,
-    DeckListItem & { totalQuantity: number; originalIndices: number[] }
-  >()
-
-  items.forEach((item, index) => {
-    const key = `${item.cardName.toLowerCase()}|${item.setCode?.toLowerCase() || ""}|${item.cardNumber || ""}`
-
-    if (uniqueKeyMap.has(key)) {
-      const existing = uniqueKeyMap.get(key)!
-      existing.totalQuantity += item.quantity
-      existing.originalIndices.push(index)
-    } else {
-      uniqueKeyMap.set(key, {
-        ...item,
-        totalQuantity: item.quantity,
-        originalIndices: [index],
-      })
-    }
-  })
-
-  const uniqueItems = Array.from(uniqueKeyMap.values())
-  const results: ParsedDeckResult[] = []
-  const resultsByIndex = new Map<number, ParsedDeckResult>()
-
-  console.log(`[Deck Parser] Resolving ${uniqueItems.length} unique card(s)`)
-
-  for (const item of uniqueItems) {
-    let selectedCard: QueriedCard | null = null
-    let error: string | undefined
-
-    try {
-      console.log(
-        `[Deck Parser] Searching for: ${item.cardName} (set: ${item.setCode}, number: ${item.cardNumber})`
-      )
-
-      // Use findCard with priority-based fallback strategy
-      const foundCard = await findCard(
-        item.cardName,
-        item.setCode,
-        item.cardNumber
-      )
-
-      if (foundCard) {
-        selectedCard = foundCard as QueriedCard
-        console.log(
-          `[Deck Parser] Found: ${selectedCard.name} (${selectedCard.set?.id} ${selectedCard.localId})`
-        )
-      } else {
-        console.log(`[Deck Parser] Card not found: ${item.cardName}`)
-        error = `Card not found: ${item.cardName}${item.setCode ? ` (${item.setCode})` : ""}`
-      }
-    } catch (err) {
-      console.error(`[Deck Parser] Error searching for ${item.cardName}:`, err)
-      error = "Search failed"
-    }
-
-    const result: ParsedDeckResult = {
-      item: {
-        ...item,
-        quantity: item.totalQuantity,
-      },
-      card: selectedCard,
-      error,
-    }
-
-    for (const originalIndex of item.originalIndices) {
-      resultsByIndex.set(originalIndex, result)
-    }
-  }
-
-  const processedKeys = new Set<string>()
-
-  for (let i = 0; i < items.length; i++) {
-    const result = resultsByIndex.get(i)
-    if (result) {
-      const key = `${result.item.cardName.toLowerCase()}|${result.item.setCode?.toLowerCase() || ""}|${result.item.cardNumber || ""}`
-
-      if (!processedKeys.has(key)) {
-        results.push(result)
-        processedKeys.add(key)
-      }
-    }
-  }
-
-  return results
+export function getCardImageUrl(
+  card: CardResult,
+  size: 'sm' | 'md' | 'lg' | 'xl' = 'lg'
+): string {
+  return getImageUrl(card.name, card.set_code, card.local_id, size)
 }
 
 /**

@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🎴 Proxymon
+# 🎴 Proxidex
 
 
 
@@ -20,7 +20,7 @@
 
 ## 📖 Project Overview
 
-Proxymon is a powerful web application designed for easily generating print-ready proxy card PDFs for the Pokémon Trading Card Game. Whether you're a competitive player, deck builder, or casual enthusiast, Proxymon provides everything you need to create professional-quality proxies without the cost of expensive cards.
+Proxidex is a powerful web application designed for easily generating print-ready proxy card PDFs for the Pokémon Trading Card Game. Whether you're a competitive player, deck builder, or casual enthusiast, Proxidex provides everything you need to create professional-quality proxies without the cost of expensive cards.
 
 The application integrates with the comprehensive TCGdex database, offering real-time card search, smart deck list importing from Limitless TCG, advanced image processing, and customizable PDF generation with proper bleed areas and cut lines.
 
@@ -145,7 +145,7 @@ The application integrates with the comprehensive TCGdex database, offering real
 
 ## 🎯 Target Audience
 
-Proxymon is designed for:
+Proxidex is designed for:
 
 - **Competitive Players**: Test new deck strategies and combos before investing in expensive cards
 - **Deck Builders**: Visualize card layouts and test different configurations
@@ -525,7 +525,7 @@ When importing deck lists, the system uses multiple fallback strategies to find 
 
 ## 🤝 Contributing
 
-Contributions are welcome! If you'd like to contribute to Proxymon, please follow these guidelines:
+Contributions are welcome! If you'd like to contribute to Proxidex, please follow these guidelines:
 
 ### Getting Started
 
@@ -591,7 +591,7 @@ If you need help or have questions:
 
 ## 🗺️ Roadmap
 
-Future enhancements planned for Proxymon:
+Future enhancements planned for Proxidex:
 
 - [x] **Limitless TCG Integration** - Browse and import meta decks
 - [x] **URL Import with Variants** - Import any Limitless deck by URL
@@ -617,6 +617,6 @@ Future enhancements planned for Proxymon:
 
 **Made with ❤️ for the Pokémon TCG community**
 
-[⬆ Back to Top](#-proxymon)
+[⬆ Back to Top](#-Proxidex)
 
 </div>

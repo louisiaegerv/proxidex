@@ -1,8 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback, useRef } from "react"
-import { Search, Loader2, ChevronDown } from "lucide-react"
-import { tcgdex, getFullImageUrl, getProcessedCardImage } from "@/lib/tcgdex"
+import { Search, Loader2, ChevronDown, ZoomIn, X } from "lucide-react"
 import { useProxyList } from "@/stores/proxy-list"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,20 +12,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Query } from "@tcgdex/sdk"
-import type { CardResume } from "@tcgdex/sdk"
+import { getCardImageUrl } from "@/lib/images"
 
-// Extended card type that includes fields returned by Query
-// The TCGdex Query API returns full Card objects, not just CardResume
-interface QueriedCard {
+// Local card result from our database
+interface LocalCard {
   id: string
-  localId: string
   name: string
-  image?: string
-  set?: {
-    id: string
-    name: string
-  }
+  set_code: string
+  set_name: string
+  local_id: string
+  folder_name: string
+  variants: string
+  sizes: string
 }
 
 interface CardVariantModalProps {
@@ -40,7 +37,7 @@ interface VariantCard {
   id: string
   name: string
   localId: string
-  image?: string
+  image: string
   setName: string
   setId: string
 }
@@ -55,14 +52,14 @@ export function CardVariantModal({
   itemId,
 }: CardVariantModalProps) {
   const [variants, setVariants] = useState<VariantCard[]>([])
-  const [allMatchingCards, setAllMatchingCards] = useState<QueriedCard[]>([])
+  const [allMatchingCards, setAllMatchingCards] = useState<LocalCard[]>([])
   const [cardsWithImagesCount, setCardsWithImagesCount] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
-  const [isProcessing, setIsProcessing] = useState(false)
   const [currentCardDetails, setCurrentCardDetails] =
     useState<VariantCard | null>(null)
+  const [previewVariant, setPreviewVariant] = useState<VariantCard | null>(null)
   const processedIndexRef = useRef(0)
 
   const updateItemCard = useProxyList((state) => state.updateItemCard)
@@ -70,66 +67,41 @@ export function CardVariantModal({
 
   const currentItem = items.find((item) => item.id === itemId)
 
-  // Helper function to load cards from a starting index until we have enough with images
+  // Helper function to build variant from local card (sm for modal thumbnails)
+  const buildVariant = useCallback((card: LocalCard): VariantCard => {
+    return {
+      id: card.id,
+      name: card.name,
+      localId: card.local_id,
+      image: getCardImageUrl(card, 'sm'),
+      setName: card.set_name,
+      setId: card.set_code,
+    }
+  }, [])
+
+  // Helper function to load cards from a starting index until we have enough
   const loadCardsWithImages = useCallback(
     async (
-      matchingCards: QueriedCard[],
+      matchingCards: LocalCard[],
       startIndex: number,
       targetCount: number
     ): Promise<{ variants: VariantCard[]; nextIndex: number }> => {
       const newVariants: VariantCard[] = []
       let currentIndex = startIndex
 
-      // Filter to only cards with images, starting from startIndex
+      // Load cards until we have enough
       while (
         newVariants.length < targetCount &&
         currentIndex < matchingCards.length
       ) {
         const card = matchingCards[currentIndex]
-
-        if (card.image) {
-          // If set data is missing from query result, fetch the full card
-          // The Card object includes set info (SetResume) with name and id
-          let setName = card.set?.name
-          let setId = card.set?.id
-
-          if (!setName || !setId) {
-            try {
-              console.log(`[Variant Modal] Fetching set data for: ${card.id}`)
-              const fullCard = await tcgdex.card.get(card.id)
-              if (fullCard) {
-                // fullCard.set contains SetResume with name and id
-                // (we could use fullCard.getSet() for full Set details, but set is sufficient)
-                setName = fullCard.set?.name || "Unknown"
-                setId = fullCard.set?.id || ""
-              }
-            } catch {
-              // Fallback: parse from image URL if possible
-              // URL format: https://assets.tcgdex.net/en/{series}/{set}/{localId}
-              const urlParts = card.image?.split("/")
-              if (urlParts && urlParts.length >= 6) {
-                setId = urlParts[urlParts.length - 2] || ""
-              }
-              setName = setId?.toUpperCase() || "Unknown"
-            }
-          }
-
-          newVariants.push({
-            id: card.id,
-            name: card.name || "Unknown",
-            localId: card.localId,
-            image: card.image,
-            setName: setName || "Unknown",
-            setId: setId || "",
-          })
-        }
-
+        newVariants.push(buildVariant(card))
         currentIndex++
       }
 
       return { variants: newVariants, nextIndex: currentIndex }
     },
-    []
+    [buildVariant]
   )
 
   // Load more variants
@@ -156,10 +128,17 @@ export function CardVariantModal({
       setIsLoading(true)
       processedIndexRef.current = 0
       try {
-        // Search for cards with the same name using server-side query
-        // The Query API returns full Card objects with set data included
-        const queryBuilder = Query.create().like("name", currentItem!.name)
-        let matchingCards = (await tcgdex.card.list(queryBuilder)) || []
+        // Search for cards with the same name using local API
+        const response = await fetch(
+          `/api/cards/search?q=${encodeURIComponent(currentItem!.name)}&limit=100`
+        )
+        
+        if (!response.ok) {
+          throw new Error('Failed to search variants')
+        }
+        
+        const data = await response.json()
+        let matchingCards: LocalCard[] = data.cards || []
 
         console.log(
           `[Variant Modal] Found ${matchingCards.length} matching cards for: ${currentItem!.name}`
@@ -187,12 +166,12 @@ export function CardVariantModal({
           return 0
         })
 
-        setAllMatchingCards(matchingCards as QueriedCard[])
+        setAllMatchingCards(matchingCards)
 
-        // Load initial batch of cards with images
+        // Load initial batch of cards
         const { variants: initialVariants, nextIndex } =
           await loadCardsWithImages(
-            matchingCards as QueriedCard[],
+            matchingCards,
             0,
             INITIAL_LOAD_COUNT
           )
@@ -208,11 +187,7 @@ export function CardVariantModal({
           setCurrentCardDetails(currentVariant)
         }
 
-        // Count total cards with images (simpler now since we have Card objects)
-        const cardsWithImages = matchingCards.filter(
-          (card) => card.image
-        ).length
-        setCardsWithImagesCount(cardsWithImages)
+        setCardsWithImagesCount(matchingCards.length)
       } catch (error) {
         console.error("Error loading variants:", error)
       } finally {
@@ -225,41 +200,23 @@ export function CardVariantModal({
     setCardsWithImagesCount(0)
   }, [isOpen, currentItem, loadCardsWithImages])
 
-  const handleSelectVariant = async (variant: VariantCard) => {
+  const handleSelectVariant = (variant: VariantCard) => {
     if (!itemId) return
 
-    setIsProcessing(true)
+    // Swap sm to md for the selected variant (modal shows sm, preview needs md)
+    const mdImageUrl = variant.image.replace(/_sm\.webp$/, '_md.webp')
 
-    try {
-      // Process image to stretch corners (mandatory preprocessing)
-      const processedImage = await getProcessedCardImage(variant.image, "high")
-
-      updateItemCard(itemId, {
-        cardId: variant.id,
-        name: variant.name,
-        image: processedImage,
-        originalImage: variant.image,
-        setName: variant.setName,
-        setId: variant.setId,
-        localId: variant.localId,
-      })
-      onClose()
-    } catch (error) {
-      console.error("Error processing variant image:", error)
-      // Fallback: update without processing
-      updateItemCard(itemId, {
-        cardId: variant.id,
-        name: variant.name,
-        image: variant.image,
-        originalImage: variant.image,
-        setName: variant.setName,
-        setId: variant.setId,
-        localId: variant.localId,
-      })
-      onClose()
-    } finally {
-      setIsProcessing(false)
-    }
+    // Images are pre-processed, use md version for preview
+    updateItemCard(itemId, {
+      cardId: variant.id,
+      name: variant.name,
+      image: mdImageUrl,
+      originalImage: mdImageUrl,
+      setName: variant.setName,
+      setId: variant.setId,
+      localId: variant.localId,
+    })
+    onClose()
   }
 
   const filteredVariants = searchQuery
@@ -274,8 +231,8 @@ export function CardVariantModal({
   const remainingToLoad = cardsWithImagesCount - variants.length
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !isProcessing && onClose()}>
-      <DialogContent className="max-h-[80vh] max-w-3xl border-slate-800 bg-slate-900">
+    <Dialog open={isOpen} onOpenChange={(open) => open === false && onClose()}>
+      <DialogContent overflow-hidden className="max-h-[90vh]  sm:max-w-5xl border-slate-800 bg-slate-900">
         <DialogHeader>
           <DialogTitle className="text-slate-100">
             Change Card Variant
@@ -300,7 +257,7 @@ export function CardVariantModal({
               <div className="h-16 w-11 flex-shrink-0 overflow-hidden rounded bg-slate-800">
                 {currentItem.image && (
                   <img
-                    src={getFullImageUrl(currentItem.image, "low", "webp")}
+                    src={currentItem.image}
                     alt={currentItem.name}
                     className="h-full w-full object-cover"
                   />
@@ -332,27 +289,37 @@ export function CardVariantModal({
               <div className="space-y-4">
                 <div className="grid grid-cols-4 gap-3">
                   {filteredVariants.map((variant) => {
-                    const imageUrl = getFullImageUrl(
-                      variant.image,
-                      "low",
-                      "webp"
-                    )
                     const isCurrent = variant.id === currentItem?.cardId
 
                     return (
-                      <button
+                      <div
                         key={variant.id}
-                        onClick={() => handleSelectVariant(variant)}
                         className={`group relative overflow-hidden rounded-lg transition-all ${
                           isCurrent
                             ? "ring-2 ring-blue-500"
                             : "hover:ring-2 hover:ring-slate-600"
                         }`}
                       >
-                        <div className="aspect-[63/88] bg-slate-800">
-                          {imageUrl ? (
+                        {/* Preview Button */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setPreviewVariant(variant)
+                          }}
+                          className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/80 text-white opacity-0 transition-opacity hover:bg-slate-800 group-hover:opacity-100"
+                          title="Preview card"
+                        >
+                          <ZoomIn className="h-4 w-4" />
+                        </button>
+
+                        {/* Card Image - Click to select */}
+                        <button
+                          onClick={() => handleSelectVariant(variant)}
+                          className="aspect-[63/88] w-full bg-slate-800"
+                        >
+                          {variant.image ? (
                             <img
-                              src={imageUrl}
+                              src={variant.image}
                               alt={variant.name}
                               className="h-full w-full object-cover"
                               loading="lazy"
@@ -362,7 +329,7 @@ export function CardVariantModal({
                               No Image
                             </div>
                           )}
-                        </div>
+                        </button>
                         {isCurrent && (
                           <div className="absolute inset-0 flex items-center justify-center bg-blue-500/20">
                             <div className="rounded bg-blue-500 px-2 py-1 text-xs text-white">
@@ -370,7 +337,7 @@ export function CardVariantModal({
                             </div>
                           </div>
                         )}
-                      </button>
+                      </div>
                     )
                   })}
                 </div>
@@ -408,22 +375,55 @@ export function CardVariantModal({
             {searchQuery
               ? `Showing ${filteredVariants.length} of ${variants.length} loaded variants`
               : cardsWithImagesCount > 0
-                ? `Showing ${variants.length} of ${cardsWithImagesCount} variants with images`
+                ? `Showing ${variants.length} of ${cardsWithImagesCount} variants`
                 : `Showing ${variants.length} variants`}
           </div>
         </div>
 
-        {/* Processing Overlay */}
-        {isProcessing && (
-          <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-slate-950/80">
-            <div className="flex flex-col items-center gap-3">
-              <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-              <span className="text-sm text-slate-300">
-                Processing image...
-              </span>
-            </div>
-          </div>
-        )}
+        {/* Card Preview Modal */}
+        <Dialog open={!!previewVariant} onOpenChange={() => setPreviewVariant(null)}>
+          <DialogContent className="max-w-md border-slate-800 bg-slate-900 p-0">
+            <DialogTitle className="sr-only">
+              {previewVariant?.name || 'Card Preview'}
+            </DialogTitle>
+            {previewVariant && (
+              <div className="flex flex-col gap-4 p-4">
+                <div className="aspect-[63/88] overflow-hidden rounded-lg">
+                  <img
+                    src={previewVariant.image}
+                    alt={previewVariant.name}
+                    className="h-full w-full object-contain"
+                  />
+                </div>
+                <div className="text-center">
+                  <h3 className="text-lg font-semibold text-slate-100">
+                    {previewVariant.name}
+                  </h3>
+                  <p className="text-sm text-slate-400">
+                    {previewVariant.setName} #{previewVariant.localId}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      handleSelectVariant(previewVariant)
+                      setPreviewVariant(null)
+                    }}
+                    className="flex-1 rounded-lg bg-blue-600 py-2 text-sm font-medium text-white hover:bg-blue-500"
+                  >
+                    Select This Variant
+                  </button>
+                  <button
+                    onClick={() => setPreviewVariant(null)}
+                    className="rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-700"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </DialogContent>
     </Dialog>
   )

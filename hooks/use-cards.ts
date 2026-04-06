@@ -1,8 +1,19 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { searchCards, getSets } from '@/lib/tcgdex';
-import type { CardResume, SetResume } from '@tcgdex/sdk';
+import { getAllSets, type SetInfo } from '@/lib/db';
+
+// Local card result from our database
+interface LocalCard {
+  id: string;
+  name: string;
+  set_code: string;
+  set_name: string;
+  local_id: string;
+  folder_name: string;
+  variants: string;
+  sizes: string;
+}
 
 interface UseCardsOptions {
   debounceMs?: number;
@@ -13,8 +24,8 @@ export function useCards(options: UseCardsOptions = {}) {
   
   const [query, setQuery] = useState('');
   const [selectedSet, setSelectedSet] = useState<string>('');
-  const [cards, setCards] = useState<CardResume[]>([]);
-  const [sets, setSets] = useState<SetResume[]>([]);
+  const [cards, setCards] = useState<LocalCard[]>([]);
+  const [sets, setSets] = useState<SetInfo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
@@ -24,7 +35,7 @@ export function useCards(options: UseCardsOptions = {}) {
   useEffect(() => {
     async function loadSets() {
       try {
-        const fetchedSets = await getSets();
+        const fetchedSets = await getAllSets();
         setSets(fetchedSets);
       } catch (err) {
         console.error('Failed to load sets:', err);
@@ -44,10 +55,19 @@ export function useCards(options: UseCardsOptions = {}) {
     setError(null);
 
     try {
-      const results = await searchCards(query, {
-        setId: selectedSet || undefined,
-      });
-      setCards(results);
+      // Build search URL
+      const params = new URLSearchParams();
+      if (query) params.set('q', query);
+      if (selectedSet) params.set('set', selectedSet);
+      params.set('limit', '50');
+      
+      const response = await fetch(`/api/cards/search?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error('Search failed');
+      }
+      
+      const data = await response.json();
+      setCards(data.cards || []);
     } catch (err) {
       setError('Failed to search cards. Please try again.');
       console.error(err);

@@ -2,9 +2,9 @@
 
 import { useState, useCallback } from "react"
 import { Plus, Trash2, Loader2 } from "lucide-react"
-import { resolveDeckCards, type DeckListItem } from "@/lib/deck-parser"
+import { type DeckListItem, getCardImageUrl } from "@/lib/deck-parser"
+import { resolveDeckCards } from "@/app/actions/deck-actions"
 import { useProxyList } from "@/stores/proxy-list"
-import { getProcessedCardImage } from "@/lib/tcgdex"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -58,22 +58,19 @@ export function DeckSidebar({ variant = "desktop" }: DeckSidebarProps) {
         if (result.card) {
           setProcessingStatus(`Adding ${result.card.name}...`)
 
-          // Process image to stretch corners
-          const processedImage = await getProcessedCardImage(
-            result.card.image,
-            "high"
-          )
+          // Get image URL from local storage (use md for UI, lg only for PDF generation)
+          const imageUrl = getCardImageUrl(result.card, 'md')
 
           // Add the card with the specified quantity
           addItem(
             {
               cardId: result.card.id,
               name: result.card.name,
-              image: processedImage,
-              originalImage: result.card.image,
-              setName: result.card.set?.name || "Unknown",
-              setId: result.card.set?.id || "",
-              localId: result.card.localId,
+              image: imageUrl,
+              originalImage: imageUrl,
+              setName: result.card.set_name || "Unknown",
+              setId: result.card.set_code || "",
+              localId: result.card.local_id,
             },
             result.item.quantity
           )

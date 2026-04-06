@@ -77,7 +77,7 @@ export const useProfiles = create<ProfilesState>()(
       },
     }),
     {
-      name: 'proxymon-profiles',
+      name: 'proxidex-profiles',
     }
   )
 );

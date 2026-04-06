@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useEffect, useCallback } from "react"
 import { useProxyList } from "@/stores/proxy-list"
-import { getFullImageUrl } from "@/lib/tcgdex"
+// Using local image URLs directly from card data
 import { PAGE_DIMENSIONS, BleedMethod } from "@/types"
 import { generateProxyPDF, downloadPDF, clearImageCache } from "@/lib/pdf"
 import { Button } from "@/components/ui/button"
@@ -101,7 +101,7 @@ export function LivePreview({
   const selectedCount = selectedIds.size
   const zoom = ZOOM_LEVELS[zoomIndex]
 
-  // Use mouse sensor with activation constraint to prevent accidental drags
+  // Use sensors with activation constraints to prevent scroll interference
   const mouseSensor = useSensor(MouseSensor, {
     activationConstraint: {
       distance: 10,
@@ -109,8 +109,8 @@ export function LivePreview({
   })
   const touchSensor = useSensor(TouchSensor, {
     activationConstraint: {
-      delay: 250,
-      tolerance: 5,
+      delay: 300,
+      tolerance: 8,
     },
   })
   const sensors = useSensors(mouseSensor, touchSensor)
@@ -314,7 +314,7 @@ export function LivePreview({
       const pdfBytes = await generateProxyPDF(items, settings, (progress) => {
         setGenerationProgress(progress)
       })
-      downloadPDF(pdfBytes, `proxymon-${totalCards}-cards.pdf`)
+      downloadPDF(pdfBytes, `proxidex-${totalCards}-cards.pdf`)
     } catch (error) {
       console.error("Failed to generate PDF:", error)
     } finally {
@@ -470,7 +470,6 @@ export function LivePreview({
                     const isActive = card.id === activeId
                     const isOver = card.id === overId
                     const isSelected = selectedIds.has(card.id)
-                    const imageUrl = getFullImageUrl(card.image, "low", "webp")
 
                     return (
                       <DraggableCard
@@ -484,16 +483,17 @@ export function LivePreview({
                         onClick={(e) => handleCardClick(card, e)}
                         onSelectChange={() => handleCheckboxChange(card.id)}
                       >
-                        {imageUrl ? (
+                        {card.image ? (
                           <CardWithBleed
-                            imageUrl={imageUrl}
+                            imageUrl={card.image}
                             name={card.name}
                             bleedMm={settings.bleed}
                             method={settings.bleedMethod as BleedMethod}
                             showTrimLines={false}
                             bleedColor={settings.bleedColor}
-                            dpi={96}
+                            dpi={300}
                             fillParent
+                            grayscale={settings.blackAndWhite}
                             cardWidth={settings.cardWidth}
                             cardHeight={settings.cardHeight}
                           />
@@ -625,14 +625,15 @@ export function LivePreview({
             >
               {activeCard.image ? (
                 <CardWithBleed
-                  imageUrl={getFullImageUrl(activeCard.image, "low", "webp")!}
+                  imageUrl={activeCard.image}
                   name={activeCard.name}
                   bleedMm={settings.bleed}
                   method={settings.bleedMethod as BleedMethod}
                   showTrimLines={false}
                   bleedColor={settings.bleedColor}
-                  dpi={96}
+                  dpi={300}
                   fillParent
+                  grayscale={settings.blackAndWhite}
                   cardWidth={settings.cardWidth}
                   cardHeight={settings.cardHeight}
                 />
@@ -790,7 +791,7 @@ function DraggableCard({
     opacity: isDragging ? 0.3 : isActive ? 0.5 : 1,
     zIndex: isDragging ? 50 : isOver ? 40 : isBulkMode ? 30 : undefined,
     cursor: isBulkMode ? "pointer" : isDragging ? "grabbing" : "grab",
-    touchAction: "none",
+    touchAction: "pan-y",
   }
 
   return (

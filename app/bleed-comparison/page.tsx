@@ -59,6 +59,291 @@ interface BleedResult {
   error?: string
 }
 
+/**
+ * Process corners client-side to handle transparent corners
+ */
+async function processCornersClientSide(imageUrl: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.crossOrigin = "anonymous"
+    
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      canvas.width = img.width
+      canvas.height = img.height
+      const ctx = canvas.getContext('2d')!
+      
+      // Draw original image
+      ctx.drawImage(img, 0, 0)
+      
+      // Get image data to find transparent corners
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+      const data = imageData.data
+      
+      // Check if we have transparent pixels in corners
+      const cornerSize = 20
+      let needsProcessing = false
+      
+      // Check top-left corner
+      for (let y = 0; y < cornerSize && !needsProcessing; y++) {
+        for (let x = 0; x < cornerSize; x++) {
+          const idx = (y * canvas.width + x) * 4
+          if (data[idx + 3] < 255) {
+            needsProcessing = true
+            break
+          }
+        }
+      }
+      
+      if (!needsProcessing) {
+        resolve(imageUrl)
+        return
+      }
+      
+      // Fill transparent areas with white (extend card content)
+      for (let i = 0; i < data.length; i += 4) {
+        if (data[i + 3] < 255) {
+          data[i] = 255     // R
+          data[i + 1] = 255 // G
+          data[i + 2] = 255 // B
+          data[i + 3] = 255 // A
+        }
+      }
+      
+      ctx.putImageData(imageData, 0, 0)
+      resolve(canvas.toDataURL('image/png'))
+    }
+    
+    img.onerror = () => reject(new Error('Failed to load image'))
+    img.src = imageUrl
+  })
+}
+
+/**
+ * Extract border color from image (client-side)
+ */
+async function extractBorderColor(imageUrl: string): Promise<{ r: number; g: number; b: number }> {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.crossOrigin = "anonymous"
+    
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      canvas.width = img.width
+      canvas.height = img.height
+      const ctx = canvas.getContext('2d')!
+      ctx.drawImage(img, 0, 0)
+      
+      // Sample from center (avoiding transparent corners)
+      const centerX = Math.floor(img.width / 2)
+      const centerY = Math.floor(img.height / 2)
+      const pixel = ctx.getImageData(centerX, centerY, 1, 1).data
+      
+      resolve({ r: pixel[0], g: pixel[1], b: pixel[2] })
+    }
+    
+    img.onerror = () => reject(new Error('Failed to load image'))
+    img.src = imageUrl
+  })
+}
+
+/**
+ * Generate bleed image client-side using Canvas API
+ */
+async function generateBleedClientSide(
+  imageUrl: string,
+  method: BleedMethod,
+  bleedMm: number,
+  bleedColor?: { r: number; g: number; b: number }
+): Promise<string> {
+  // Load the image
+  const img = new Image()
+  img.crossOrigin = "anonymous"
+  
+  await new Promise<void>((resolve, reject) => {
+    img.onload = () => resolve()
+    img.onerror = () => reject(new Error("Failed to load image"))
+    img.src = imageUrl
+  })
+
+  const width = img.width
+  const height = img.height
+  
+  // Calculate bleed in pixels (assuming 300 DPI for PDF)
+  const bleedPx = Math.round((bleedMm * 300) / 25.4)
+  
+  if (bleedPx === 0) {
+    const canvas = document.createElement('canvas')
+    canvas.width = width
+    canvas.height = height
+    const ctx = canvas.getContext('2d')!
+    ctx.drawImage(img, 0, 0)
+    return canvas.toDataURL('image/png')
+  }
+
+  // Create canvas with bleed dimensions
+  const canvas = document.createElement('canvas')
+  canvas.width = width + bleedPx * 2
+  canvas.height = height + bleedPx * 2
+  const ctx = canvas.getContext('2d')!
+
+  switch (method) {
+    case 'replicate':
+      return generateReplicateBleed(ctx, img, width, height, bleedPx, bleedColor)
+    case 'mirror':
+      return generateMirrorBleed(ctx, img, width, height, bleedPx)
+    case 'edge':
+      return generateEdgeBleed(ctx, img, width, height, bleedPx)
+    default:
+      return generateReplicateBleed(ctx, img, width, height, bleedPx, bleedColor)
+  }
+}
+
+function generateReplicateBleed(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  width: number,
+  height: number,
+  bleedPx: number,
+  userColor?: { r: number; g: number; b: number }
+): string {
+  if (userColor) {
+    ctx.fillStyle = `rgb(${userColor.r}, ${userColor.g}, ${userColor.b})`
+  } else {
+    // Auto-detect from center of image
+    const cornerCanvas = document.createElement('canvas')
+    cornerCanvas.width = 5
+    cornerCanvas.height = 5
+    const cornerCtx = cornerCanvas.getContext('2d')!
+    cornerCtx.drawImage(img, Math.floor(img.width/2)-2, Math.floor(img.height/2)-2, 5, 5, 0, 0, 5, 5)
+    const pixel = cornerCtx.getImageData(2, 2, 1, 1).data
+    ctx.fillStyle = `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`
+  }
+  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+  ctx.drawImage(img, bleedPx, bleedPx, width, height)
+  return ctx.canvas.toDataURL('image/png')
+}
+
+function generateMirrorBleed(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  width: number,
+  height: number,
+  bleedPx: number
+): string {
+  ctx.drawImage(img, bleedPx, bleedPx, width, height)
+  
+  ctx.save()
+  ctx.translate(bleedPx, 0)
+  ctx.scale(-1, 1)
+  ctx.drawImage(img, 0, 0, bleedPx, height, 0, bleedPx, bleedPx, height)
+  ctx.restore()
+  
+  ctx.save()
+  ctx.translate(ctx.canvas.width, 0)
+  ctx.scale(-1, 1)
+  ctx.drawImage(img, width - bleedPx, 0, bleedPx, height, 0, bleedPx, bleedPx, height)
+  ctx.restore()
+  
+  ctx.save()
+  ctx.translate(0, bleedPx)
+  ctx.scale(1, -1)
+  ctx.drawImage(img, 0, 0, width, bleedPx, bleedPx, 0, width, bleedPx)
+  ctx.restore()
+  
+  ctx.save()
+  ctx.translate(0, ctx.canvas.height)
+  ctx.scale(1, -1)
+  ctx.drawImage(img, 0, height - bleedPx, width, bleedPx, bleedPx, 0, width, bleedPx)
+  ctx.restore()
+  
+  ctx.fillStyle = 'white'
+  ctx.fillRect(0, 0, bleedPx, bleedPx)
+  ctx.fillRect(bleedPx + width, 0, bleedPx, bleedPx)
+  ctx.fillRect(0, bleedPx + height, bleedPx, bleedPx)
+  ctx.fillRect(bleedPx + width, bleedPx + height, bleedPx, bleedPx)
+  
+  return ctx.canvas.toDataURL('image/png')
+}
+
+function generateEdgeBleed(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  width: number,
+  height: number,
+  bleedPx: number
+): string {
+  const tempCanvas = document.createElement('canvas')
+  tempCanvas.width = width
+  tempCanvas.height = height
+  const tempCtx = tempCanvas.getContext('2d')!
+  tempCtx.drawImage(img, 0, 0)
+  
+  const imageData = tempCtx.getImageData(0, 0, width, height)
+  const data = imageData.data
+  
+  const getPixel = (x: number, y: number): [number, number, number, number] => {
+    const idx = (y * width + x) * 4
+    return [data[idx], data[idx + 1], data[idx + 2], data[idx + 3]]
+  }
+  
+  ctx.fillStyle = 'white'
+  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+  ctx.drawImage(img, bleedPx, bleedPx)
+  
+  const inset = 2
+  
+  for (let y = 0; y < height; y++) {
+    const [r, g, b, a] = getPixel(inset, y)
+    ctx.fillStyle = `rgba(${r},${g},${b},${a / 255})`
+    for (let x = 0; x < bleedPx; x++) {
+      ctx.fillRect(x, bleedPx + y, 1, 1)
+    }
+  }
+  
+  for (let y = 0; y < height; y++) {
+    const [r, g, b, a] = getPixel(width - 1 - inset, y)
+    ctx.fillStyle = `rgba(${r},${g},${b},${a / 255})`
+    for (let x = 0; x < bleedPx; x++) {
+      ctx.fillRect(bleedPx + width + x, bleedPx + y, 1, 1)
+    }
+  }
+  
+  for (let x = 0; x < width; x++) {
+    const [r, g, b, a] = getPixel(x, inset)
+    ctx.fillStyle = `rgba(${r},${g},${b},${a / 255})`
+    for (let y = 0; y < bleedPx; y++) {
+      ctx.fillRect(bleedPx + x, y, 1, 1)
+    }
+  }
+  
+  for (let x = 0; x < width; x++) {
+    const [r, g, b, a] = getPixel(x, height - 1 - inset)
+    ctx.fillStyle = `rgba(${r},${g},${b},${a / 255})`
+    for (let y = 0; y < bleedPx; y++) {
+      ctx.fillRect(bleedPx + x, bleedPx + height + y, 1, 1)
+    }
+  }
+  
+  const topLeft = getPixel(inset, inset)
+  ctx.fillStyle = `rgba(${topLeft[0]},${topLeft[1]},${topLeft[2]},${topLeft[3] / 255})`
+  ctx.fillRect(0, 0, bleedPx, bleedPx)
+  
+  const topRight = getPixel(width - 1 - inset, inset)
+  ctx.fillStyle = `rgba(${topRight[0]},${topRight[1]},${topRight[2]},${topRight[3] / 255})`
+  ctx.fillRect(bleedPx + width, 0, bleedPx, bleedPx)
+  
+  const bottomLeft = getPixel(inset, height - 1 - inset)
+  ctx.fillStyle = `rgba(${bottomLeft[0]},${bottomLeft[1]},${bottomLeft[2]},${bottomLeft[3] / 255})`
+  ctx.fillRect(0, bleedPx + height, bleedPx, bleedPx)
+  
+  const bottomRight = getPixel(width - 1 - inset, height - 1 - inset)
+  ctx.fillStyle = `rgba(${bottomRight[0]},${bottomRight[1]},${bottomRight[2]},${bottomRight[3] / 255})`
+  ctx.fillRect(bleedPx + width, bleedPx + height, bleedPx, bleedPx)
+  
+  return ctx.canvas.toDataURL('image/png')
+}
+
 export default function BleedComparisonPage() {
   const [selectedCard, setSelectedCard] = useState(SAMPLE_CARDS[0])
   const [bleedMm, setBleedMm] = useState(5)
@@ -77,20 +362,15 @@ export default function BleedComparisonPage() {
     edge: { method: "edge", imageUrl: "", isLoading: false },
   })
 
-  // Processed image with corners extended (mandatory preprocessing)
-  const [processedImageUrl, setProcessedImageUrl] = useState<string | null>(
-    null
-  )
+  const [processedImageUrl, setProcessedImageUrl] = useState<string | null>(null)
   const [isProcessingCorners, setIsProcessingCorners] = useState(false)
 
   const rawImageUrl = uploadedImage || `${selectedCard.image}/high.png`
-  // Use corner-processed image if available, otherwise fall back to raw
   const currentImageUrl = processedImageUrl || rawImageUrl
 
-  // Process corners when raw image changes (mandatory preprocessing)
+  // Process corners client-side when image changes
   useEffect(() => {
     const processCorners = async () => {
-      // Skip if it's already a data URL (already processed)
       if (rawImageUrl.startsWith("data:")) {
         setProcessedImageUrl(rawImageUrl)
         return
@@ -98,19 +378,8 @@ export default function BleedComparisonPage() {
 
       setIsProcessingCorners(true)
       try {
-        const response = await fetch("/api/process-corners", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ imageUrl: rawImageUrl }),
-        })
-
-        if (response.ok) {
-          const data = await response.json()
-          setProcessedImageUrl(data.image)
-        } else {
-          // Fallback to raw image if processing fails
-          setProcessedImageUrl(null)
-        }
+        const processed = await processCornersClientSide(rawImageUrl)
+        setProcessedImageUrl(processed === rawImageUrl ? null : processed)
       } catch (err) {
         console.error("Failed to process corners:", err)
         setProcessedImageUrl(null)
@@ -122,22 +391,17 @@ export default function BleedComparisonPage() {
     processCorners()
   }, [rawImageUrl])
 
-  // Fetch suggested color when image changes
+  // Extract suggested color client-side when image changes
   useEffect(() => {
     const fetchSuggestedColor = async () => {
       try {
-        const response = await fetch(
-          `/api/generate-bleed?imageUrl=${encodeURIComponent(rawImageUrl)}`
-        )
-        if (response.ok) {
-          const data = await response.json()
-          setSuggestedColor(data.color)
-          if (!selectedColor) {
-            setSelectedColor(data.color)
-          }
+        const color = await extractBorderColor(rawImageUrl)
+        setSuggestedColor(color)
+        if (!selectedColor) {
+          setSelectedColor(color)
         }
       } catch (err) {
-        console.error("Failed to fetch suggested color:", err)
+        console.error("Failed to extract color:", err)
       }
     }
     fetchSuggestedColor()
@@ -151,41 +415,16 @@ export default function BleedComparisonPage() {
       }))
 
       try {
-        const body: {
-          imageUrl: string
-          method: BleedMethod
-          bleedMm: number
-          colorR?: number
-          colorG?: number
-          colorB?: number
-        } = {
-          imageUrl: currentImageUrl,
+        const bleedDataUrl = await generateBleedClientSide(
+          currentImageUrl,
           method,
           bleedMm,
-        }
+          method === "replicate" ? selectedColor : undefined
+        )
 
-        // Include selected color for replicate method
-        if (method === "replicate" && selectedColor) {
-          body.colorR = selectedColor.r
-          body.colorG = selectedColor.g
-          body.colorB = selectedColor.b
-        }
-
-        const response = await fetch("/api/generate-bleed", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        })
-
-        if (!response.ok) {
-          const errorData = await response.json()
-          throw new Error(errorData.error || "Failed to generate bleed")
-        }
-
-        const data = await response.json()
         setBleedResults((prev) => ({
           ...prev,
-          [method]: { ...prev[method], imageUrl: data.image, isLoading: false },
+          [method]: { ...prev[method], imageUrl: bleedDataUrl, isLoading: false },
         }))
       } catch (err) {
         console.error(`Error generating ${method} bleed:`, err)
@@ -267,8 +506,7 @@ export default function BleedComparisonPage() {
             Compare different canvas extension methods for print bleed areas
           </p>
           <p className="text-xs text-slate-500">
-            Note: All images automatically have their transparent corners
-            pre-processed before bleed methods are applied
+            All processing happens in your browser - no server calls needed
           </p>
         </div>
 
@@ -401,7 +639,7 @@ export default function BleedComparisonPage() {
                 </div>
               </div>
               <p className="text-xs text-slate-500">
-                For Solid Color method (5px border sample)
+                For Solid Color method (auto-detected from image center)
               </p>
             </div>
           </div>
@@ -506,10 +744,9 @@ export default function BleedComparisonPage() {
             <div className="space-y-2">
               <h4 className="font-medium text-slate-300">Solid Color Method</h4>
               <p>
-                Samples the outer 5px border of the image to suggest a color,
-                but allows you to pick any color using the color picker. Uses
-                Sharp&apos;s <code>extend</code> with the selected color as the
-                background.
+                Samples the image center to suggest a color, but allows you to pick 
+                any color using the color picker. Extends the canvas with the 
+                selected color as the background.
               </p>
             </div>
             <div className="space-y-2">
