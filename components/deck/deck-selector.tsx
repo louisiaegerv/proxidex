@@ -1,8 +1,9 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { ChevronDown, Pencil, Trash2, Plus, Check, Layers } from "lucide-react"
+import { ChevronDown, Pencil, Trash2, Plus, Check, Layers, Crown } from "lucide-react"
 import { useProxyList } from "@/stores/proxy-list"
+import { useSubscription } from "@/components/subscription-provider"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -30,6 +31,9 @@ export function DeckSelector({ className }: DeckSelectorProps) {
     id: string
     name: string
   } | null>(null)
+  
+  const { subscription } = useSubscription()
+  const isPro = subscription?.isPro ?? false
 
   const decks = useProxyList((state) => state.decks)
   const activeDeckId = useProxyList((state) => state.activeDeckId)
@@ -38,14 +42,14 @@ export function DeckSelector({ className }: DeckSelectorProps) {
 
   const activeDeck = getActiveDeck()
 
+  // Check if free user is at deck limit
+  const isAtDeckLimit = !isPro && decks.length >= 2
+
   // Calculate card counts for each deck
   const deckCardCounts = useMemo(() => {
     const counts = new Map<string, number>()
     decks.forEach((deck) => {
-      const totalCards = deck.items.reduce(
-        (sum, item) => sum + item.quantity,
-        0
-      )
+      const totalCards = deck.items.length
       counts.set(deck.id, totalCards)
     })
     return counts
@@ -183,16 +187,34 @@ export function DeckSelector({ className }: DeckSelectorProps) {
 
           <DropdownMenuSeparator className="my-1 bg-slate-700" />
 
-          {/* Create new deck option */}
+          {/* Create new deck option - opens dialog which handles upgrade prompt if at limit */}
           <DropdownMenuItem
             onClick={() => setIsCreateDialogOpen(true)}
-            className="cursor-pointer rounded-sm px-2 py-2 text-slate-100 focus:bg-slate-800"
+            className={cn(
+              "cursor-pointer rounded-sm px-2 py-2",
+              isAtDeckLimit
+                ? "text-amber-400 focus:bg-amber-950/30 focus:text-amber-400"
+                : "text-slate-100 focus:bg-slate-800"
+            )}
           >
             <span className="flex items-center gap-2">
-              <Plus className="h-4 w-4 text-blue-400" />
-              <span className="text-sm font-medium">Create New Deck</span>
+              {isAtDeckLimit ? (
+                <Crown className="h-4 w-4 text-amber-400" />
+              ) : (
+                <Plus className="h-4 w-4 text-blue-400" />
+              )}
+              <span className="text-sm font-medium">
+                {isAtDeckLimit ? "Upgrade for More Decks" : "Create New Deck"}
+              </span>
             </span>
           </DropdownMenuItem>
+
+          {/* Show deck count for free users */}
+          {!isPro && (
+            <div className="px-2 py-1.5 text-xs text-slate-500">
+              {decks.length}/2 decks used
+            </div>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 

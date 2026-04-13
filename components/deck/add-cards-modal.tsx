@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback, useEffect, useRef } from "react"
-import { FileText, Trophy, Link, Plus, Loader2, Images } from "lucide-react"
+import { FileText, Trophy, Link, Plus, Loader2, Images, Search } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { MetaDeckSelector } from "./meta-deck-selector"
 import { DeckUrlImport } from "./deck-url-import"
-import { SetBrowser, SetBrowserRef } from "./set-browser"
+import { CardSearchBrowser, CardSearchBrowserRef } from "./card-search-browser"
 import { LoadConfirmDialog } from "./load-confirm-dialog"
 import { useProxyList } from "@/stores/proxy-list"
 import { parseDeckList, type DeckListItem } from "@/lib/deck-parser"
@@ -42,9 +42,9 @@ const methods: MethodOption[] = [
   },
   {
     value: "browse",
-    label: "Browse Sets",
-    icon: Images,
-    description: "Browse cards by set and select visually",
+    label: "Search",
+    icon: Search,
+    description: "Search cards by name and filter by set",
   },
   {
     value: "meta",
@@ -71,34 +71,31 @@ export function AddCardsModal({
   const [isProcessing, setIsProcessing] = useState(false)
   const [importSource, setImportSource] = useState<string>("")
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
-  const [browseSelection, setBrowseSelection] = useState<{ count: number; total: number } | null>(null)
+  const [browseSelection, setBrowseSelection] = useState<number>(0)
 
-  const setBrowserRef = useRef<SetBrowserRef>(null)
+  const searchBrowserRef = useRef<CardSearchBrowserRef>(null)
 
   const existingItems = useProxyList(
     (state) => state.getActiveDeck()?.items ?? []
   )
   const clearList = useProxyList((state) => state.clearList)
-  const existingCardCount = existingItems.reduce(
-    (sum, item) => sum + item.quantity,
-    0
-  )
+  const existingCardCount = existingItems.length
 
   const handleMethodChange = (method: AddMethod) => {
     setActiveMethod(method)
     setPendingItems(null)
     setImportSource("")
-    setBrowseSelection(null)
+    setBrowseSelection(0)
   }
 
   const handleBackToMethods = () => {
     setActiveMethod(null)
     setPendingItems(null)
     setImportSource("")
-    setBrowseSelection(null)
-    // Clear SetBrowser selection when going back
-    if (setBrowserRef.current) {
-      setBrowserRef.current.clearSelection()
+    setBrowseSelection(0)
+    // Clear search browser selection when going back
+    if (searchBrowserRef.current) {
+      searchBrowserRef.current.clearSelection()
     }
     setTextInput("")
   }
@@ -148,8 +145,8 @@ export function AddCardsModal({
     let source = importSource
 
     // Get items based on active method
-    if (activeMethod === "browse" && setBrowserRef.current) {
-      const selectedCards = setBrowserRef.current.getSelectedCards()
+    if (activeMethod === "browse" && searchBrowserRef.current) {
+      const selectedCards = searchBrowserRef.current.getSelectedCards()
       if (selectedCards.length > 0) {
         itemsToAdd = selectedCards.map(({ card, quantity }) => ({
           quantity,
@@ -157,7 +154,7 @@ export function AddCardsModal({
           setCode: card.set_code,
           cardNumber: card.local_id,
         }))
-        source = "Set Browser"
+        source = "Card Search"
       }
     } else {
       itemsToAdd = pendingItems
@@ -192,11 +189,11 @@ export function AddCardsModal({
       setTextInput("")
       setPendingItems(null)
       setImportSource("")
-      setBrowseSelection(null)
+      setBrowseSelection(0)
       
-      // Clear SetBrowser selection
-      if (setBrowserRef.current) {
-        setBrowserRef.current.clearSelection()
+      // Clear search browser selection
+      if (searchBrowserRef.current) {
+        searchBrowserRef.current.clearSelection()
       }
       
       setActiveMethod("text")
@@ -233,9 +230,9 @@ export function AddCardsModal({
       setActiveMethod(null)
       setTextInput("")
       setPendingItems(null)
-      setBrowseSelection(null)
-      if (setBrowserRef.current) {
-        setBrowserRef.current.clearSelection()
+      setBrowseSelection(0)
+      if (searchBrowserRef.current) {
+        searchBrowserRef.current.clearSelection()
       }
       onClose()
     }
@@ -243,13 +240,13 @@ export function AddCardsModal({
 
   // Calculate total cards for display
   const totalCards = activeMethod === "browse" 
-    ? (browseSelection?.total || 0)
+    ? browseSelection
     : activeMethod === null
     ? 0
-    : (pendingItems?.reduce((sum, item) => sum + item.quantity, 0) || 0)
+    : (pendingItems?.length || 0)
 
   const hasItems = activeMethod === "browse"
-    ? (browseSelection?.count || 0) > 0
+    ? browseSelection > 0
     : activeMethod === null
     ? false
     : (pendingItems && pendingItems.length > 0)
@@ -282,7 +279,7 @@ export function AddCardsModal({
           "h-dvh w-dvw max-w-dvw overflow-hidden border-slate-800 bg-slate-900 p-0 text-slate-100 transition-all md:h-[600px] md:max-h-[90vh]",
           "flex flex-col",
           activeMethod === "browse" || activeMethod === "url" ? "sm:max-w-5xl" : "sm:max-w-2xl",
-          activeMethod === "browse" && "md:h-[80vh]"
+          activeMethod === "browse" && "md:h-[90vh]"
         )}>
           <DialogHeader className="border-b border-slate-800 px-6 py-4 h-15">
             <DialogTitle className="flex items-center justify-center text-lg font-semibold text-slate-100">
@@ -298,7 +295,7 @@ export function AddCardsModal({
               )}
               {activeMethod === null && "Add Cards to Deck"}
               {activeMethod === "text" && "Type / Paste"}
-              {activeMethod === "browse" && "Set Selector"}
+              {activeMethod === "browse" && "Card Search"}
               {activeMethod === "meta" && "Deck Selector"}
               {activeMethod === "url" && "URL Import"}
             </DialogTitle>
@@ -383,10 +380,10 @@ export function AddCardsModal({
                   )}
 
                   {activeMethod === "browse" && (
-                    <SetBrowser
-                      ref={setBrowserRef}
-                      onSelectionChange={(count, total) => {
-                        setBrowseSelection({ count, total })
+                    <CardSearchBrowser
+                      ref={searchBrowserRef}
+                      onSelectionChange={(count) => {
+                        setBrowseSelection(count)
                       }}
                     />
                   )}
@@ -405,20 +402,18 @@ export function AddCardsModal({
                 <div className="border-t border-slate-800 px-6 py-4">
                   <div className="flex items-center justify-between">
                     <div className="text-sm text-slate-400">
-                      {hasItems ? (
+                      {hasItems && (
                         <span className="text-slate-300">
                           <span className="font-semibold text-white">
                             {totalCards}
                           </span>{" "}
                           card{totalCards !== 1 ? "s" : ""} to add
-                          {activeMethod === "browse" && browseSelection && browseSelection.count > 0 && (
+                          {activeMethod === "browse" && browseSelection > 0 && (
                             <span className="ml-1 text-slate-500">
-                              ({browseSelection.count} unique)
+                              ({browseSelection} selected)
                             </span>
                           )}
                         </span>
-                      ) : (
-                        <span>Enter cards or select cards to add</span>
                       )}
                     </div>
 

@@ -37,6 +37,11 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --color-1: oklch(66.2% 0.225 25.9);
+  --color-2: oklch(60.4% 0.26 302);
+  --color-3: oklch(69.6% 0.165 251);
+  --color-4: oklch(80.2% 0.134 225);
+  --color-5: oklch(90.7% 0.231 133);
 }
 
 .dark {
@@ -71,10 +76,88 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  --color-1: oklch(66.2% 0.225 25.9);
+  --color-2: oklch(60.4% 0.26 302);
+  --color-3: oklch(69.6% 0.165 251);
+  --color-4: oklch(80.2% 0.134 225);
+  --color-5: oklch(90.7% 0.231 133);
+}
+
+/* ========================================
+   COLOR THEMES
+   Use data-theme attribute for different color palettes
+   ======================================== */
+
+/* Blue Theme (Default) - matches shadcn blue */
+[data-theme="blue"]:root,
+:root {
+  --primary: oklch(0.546 0.245 262.881);
+  --primary-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.546 0.245 262.881);
+}
+
+.dark[data-theme="blue"],
+.dark {
+  --primary: oklch(0.546 0.245 262.881);
+  --primary-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.546 0.245 262.881);
+}
+
+/* Purple Theme */
+[data-theme="purple"]:root {
+  --primary: oklch(0.558 0.268 294.306);
+  --primary-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.558 0.268 294.306);
+}
+
+.dark[data-theme="purple"] {
+  --primary: oklch(0.602 0.238 292.374);
+  --primary-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.602 0.238 292.374);
+}
+
+/* Emerald Theme */
+[data-theme="emerald"]:root {
+  --primary: oklch(0.543 0.215 154.324);
+  --primary-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.543 0.215 154.324);
+}
+
+.dark[data-theme="emerald"] {
+  --primary: oklch(0.543 0.215 154.324);
+  --primary-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.543 0.215 154.324);
+}
+
+/* Rose Theme */
+[data-theme="rose"]:root {
+  --primary: oklch(0.557 0.246 16.439);
+  --primary-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.557 0.246 16.439);
+}
+
+.dark[data-theme="rose"] {
+  --primary: oklch(0.557 0.246 16.439);
+  --primary-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.557 0.246 16.439);
+}
+
+/* Orange Theme */
+[data-theme="orange"]:root {
+  --primary: oklch(0.618 0.189 48.747);
+  --primary-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.618 0.189 48.747);
+}
+
+.dark[data-theme="orange"] {
+  --primary: oklch(0.618 0.189 48.747);
+  --primary-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.618 0.189 48.747);
 }
 
 @theme inline {
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -113,7 +196,27 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
-}
+  --animate-rainbow: rainbow var(--speed, 2s) infinite linear;
+  --color-color-5: var(--color-5);
+  --color-color-4: var(--color-4);
+  --color-color-3: var(--color-3);
+  --color-color-2: var(--color-2);
+  --color-color-1: var(--color-1);
+  @keyframes rainbow {
+  0% {
+    background-position: 0%;
+    }
+  100% {
+    background-position: 200%;
+    }
+  }
+  --animate-gradient: gradient 8s linear infinite
+;
+  @keyframes gradient {
+  to {
+    background-position: var(--bg-size, 300%) 0;
+    }
+  }}
 
 @layer base {
   * {
@@ -216,4 +319,138 @@
 
 .animate-fade-out {
   animation: fade-out 3s ease-out forwards;
+}
+
+/* Particle Float Animations for VIP Cards */
+@keyframes float {
+  0% {
+    transform: translateY(0) translateX(0) scale(1);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.6;
+  }
+  90% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(-120px) translateX(20px) scale(0.5);
+    opacity: 0;
+  }
+}
+
+@keyframes float-slow {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.4;
+  }
+  85% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: translateY(-150px) translateX(-30px);
+    opacity: 0;
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-out infinite;
+}
+
+.animate-float-slow {
+  animation: float-slow 4s ease-out infinite;
+}
+
+/* Glow pulse animation for VIP cards */
+@keyframes glow-pulse {
+  0%, 100% {
+    opacity: 0.5;
+    filter: blur(8px);
+  }
+  50% {
+    opacity: 0.8;
+    filter: blur(12px);
+  }
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+/* Shimmer effect for VIP cards */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+/* Breathing overlay effect for background */
+@keyframes breathe {
+  0%, 100% {
+    opacity: 0.70;
+  }
+  50% {
+    opacity: 0.2;
+  }
+}
+
+.animate-breathe {
+  animation: breathe 8s ease-in-out infinite;
+}
+
+/* Disable breathing animation on mobile to save battery/resources */
+@media (max-width: 768px) {
+  .animate-breathe {
+    animation: none;
+    opacity: 0.75; /* Static opacity matching the middle of the breathe cycle */
+  }
+}
+
+/* Logo floating animation for auth pages */
+@keyframes float-logo {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+.animate-float-logo {
+  animation: float-logo 2.5s ease-in-out infinite;
+  display: block;
+}
+
+@theme inline {
+  --animate-cell-ripple: cell-ripple var(--duration, 200ms) ease-out none 1
+  var(--delay, 0ms);
+
+  @keyframes cell-ripple {
+    0% {
+      opacity: 0.4;
+    }
+    50% {
+      opacity: 0.8;
+    }
+    100% {
+      opacity: 0.4;
+    }
+  }
 }

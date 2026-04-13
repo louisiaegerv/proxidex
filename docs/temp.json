@@ -1,0 +1,202 @@
+{
+    "decks": [
+        {
+            "id": "deck-1775672164223",
+            "name": "Deck 2",
+            "items": [
+                {
+                    "id": "MEE-008-1775688755419-0",
+                    "cardId": "MEE-008",
+                    "name": "Basic M Energy",
+                    "image": "/api/images/Mega_Evolution_Energy_MEE/Basic_M_Energy_MEE_008_md.webp",
+                    "originalImage": "/api/images/Mega_Evolution_Energy_MEE/Basic_M_Energy_MEE_008_md.webp",
+                    "setName": "Mega Evolution Energy",
+                    "setId": "MEE",
+                    "localId": "008",
+                    "quantity": 1,
+                    "variant": "normal"
+                },
+                {
+                    "id": "MEE-008-1775688755419-1",
+                    "cardId": "MEE-008",
+                    "name": "Basic M Energy",
+                    "image": "/api/images/Mega_Evolution_Energy_MEE/Basic_M_Energy_MEE_008_md.webp",
+                    "originalImage": "/api/images/Mega_Evolution_Energy_MEE/Basic_M_Energy_MEE_008_md.webp",
+                    "setName": "Mega Evolution Energy",
+                    "setId": "MEE",
+                    "localId": "008",
+                    "quantity": 1,
+                    "variant": "normal"
+                },
+                {
+                    "id": "MEE-005-1775688755420-0",
+                    "cardId": "MEE-005",
+                    "name": "Basic P Energy",
+                    "image": "/api/images/Mega_Evolution_Energy_MEE/Basic_P_Energy_MEE_005_md.webp",
+                    "originalImage": "/api/images/Mega_Evolution_Energy_MEE/Basic_P_Energy_MEE_005_md.webp",
+                    "setName": "Mega Evolution Energy",
+                    "setId": "MEE",
+                    "localId": "005",
+                    "quantity": 1,
+                    "variant": "normal"
+                },
+                {
+                    "id": "MEE-005-1775688755420-1",
+                    "cardId": "MEE-005",
+                    "name": "Basic P Energy",
+                    "image": "/api/images/Mega_Evolution_Energy_MEE/Basic_P_Energy_MEE_005_md.webp",
+                    "originalImage": "/api/images/Mega_Evolution_Energy_MEE/Basic_P_Energy_MEE_005_md.webp",
+                    "setName": "Mega Evolution Energy",
+                    "setId": "MEE",
+                    "localId": "005",
+                    "quantity": 1,
+                    "variant": "normal"
+                },
+                {
+                    "id": "MEE-006-1775688755420-0",
+                    "cardId": "MEE-006",
+                    "name": "Basic F Energy",
+                    "image": "/api/images/Mega_Evolution_Energy_MEE/Basic_F_Energy_MEE_006_md.webp",
+                    "originalImage": "/api/images/Mega_Evolution_Energy_MEE/Basic_F_Energy_MEE_006_md.webp",
+                    "setName": "Mega Evolution Energy",
+                    "setId": "MEE",
+                    "localId": "006",
+                    "quantity": 1,
+                    "variant": "normal"
+                },
+                {
+                    "id": "MEE-006-1775688755420-1",
+                    "cardId": "MEE-006",
+                    "name": "Basic F Energy",
+                    "image": "/api/images/Mega_Evolution_Energy_MEE/Basic_F_Energy_MEE_006_md.webp",
+                    "originalImage": "/api/images/Mega_Evolution_Energy_MEE/Basic_F_Energy_MEE_006_md.webp",
+                    "setName": "Mega Evolution Energy",
+                    "setId": "MEE",
+                    "localId": "006",
+                    "quantity": 1,
+                    "variant": "normal"
+                },
+                {
+                    "id": "MEE-001-1775688755420-0",
+                    "cardId": "MEE-001",
+                    "name": "Basic G Energy",
+                    "image": "/api/images/Mega_Evolution_Energy_MEE/Basic_G_Energy_MEE_001_md.webp",
+                    "originalImage": "/api/images/Mega_Evolution_Energy_MEE/Basic_G_Energy_MEE_001_md.webp",
+                    "setName": "Mega Evolution Energy",
+                    "setId": "MEE",
+                    "localId": "001",
+                    "quantity": 1,
+                    "variant": "normal"
+                },
+                {
+                    "id": "MEE-001-1775688755420-1",
+                    "cardId": "MEE-001",
+                    "name": "Basic G Energy",
+                    "image": "/api/images/Mega_Evolution_Energy_MEE/Basic_G_Energy_MEE_001_md.webp",
+                    "originalImage": "/api/images/Mega_Evolution_Energy_MEE/Basic_G_Energy_MEE_001_md.webp",
+                    "setName": "Mega Evolution Energy",
+                    "setId": "MEE",
+                    "localId": "001",
+                    "quantity": 1,
+                    "variant": "normal"
+                },
+                {
+                    "id": "MEE-003-1775688755421-0",
+                    "cardId": "MEE-003",
+                    "name": "Basic W Energy",
+                    "image": "/api/images/Mega_Evolution_Energy_MEE/Basic_W_Energy_MEE_003_md.webp",
+                    "originalImage": "/api/images/Mega_Evolution_Energy_MEE/Basic_W_Energy_MEE_003_md.webp",
+                    "setName": "Mega Evolution Energy",
+                    "setId": "MEE",
+                    "localId": "003",
+                    "quantity": 1,
+                    "variant": "normal"
+                },
+                {
+                    "id": "MEE-003-1775688755421-1",
+                    "cardId": "MEE-003",
+                    "name": "Basic W Energy",
+                    "image": "/api/images/Mega_Evolution_Energy_MEE/Basic_W_Energy_MEE_003_md.webp",
+                    "originalImage": "/api/images/Mega_Evolution_Energy_MEE/Basic_W_Energy_MEE_003_md.webp",
+                    "setName": "Mega Evolution Energy",
+                    "setId": "MEE",
+                    "localId": "003",
+                    "quantity": 1,
+                    "variant": "normal"
+                },
+                {
+                    "id": "MEE-002-1775688755421-0",
+                    "cardId": "MEE-002",
+                    "name": "Basic R Energy",
+                    "image": "/api/images/Mega_Evolution_Energy_MEE/Basic_R_Energy_MEE_002_md.webp",
+                    "originalImage": "/api/images/Mega_Evolution_Energy_MEE/Basic_R_Energy_MEE_002_md.webp",
+                    "setName": "Mega Evolution Energy",
+                    "setId": "MEE",
+                    "localId": "002",
+                    "quantity": 1,
+                    "variant": "normal"
+                },
+                {
+                    "id": "MEE-002-1775688755421-1",
+                    "cardId": "MEE-002",
+                    "name": "Basic R Energy",
+                    "image": "/api/images/Mega_Evolution_Energy_MEE/Basic_R_Energy_MEE_002_md.webp",
+                    "originalImage": "/api/images/Mega_Evolution_Energy_MEE/Basic_R_Energy_MEE_002_md.webp",
+                    "setName": "Mega Evolution Energy",
+                    "setId": "MEE",
+                    "localId": "002",
+                    "quantity": 1,
+                    "variant": "normal"
+                }
+            ],
+            "isActive": false,
+            "createdAt": "2026-04-08 18:42:28",
+            "updatedAt": "2026-04-08 23:14:31"
+        },
+        {
+            "id": "deck-1775537769184",
+            "name": "Main",
+            "items": [
+                {
+                    "id": "B2-126-1775595362187-0",
+                    "cardId": "B2-126",
+                    "name": "Fire Energy",
+                    "originalImage": "/api/images/Base_Set_2_B2/Fire_Energy_B2_126_md.webp",
+                    "setName": "Base Set 2",
+                    "setId": "B2",
+                    "localId": "126",
+                    "quantity": 1,
+                    "variant": "normal",
+                    "image": "/api/images/Base_Set_2_B2/Fire_Energy_B2_126_md.webp"
+                },
+                {
+                    "id": "B2-127-1775595362189-0",
+                    "cardId": "B2-127",
+                    "name": "Grass Energy",
+                    "originalImage": "/api/images/Base_Set_2_B2/Grass_Energy_B2_127_md.webp",
+                    "setName": "Base Set 2",
+                    "setId": "B2",
+                    "localId": "127",
+                    "quantity": 1,
+                    "variant": "normal",
+                    "image": "/api/images/Base_Set_2_B2/Grass_Energy_B2_127_md.webp"
+                },
+                {
+                    "id": "B2-130-1775595362189-1",
+                    "cardId": "B2-130",
+                    "name": "Water Energy",
+                    "originalImage": "/api/images/Base_Set_2_B2/Water_Energy_B2_130_md.webp",
+                    "setName": "Base Set 2",
+                    "setId": "B2",
+                    "localId": "130",
+                    "quantity": 1,
+                    "variant": "normal",
+                    "image": "/api/images/Base_Set_2_B2/Water_Energy_B2_130_md.webp"
+                }
+            ],
+            "isActive": true,
+            "createdAt": "2026-04-08 18:42:27",
+            "updatedAt": "2026-04-08 23:14:30"
+        }
+    ]
+}

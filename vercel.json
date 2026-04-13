@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/admin/cleanup?secret=${ADMIN_SECRET_KEY}",
+      "schedule": "0 5 * * 0"
+    }
+  ]
+}

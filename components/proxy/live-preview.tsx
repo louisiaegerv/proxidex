@@ -337,15 +337,19 @@ export function LivePreview({
 
   if (items.length === 0) {
     return (
-      <div className="flex h-full flex-col items-center justify-center text-slate-500">
-        <div className="space-y-4 text-center">
-          <div className="text-6xl opacity-20">🎴</div>
+      <div className="flex h-full flex-col items-center justify-center text-muted-foreground">
+        <div className="space-y-4 text-center justify-center">
+            <img 
+          src="/cards.webp" 
+          alt="Proxidex" 
+          className="h-80 m-auto"
+        />
           <div>
-            <p className="text-lg font-medium text-slate-400">
+            <p className="text-[2rem] md:text-lg font-medium text-muted-foreground">
               No cards added yet
             </p>
-            <p className="mt-1 text-sm">
-              Paste a deck list on the left to get started
+            <p className="mt-1 text-[2rem] md:text-sm">
+              Add some cards on the left to get started
             </p>
           </div>
         </div>
@@ -359,10 +363,10 @@ export function LivePreview({
       {!hideHeader && (
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-slate-100">
+            <h2 className="text-lg font-semibold text-foreground">
               Print Preview
             </h2>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-muted-foreground">
               {totalCards} cards ·{" "}
               {selectedCount > 0 ? `${selectedCount} selected · ` : ""}
               {Math.ceil(displayCards.length / preview.cardsPerPage)} page
@@ -380,7 +384,7 @@ export function LivePreview({
               onClick={toggleBulkMode}
               className={cn(
                 "h-8 gap-2 px-3",
-                isBulkMode && "bg-blue-600 text-white hover:bg-blue-700"
+                isBulkMode && "bg-primary text-primary-foreground hover:bg-primary/90"
               )}
             >
               {isBulkMode ? (
@@ -396,7 +400,7 @@ export function LivePreview({
               )}
             </Button>
 
-            <div className="flex items-center gap-1 rounded-lg border border-slate-800 bg-slate-900 p-1">
+            <div className="flex items-center gap-1 rounded-lg border border-border bg-muted p-1">
               <Button
                 variant="ghost"
                 size="icon"
@@ -452,12 +456,12 @@ export function LivePreview({
 
             return (
               <div key={pageIndex} className="flex flex-col items-center">
-                <div className="mb-2 text-3xl text-slate-500 md:text-xs">
+                <div className="mb-2 text-3xl text-muted-foreground md:text-xs">
                   Page {pageIndex + 1} of {totalPages}
                 </div>
 
                 <div
-                  className="card-grid preview-paper relative bg-white shadow-2xl"
+                  className="card-grid preview-paper relative bg-muted bg-gradient-to-r from-muted to-muted shadow-2xl"
                   style={{
                     width: preview.width,
                     height: preview.height,
@@ -498,7 +502,7 @@ export function LivePreview({
                             cardHeight={settings.cardHeight}
                           />
                         ) : (
-                          <div className="flex h-full w-full items-center justify-center bg-slate-200 text-xs">
+                          <div className="flex h-full w-full items-center justify-center bg-muted text-xs">
                             {card.name}
                           </div>
                         )}
@@ -649,13 +653,13 @@ export function LivePreview({
 
       {/* PDF Generation Progress Overlay */}
       {isGenerating && generationProgress && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm">
-          <div className="w-80 rounded-xl border border-slate-700 bg-slate-800 p-6 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+          <div className="w-80 rounded-xl border border-border bg-card p-6 shadow-2xl">
             <div className="mb-4 flex items-center justify-center">
               <div className="relative">
-                <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
+                <Loader2 className="h-12 w-12 animate-spin text-primary" />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-xs font-semibold text-blue-400">
+                  <span className="text-xs font-semibold text-primary">
                     {Math.round(
                       (generationProgress.current / generationProgress.total) *
                         100
@@ -665,15 +669,15 @@ export function LivePreview({
                 </div>
               </div>
             </div>
-            <h3 className="mb-2 text-center text-lg font-semibold text-slate-100">
+            <h3 className="mb-2 text-center text-lg font-semibold text-foreground">
               Generating PDF
             </h3>
-            <p className="mb-4 text-center text-sm text-slate-400">
+            <p className="mb-4 text-center text-sm text-muted-foreground">
               {generationProgress.message}
             </p>
-            <div className="h-2 overflow-hidden rounded-full bg-slate-700">
+            <div className="h-2 overflow-hidden rounded-full bg-muted">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-blue-500 to-blue-400 transition-all duration-300"
+                className="h-full rounded-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-300"
                 style={{
                   width: `${
                     (generationProgress.current / generationProgress.total) *
@@ -682,7 +686,7 @@ export function LivePreview({
                 }}
               />
             </div>
-            <p className="mt-2 text-center text-xs text-slate-500">
+            <p className="mt-2 text-center text-xs text-muted-foreground">
               {generationProgress.stage === "bleed-generation" &&
                 `Step 1 of 3: Processing images...`}
               {generationProgress.stage === "pdf-assembly" &&
@@ -695,15 +699,15 @@ export function LivePreview({
       )}
 
       {/* Legend */}
-      <div className="mt-4 text-center text-xs text-slate-500">
+      <div className="mt-4 text-center text-xs text-muted-foreground">
         {settings.bleed > 0 && (
-          <div className="text-emerald-400">
+          <div className="text-green-500">
             Green line = cut line · Card artwork extends {settings.bleed}mm past
             cut
           </div>
         )}
         {isBulkMode && (
-          <div className="mt-1 text-blue-400">
+          <div className="mt-1 text-primary">
             Click cards to select · Shift+click for range selection · Press
             Delete to remove selected
           </div>
@@ -801,8 +805,8 @@ function DraggableCard({
         "absolute z-10 transition-all duration-200",
         isOver &&
           !isBulkMode &&
-          "z-40 scale-105 ring-2 ring-green-400 ring-offset-2",
-        isSelected && "z-30 ring-2 ring-blue-500 ring-offset-2"
+          "z-40 scale-105 ring-2 ring-green-500 ring-offset-2",
+        isSelected && "z-30 ring-2 ring-primary ring-offset-2"
       )}
       style={{
         left: card.imageX,
@@ -819,7 +823,7 @@ function DraggableCard({
         className={cn(
           "h-full w-full transition-all",
           !isBulkMode && "hover:brightness-110",
-          isDragging && "ring-2 ring-blue-400"
+          isDragging && "ring-2 ring-primary"
         )}
         style={style}
       >
@@ -838,8 +842,8 @@ function DraggableCard({
             className={cn(
               "h-5 w-5 border-2 shadow-lg",
               isSelected
-                ? "border-blue-600 bg-blue-600 data-[state=checked]:bg-blue-600"
-                : "border-slate-400 bg-white/90 hover:bg-white"
+                ? "border-primary bg-primary data-[state=checked]:bg-primary"
+                : "border-muted-foreground bg-background/90 hover:bg-background"
             )}
           />
         </div>
@@ -848,7 +852,7 @@ function DraggableCard({
       {/* Selected indicator (subtle when not in bulk mode) */}
       {isSelected && !isBulkMode && (
         <div className="absolute top-2 left-2 z-40">
-          <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-blue-600 shadow-lg">
+          <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-primary shadow-lg">
             <svg
               className="h-3 w-3 text-white"
               fill="none"

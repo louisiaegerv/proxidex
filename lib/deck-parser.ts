@@ -1,4 +1,5 @@
 import { getImageUrl } from "./images"
+import { getFolderName } from "./set-mappings"
 import setCodeMappings from "./set-code-mappings.json"
 import type { CardResult } from "./db"
 
@@ -161,21 +162,43 @@ export function parseDeckList(deckText: string): DeckListItem[] {
 
 /**
  * Get image URL for a resolved card
+ * Uses folder_name from the database for correct image path
  */
 export function getCardImageUrl(
   card: CardResult,
   size: 'sm' | 'md' | 'lg' | 'xl' = 'lg'
 ): string {
-  return getImageUrl(card.name, card.set_code, card.local_id, size)
+  // Use folder_name if available (from database), otherwise fall back to mapping
+  const folder = card.folder_name || getFolderName(card.set_code) || card.set_code
+  
+  // Sanitize card name for filename
+  const safeName = card.name.replace(/[^\p{L}\p{N}-]/gu, '_')
+  
+  // Build filename
+  const fileName = `${safeName}_${card.set_code}_${card.local_id}_${size}.webp`
+  
+  // Check environment
+  const imageSource = process.env.IMAGE_SOURCE || 'local'
+  
+  if (imageSource === 'r2') {
+    const r2Url = process.env.R2_PUBLIC_URL
+    if (!r2Url) {
+      throw new Error('R2_PUBLIC_URL not configured')
+    }
+    return `${r2Url}/${folder}/${fileName}`
+  }
+  
+  return `/api/images/${folder}/${fileName}`
 }
 
 /**
  * Format a deck list from parsed items back to text
  */
-export function formatDeckList(items: DeckListItem[]): string {
+export function formatDeckList(items: Array<DeckListItem | { name: string; setCode?: string; cardNumber?: string }>): string {
   return items
     .map((item) => {
-      let line = `${item.quantity} ${item.cardName}`
+      const cardName = 'name' in item ? item.name : item.cardName
+      let line = `1 ${cardName}`
       if (item.setCode) {
         line += ` ${item.setCode}`
         if (item.cardNumber) {
@@ -193,7 +216,7 @@ export function formatDeckList(items: DeckListItem[]): string {
  */
 export function parseStructuredDeck(
   cards: Array<{
-    quantity: number
+    quantity?: number
     name: string
     setCode?: string
     cardNumber?: string
@@ -202,7 +225,7 @@ export function parseStructuredDeck(
   // Convert to text format and call parseDeckList to ensure consistent set code mapping
   const deckText = cards
     .map((c) => {
-      let line = `${c.quantity} ${c.name}`
+      let line = `${c.quantity ?? 1} ${c.name}`
       if (c.setCode) {
         line += ` ${c.setCode}`
         if (c.cardNumber) {

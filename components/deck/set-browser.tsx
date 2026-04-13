@@ -383,7 +383,7 @@ export const SetBrowser = forwardRef<SetBrowserRef, SetBrowserProps>(
               <div className="flex flex-col gap-4 p-4">
                 <div className="aspect-[63/88] overflow-hidden rounded-lg">
                   <img
-                    src={getCardImageUrl(previewCard, 'sm')}
+                    src={getCardImageUrl(previewCard, 'md')}
                     alt={previewCard.name}
                     className="h-full w-full object-contain"
                   />

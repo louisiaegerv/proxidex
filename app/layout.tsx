@@ -1,32 +1,37 @@
-import type { Metadata, Viewport } from 'next'
-import { Geist, Geist_Mono } from "next/font/google"
-
-import "./globals.css"
+import type { Metadata, Viewport } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
+import { ClerkProvider } from "@clerk/nextjs";
+import { SubscriptionProvider } from "@/components/subscription-provider";
 import { ThemeProvider } from "@/components/theme-provider"
-import { cn } from "@/lib/utils";
+import { SparklesCore } from "../components/ui/sparkles";
 
-const fontSans = Geist({
-  subsets: ["latin"],
-  variable: "--font-sans",
-})
 
-const fontMono = Geist_Mono({
+const geistSans = Geist({
+  variable: "--font-geist-sans",
   subsets: ["latin"],
-  variable: "--font-mono",
-})
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 
 export const metadata: Metadata = {
-  title: "Proxidex - Pokemon Proxy Card Generator",
-  description: "Generate high-quality printable proxy cards for Pokemon TCG",
-}
+  title: "Proxidex - Free Pokémon Card Proxy Generator",
+  description: "Search, browse, and create free proxies of any Pokémon card. 20,000+ cards available. Perfect for playtesting and casual games.",
+  keywords: ["pokemon proxy", "pokemon tcg", "card proxy", "deck testing", "pokemon cards"],
+  openGraph: {
+    title: "Proxidex - Free Pokémon Card Proxy Generator",
+    description: "Create professional-quality Pokémon card proxies for free",
+    type: "website",
+  },
+};
 
 // Viewport configuration for mobile safe areas
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  // This is the key property for handling safe areas
   viewportFit: 'cover',
   themeColor: '#020617',
 }
@@ -34,17 +39,22 @@ export const viewport: Viewport = {
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className={cn("antialiased", fontMono.variable, "font-sans", fontSans.variable)}
-    >
-      <body className="overscroll-none">
-        <ThemeProvider>{children}</ThemeProvider>
-      </body>
-    </html>
-  )
+    <ClerkProvider>
+      <html lang="en"
+      suppressHydrationWarning>
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans`}
+        >
+          <div className="relative z-10 min-h-screen">
+            <SubscriptionProvider>
+              <ThemeProvider>{children}</ThemeProvider>
+            </SubscriptionProvider>
+          </div>
+        </body>
+      </html>
+    </ClerkProvider>
+  );
 }

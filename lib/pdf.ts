@@ -577,13 +577,8 @@ export async function generateProxyPDF(
   const marginX = mmToPoints(marginXMm)
   const marginY = mmToPoints(marginYMm)
 
-  // Flatten items
-  const cardsToPrint: ProxyItem[] = []
-  for (const item of items) {
-    for (let i = 0; i < item.quantity; i++) {
-      cardsToPrint.push(item)
-    }
-  }
+  // Flatten items (each item is 1 card)
+  const cardsToPrint: ProxyItem[] = items
 
   const cardsPerPage = settings.cardsPerRow * settings.rowsPerPage
   const totalPages = Math.ceil(cardsToPrint.length / cardsPerPage)
@@ -1157,11 +1152,9 @@ export function generatePrintHTML(
     return `${imageUrl}|${settings.bleedMethod ?? 'replicate'}|${settings.bleed}|${settings.bleedColor?.r ?? 'auto'}|${settings.bleedColor?.g ?? 'auto'}|${settings.bleedColor?.b ?? 'auto'}`
   }
   
-  // Flatten items for display
-  const cardsToPrint: { item: ProxyItem; imageUrl: string }[] = []
-  for (const item of items) {
-    for (let i = 0; i < item.quantity; i++) {
-      let imageUrl = ''
+  // Flatten items for display (each item is 1 card)
+  const cardsToPrint: { item: ProxyItem; imageUrl: string }[] = items.map((item) => {
+    let imageUrl = ''
       
       if (item.image) {
         // Get the lg image URL for cache lookup
@@ -1185,9 +1178,8 @@ export function generatePrintHTML(
           imageUrl = absoluteUrl
         }
       }
-      cardsToPrint.push({ item, imageUrl })
-    }
-  }
+    return { item, imageUrl }
+  })
 
   const cardsPerPage = settings.cardsPerRow * settings.rowsPerPage
   const totalPages = Math.ceil(cardsToPrint.length / cardsPerPage)
@@ -1425,7 +1417,7 @@ export function generatePrintHTML(
 <body>
   <div class="controls">
     <h1>🎴 ProxiDex Print Preview</h1>
-    <p><strong>${items.reduce((sum, item) => sum + item.quantity, 0)} cards</strong> • ${settings.pageSize.toUpperCase()} • ${settings.cardsPerRow}×${settings.rowsPerPage} grid</p>
+    <p><strong>${items.length} cards</strong> • ${settings.pageSize.toUpperCase()} • ${settings.cardsPerRow}×${settings.rowsPerPage} grid</p>
     <p>WebP images loaded directly (no conversion). Use your browser's Print dialog (Ctrl+P / Cmd+P) to save as PDF.</p>
     <button onclick="window.print()">🖨️ Print / Save as PDF</button>
     <button onclick="window.close()">❌ Close</button>

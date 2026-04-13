@@ -70,12 +70,10 @@ export interface ProxyItem {
   id: string
   cardId: string
   name: string
-  image: string | undefined // Processed image (no transparent corners)
-  originalImage?: string | undefined // Original TCGdex URL (for reference)
+  image: string | undefined
   setName: string
   setId: string
   localId: string
-  quantity: number
   variant: "normal" | "holo" | "reverse"
 }
 
@@ -85,6 +83,10 @@ export interface Deck {
   items: ProxyItem[]
   createdAt: number
   updatedAt: number
+  isActive?: boolean
+  // Cloud sync metadata (not persisted to storage)
+  _needsLoad?: boolean  // If true, deck items need to be fetched from cloud
+  _cardCount?: number   // Estimated card count (for UI before loading)
 }
 
 export type BleedMethod = "replicate" | "mirror" | "edge"
@@ -150,3 +152,24 @@ export const PAGE_DIMENSIONS = {
   letter: { width: 216, height: 279 },
   a4: { width: 210, height: 297 },
 }
+
+// ============================================================================
+// Export Tracking Types
+// ============================================================================
+
+export interface ExportLimits {
+  dailyExportsRemaining: number
+  initialCreditsRemaining: number
+  premiumTrialsUsed: number
+  premiumTrialsTotal: number
+  isPro: boolean
+}
+
+export interface RemainingExports {
+  daily: number
+  initial: number
+  premiumTrialsRemaining: number
+  total: number
+}
+
+export type ExportType = 'daily' | 'initial' | 'premium' | null

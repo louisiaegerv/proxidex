@@ -26,6 +26,7 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { NumberInput } from "@/components/ui/number-input"
 import { ProfileManager } from "./profile-manager"
+import { AuthExportButton } from "@/components/auth/export-button"
 import { HTMLExportModal } from "./html-export-modal"
 import { useState, useCallback } from "react"
 import {
@@ -63,10 +64,7 @@ export function SettingsSidebar() {
   } = useProxyList()
   const items = getActiveDeck()?.items ?? []
   const [copied, setCopied] = useState(false)
-  const [openSections, setOpenSections] = useState<string[]>([
-    "page-layout",
-    "spacing-bleed",
-  ])
+  const [openSections, setOpenSections] = useState<string[]>([])
   
   // HTML export with bleed modal state
   const [htmlExportOpen, setHtmlExportOpen] = useState(false)
@@ -104,11 +102,25 @@ export function SettingsSidebar() {
     }
   }
 
-  const handleGenerateHTML = async () => {
+  const handleGenerateHTML = async (exportType: 'standard' | 'turbo' = 'standard') => {
     if (items.length === 0) return
+    
+    // For free users with standard export, add per-card artificial delay
+    const isStandardExport = exportType === 'standard'
     
     // If no bleed, use fast export
     if (settings.bleed === 0) {
+      // For standard export, simulate processing delay per card
+      if (isStandardExport) {
+        setIsProcessingHtml(true)
+        for (let i = 0; i < items.length; i++) {
+          // Randomized 1-2 second delay per card
+          const cardDelay = 1000 + Math.random() * 1000
+          await new Promise(resolve => setTimeout(resolve, cardDelay))
+        }
+        setIsProcessingHtml(false)
+      }
+      
       const html = generatePrintHTML(items, settings)
       downloadPrintHTML(html, `proxidex-${totalCards}-cards.html`)
       return
@@ -152,8 +164,8 @@ export function SettingsSidebar() {
     const getSetId = (item: (typeof items)[0]): string => {
       if (item.setId) return item.setId
 
-      // Try to extract from originalImage or image URL
-      const imageUrl = item.originalImage || item.image
+      // Try to extract from image URL
+      const imageUrl = item.image
       if (imageUrl) {
         const match = imageUrl.match(/\/en\/[^/]+\/([^/]+)\//)
         if (match) return match[1]
@@ -180,7 +192,7 @@ export function SettingsSidebar() {
 
       if (key === currentKey) {
         // Same card as previous, accumulate quantity
-        currentQuantity += item.quantity
+        currentQuantity += 1
       } else {
         // Different card, output previous if exists
         if (currentKey !== null) {
@@ -190,7 +202,7 @@ export function SettingsSidebar() {
         }
         // Start new group
         currentKey = key
-        currentQuantity = item.quantity
+        currentQuantity = 1
         currentName = item.name
         currentSetId = getSetId(item)
         currentLocalId = item.localId
@@ -218,15 +230,15 @@ export function SettingsSidebar() {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="border-b border-slate-800 p-4">
+      <div className="border-b border-border p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Settings2 className="h-4 w-4 text-slate-400" />
-            <h2 className="font-semibold text-slate-100">Print Settings</h2>
+            <Settings2 className="h-4 w-4 text-muted-foreground" />
+            <h2 className="font-semibold text-foreground">Print Settings</h2>
           </div>
           <button
             onClick={toggleAll}
-            className="rounded-md p-1.5 text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-200"
+            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             title={allExpanded ? "Collapse All" : "Expand All"}
           >
             {allExpanded ? (
@@ -246,36 +258,36 @@ export function SettingsSidebar() {
           className="space-y-2"
         >
           {/* Page & Layout */}
-          <AccordionItem value="page-layout" className="border-slate-800">
-            <AccordionTrigger className="py-3 text-sm text-slate-300 hover:no-underline">
+          <AccordionItem value="page-layout" className="border-border">
+            <AccordionTrigger className="py-3 text-sm text-muted-foreground hover:text-base hover:text-current hover:no-underline">
               <div className="flex items-center gap-2">
-                <Grid3X3 className="h-4 w-4 text-slate-400" />
+                <Grid3X3 className="h-4 w-4 text-muted-foreground" />
                 <span>Page & Layout</span>
               </div>
             </AccordionTrigger>
             <AccordionContent className="space-y-4 pb-4">
               {/* Page Size */}
               <div className="space-y-2">
-                <Label className="text-xs text-slate-400">Page Size</Label>
+                <Label className="text-xs text-muted-foreground">Page Size</Label>
                 <Select
                   value={settings.pageSize}
                   onValueChange={(value: "letter" | "a4") =>
                     updateSettings({ pageSize: value })
                   }
                 >
-                  <SelectTrigger className="h-9 border-slate-700 bg-slate-900/50 text-slate-100">
+                  <SelectTrigger className="h-9 border-border bg-muted/50 text-foreground">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="border-slate-700 bg-slate-900">
+                  <SelectContent className="border-border bg-card">
                     <SelectItem
                       value="letter"
-                      className="text-slate-100 focus:bg-slate-800"
+                      className="text-foreground focus:bg-muted"
                     >
                       Letter (8.5&quot; × 11&quot;)
                     </SelectItem>
                     <SelectItem
                       value="a4"
-                      className="text-slate-100 focus:bg-slate-800"
+                      className="text-foreground focus:bg-muted"
                     >
                       A4 (210mm × 297mm)
                     </SelectItem>
@@ -286,8 +298,8 @@ export function SettingsSidebar() {
               {/* Cards Per Row */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-400">Cards per row</span>
-                  <span className="text-slate-500">{settings.cardsPerRow}</span>
+                  <span className="text-muted-foreground">Cards per row</span>
+                  <span className="text-muted-foreground">{settings.cardsPerRow}</span>
                 </div>
                 <Slider
                   value={[settings.cardsPerRow]}
@@ -303,8 +315,8 @@ export function SettingsSidebar() {
               {/* Rows Per Page */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-400">Rows per page</span>
-                  <span className="text-slate-500">{settings.rowsPerPage}</span>
+                  <span className="text-muted-foreground">Rows per page</span>
+                  <span className="text-muted-foreground">{settings.rowsPerPage}</span>
                 </div>
                 <Slider
                   value={[settings.rowsPerPage]}
@@ -320,10 +332,10 @@ export function SettingsSidebar() {
           </AccordionItem>
 
           {/* Spacing & Bleed */}
-          <AccordionItem value="spacing-bleed" className="border-slate-800">
-            <AccordionTrigger className="py-3 text-sm text-slate-300 hover:no-underline">
+          <AccordionItem value="spacing-bleed" className="border-border">
+            <AccordionTrigger className="py-3 text-sm text-muted-foreground hover:text-base hover:text-current hover:no-underline">
               <div className="flex items-center gap-2">
-                <Ruler className="h-4 w-4 text-slate-400" />
+                <Ruler className="h-4 w-4 text-muted-foreground" />
                 <span>Spacing & Bleed</span>
               </div>
             </AccordionTrigger>
@@ -331,8 +343,8 @@ export function SettingsSidebar() {
               {/* Gap */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-400">Gap between cards</span>
-                  <span className="text-slate-500">{settings.gap}mm</span>
+                  <span className="text-muted-foreground">Gap between cards</span>
+                  <span className="text-muted-foreground">{settings.gap}mm</span>
                 </div>
                 <Slider
                   value={[settings.gap]}
@@ -346,8 +358,8 @@ export function SettingsSidebar() {
               {/* Bleed */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-400">Bleed area</span>
-                  <span className="text-slate-500">{settings.bleed}mm</span>
+                  <span className="text-muted-foreground">Bleed area</span>
+                  <span className="text-muted-foreground">{settings.bleed}mm</span>
                 </div>
                 <Slider
                   value={[settings.bleed]}
@@ -356,7 +368,7 @@ export function SettingsSidebar() {
                   max={5}
                   step={0.5}
                 />
-                <p className="text-[10px] text-slate-600">
+                <p className="text-[10px] text-muted-foreground/60">
                   Extends image past cut line to prevent white edges
                 </p>
               </div>
@@ -364,32 +376,32 @@ export function SettingsSidebar() {
               {/* Bleed Method */}
               {settings.bleed > 0 && (
                 <div className="space-y-2 pt-2">
-                  <Label className="text-xs text-slate-400">Bleed method</Label>
+                  <Label className="text-xs text-muted-foreground">Bleed method</Label>
                   <Select
                     value={settings.bleedMethod}
                     onValueChange={(value: "replicate" | "mirror" | "edge") =>
                       updateSettings({ bleedMethod: value })
                     }
                   >
-                    <SelectTrigger className="h-8 border-slate-700 bg-slate-900/50 text-xs text-slate-100">
+                    <SelectTrigger className="h-8 border-border bg-muted/50 text-xs text-foreground">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="border-slate-700 bg-slate-900">
+                    <SelectContent className="border-border bg-card">
                       <SelectItem
                         value="replicate"
-                        className="text-xs text-slate-100 focus:bg-slate-800"
+                        className="text-xs text-foreground focus:bg-muted"
                       >
                         Solid Color (from border)
                       </SelectItem>
                       <SelectItem
                         value="mirror"
-                        className="text-xs text-slate-100 focus:bg-slate-800"
+                        className="text-xs text-foreground focus:bg-muted"
                       >
                         Mirror (flip edges)
                       </SelectItem>
                       <SelectItem
                         value="edge"
-                        className="text-xs text-slate-100 focus:bg-slate-800"
+                        className="text-xs text-foreground focus:bg-muted"
                       >
                         Edge Stretch (1px border)
                       </SelectItem>
@@ -399,7 +411,7 @@ export function SettingsSidebar() {
                   {/* Color picker for replicate method */}
                   {settings.bleedMethod === "replicate" && (
                     <div className="space-y-2 pt-2">
-                      <Label className="text-xs text-slate-400">
+                      <Label className="text-xs text-muted-foreground">
                         Bleed color
                       </Label>
                       <div className="flex items-center gap-2">
@@ -417,9 +429,9 @@ export function SettingsSidebar() {
                             const b = parseInt(hex.slice(5, 7), 16)
                             updateSettings({ bleedColor: { r, g, b } })
                           }}
-                          className="h-8 w-8 cursor-pointer rounded border border-slate-700 bg-transparent"
+                          className="h-8 w-8 cursor-pointer rounded border border-border bg-transparent"
                         />
-                        <span className="text-xs text-slate-500">
+                        <span className="text-xs text-muted-foreground">
                           {settings.bleedColor
                             ? `RGB(${settings.bleedColor.r}, ${settings.bleedColor.g}, ${settings.bleedColor.b})`
                             : "Auto-detected from border"}
@@ -435,28 +447,28 @@ export function SettingsSidebar() {
                 href="/bleed-comparison"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-2 flex items-center justify-between rounded-md border border-slate-700 bg-slate-900/50 px-3 py-2 text-xs text-slate-300 transition-colors hover:bg-slate-800 hover:text-slate-100"
+                className="mt-2 flex items-center justify-between rounded-md border border-border bg-muted/50 px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
                 <span className="flex items-center gap-2">
-                  <Layers className="h-3.5 w-3.5 text-emerald-400" />
+                  <Layers className="h-3.5 w-3.5 text-green-500" />
                   Compare Bleed Methods
                 </span>
-                <ExternalLink className="h-3 w-3 text-slate-500" />
+                <ExternalLink className="h-3 w-3 text-muted-foreground" />
               </a>
             </AccordionContent>
           </AccordionItem>
 
           {/* Cut Lines */}
-          <AccordionItem value="cut-lines" className="border-slate-800">
-            <AccordionTrigger className="py-3 text-sm text-slate-300 hover:no-underline">
+          <AccordionItem value="cut-lines" className="border-border">
+            <AccordionTrigger className="py-3 text-sm text-muted-foreground hover:text-base hover:text-current hover:text-base hover:text-current hover:no-underline">
               <div className="flex items-center gap-2">
-                <Scissors className="h-4 w-4 text-slate-400" />
+                <Scissors className="h-4 w-4 text-muted-foreground" />
                 <span>Cut Lines</span>
               </div>
             </AccordionTrigger>
             <AccordionContent className="space-y-4 pb-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-400">Show cut lines</span>
+                <span className="text-xs text-muted-foreground">Show cut lines</span>
                 <Switch
                   checked={settings.showCutLines}
                   onCheckedChange={(checked) =>
@@ -467,7 +479,7 @@ export function SettingsSidebar() {
 
               {settings.showCutLines && (
                 <div className="space-y-2 pt-2">
-                  <Label className="text-xs text-slate-400">
+                  <Label className="text-xs text-muted-foreground">
                     Cut line color
                   </Label>
                   <div className="flex items-center gap-2">
@@ -485,9 +497,9 @@ export function SettingsSidebar() {
                         const b = parseInt(hex.slice(5, 7), 16)
                         updateSettings({ cutLineColor: { r, g, b } })
                       }}
-                      className="h-8 w-8 cursor-pointer rounded border border-slate-700 bg-transparent"
+                      className="h-8 w-8 cursor-pointer rounded border border-border bg-transparent"
                     />
-                    <span className="text-xs text-slate-500">
+                    <span className="text-xs text-muted-foreground">
                       {settings.cutLineColor
                         ? `RGB(${settings.cutLineColor.r}, ${settings.cutLineColor.g}, ${settings.cutLineColor.b})`
                         : "Default (Emerald)"}
@@ -497,8 +509,8 @@ export function SettingsSidebar() {
                   {/* Cut Line Width */}
                   <div className="space-y-2 pt-2">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-slate-400">Line width</span>
-                      <span className="text-slate-500">
+                      <span className="text-muted-foreground">Line width</span>
+                      <span className="text-muted-foreground">
                         {settings.cutLineWidth ?? 1.5}px
                       </span>
                     </div>
@@ -516,8 +528,8 @@ export function SettingsSidebar() {
                   {/* Cut Line Length */}
                   <div className="space-y-2 pt-2">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-slate-400">Line length</span>
-                      <span className="text-slate-500">
+                      <span className="text-muted-foreground">Line length</span>
+                      <span className="text-muted-foreground">
                         {settings.cutLineLength ?? 8}mm
                       </span>
                     </div>
@@ -534,7 +546,7 @@ export function SettingsSidebar() {
 
                   {/* Cut Line Position */}
                   <div className="space-y-2 pt-2">
-                    <Label className="text-xs text-slate-400">
+                    <Label className="text-xs text-muted-foreground">
                       Line position
                     </Label>
                     <Select
@@ -543,19 +555,19 @@ export function SettingsSidebar() {
                         updateSettings({ cutLinePosition: value })
                       }
                     >
-                      <SelectTrigger className="h-8 border-slate-700 bg-slate-900/50 text-xs text-slate-100">
+                      <SelectTrigger className="h-8 border-border bg-muted/50 text-xs text-foreground">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="border-slate-700 bg-slate-900">
+                      <SelectContent className="border-border bg-card">
                         <SelectItem
                           value="front"
-                          className="text-xs text-slate-100 focus:bg-slate-800"
+                          className="text-xs text-foreground focus:bg-muted"
                         >
                           In front of cards
                         </SelectItem>
                         <SelectItem
                           value="behind"
-                          className="text-xs text-slate-100 focus:bg-slate-800"
+                          className="text-xs text-foreground focus:bg-muted"
                         >
                           Behind cards
                         </SelectItem>
@@ -568,10 +580,10 @@ export function SettingsSidebar() {
           </AccordionItem>
 
           {/* Position Offset */}
-          <AccordionItem value="position" className="border-slate-800">
-            <AccordionTrigger className="py-3 text-sm text-slate-300 hover:no-underline">
+          <AccordionItem value="position" className="border-border">
+            <AccordionTrigger className="py-3 text-sm text-muted-foreground hover:text-base hover:text-current hover:text-base hover:text-current hover:no-underline">
               <div className="flex items-center gap-2">
-                <Move className="h-4 w-4 text-slate-400" />
+                <Move className="h-4 w-4 text-muted-foreground" />
                 <span>Position Offset</span>
               </div>
             </AccordionTrigger>
@@ -579,7 +591,7 @@ export function SettingsSidebar() {
               {/* Horizontal Offset */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-400">Horizontal</span>
+                  <span className="text-muted-foreground">Horizontal</span>
                 </div>
                 <NumberInput
                   value={settings.offsetX}
@@ -589,7 +601,7 @@ export function SettingsSidebar() {
                   step={OFFSET_LIMITS.step}
                   unit="mm"
                 />
-                <p className="flex justify-between text-[10px] text-slate-600">
+                <p className="flex justify-between text-[10px] text-muted-foreground/60">
                   <span>← Left</span>
                   <span>Right →</span>
                 </p>
@@ -598,7 +610,7 @@ export function SettingsSidebar() {
               {/* Vertical Offset */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-400">Vertical</span>
+                  <span className="text-muted-foreground">Vertical</span>
                 </div>
                 <NumberInput
                   value={settings.offsetY}
@@ -608,7 +620,7 @@ export function SettingsSidebar() {
                   step={OFFSET_LIMITS.step}
                   unit="mm"
                 />
-                <p className="flex justify-between text-[10px] text-slate-600">
+                <p className="flex justify-between text-[10px] text-muted-foreground/60">
                   <span>↑ Up</span>
                   <span>Down ↓</span>
                 </p>
@@ -617,48 +629,48 @@ export function SettingsSidebar() {
           </AccordionItem>
 
           {/* Options */}
-          <AccordionItem value="options" className="border-slate-800">
-            <AccordionTrigger className="py-3 text-sm text-slate-300 hover:no-underline">
+          <AccordionItem value="options" className="border-border">
+            <AccordionTrigger className="py-3 text-sm text-muted-foreground hover:text-base hover:text-current hover:no-underline">
               <div className="flex items-center gap-2">
-                <Palette className="h-4 w-4 text-slate-400" />
+                <Palette className="h-4 w-4 text-muted-foreground" />
                 <span>Options</span>
               </div>
             </AccordionTrigger>
             <AccordionContent className="space-y-4 pb-4">
               {/* Image Size / Quality */}
               <div className="space-y-2">
-                <Label className="text-xs text-slate-400">Image Size</Label>
+                <Label className="text-xs text-muted-foreground">Image Size</Label>
                 <Select
                   value={settings.imageSize ?? "lg"}
                   onValueChange={(value: "sm" | "md" | "lg") =>
                     updateSettings({ imageSize: value })
                   }
                 >
-                  <SelectTrigger className="h-8 border-slate-700 bg-slate-900/50 text-xs text-slate-100">
+                  <SelectTrigger className="h-8 border-border bg-muted/50 text-xs text-foreground">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="border-slate-700 bg-slate-900">
+                  <SelectContent className="border-border bg-card">
                     <SelectItem
                       value="sm"
-                      className="text-xs text-slate-100 focus:bg-slate-800"
+                      className="text-xs text-foreground focus:bg-muted"
                     >
                       Draft (288×400) - Fastest
                     </SelectItem>
                     <SelectItem
                       value="md"
-                      className="text-xs text-slate-100 focus:bg-slate-800"
+                      className="text-xs text-foreground focus:bg-muted"
                     >
                       Optimized (575×800) - Balanced
                     </SelectItem>
                     <SelectItem
                       value="lg"
-                      className="text-xs text-slate-100 focus:bg-slate-800"
+                      className="text-xs text-foreground focus:bg-muted"
                     >
                       High Quality (1150×1600)
                     </SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-[10px] text-slate-600">
+                <p className="text-[10px] text-muted-foreground/60">
                   Draft = fastest, Optimized = balanced, High Quality = best detail
                 </p>
               </div>
@@ -666,8 +678,8 @@ export function SettingsSidebar() {
               {/* Black and White Toggle */}
               <div className="flex items-center justify-between pt-2">
                 <div className="space-y-0.5">
-                  <span className="text-xs text-slate-400">Black & White</span>
-                  <p className="text-[10px] text-slate-600">
+                  <span className="text-xs text-muted-foreground">Black & White</span>
+                  <p className="text-[10px] text-muted-foreground/60">
                     Saves color ink on draft prints
                   </p>
                 </div>
@@ -682,10 +694,10 @@ export function SettingsSidebar() {
           </AccordionItem>
 
           {/* Profiles */}
-          <AccordionItem value="profiles" className="border-slate-800">
-            <AccordionTrigger className="py-3 text-sm text-slate-300 hover:no-underline">
+          <AccordionItem value="profiles" className="border-border">
+            <AccordionTrigger className="py-3 text-sm text-muted-foreground hover:text-base hover:text-current hover:no-underline">
               <div className="flex items-center gap-2">
-                <Settings2 className="h-4 w-4 text-slate-400" />
+                <Settings2 className="h-4 w-4 text-muted-foreground" />
                 <span>Profiles</span>
               </div>
             </AccordionTrigger>
@@ -697,10 +709,10 @@ export function SettingsSidebar() {
       </div>
 
       {/* Action Buttons */}
-      <div className="space-y-2 border-t border-slate-800 p-4">
+      <div className="space-y-2 border-t border-border p-4">
         {/* Copy Card List Button */}
         <Button
-          className="w-full border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
+          className="w-full border-border bg-muted text-foreground hover:bg-muted/80"
           variant="outline"
           disabled={items.length === 0}
           onClick={handleCopyCardList}
@@ -718,18 +730,12 @@ export function SettingsSidebar() {
           )}
         </Button>
 
-        {/* Download HTML Button */}
-        <Button
-          className="w-full bg-blue-600 text-white hover:bg-blue-500"
-          // className="w-full border-emerald-700 bg-emerald-900/50 text-emerald-400 hover:bg-emerald-900"
-          // variant="outline"
-          disabled={items.length === 0 || isProcessingHtml}
-          onClick={handleGenerateHTML}
-        >
-          <Printer className="mr-2 h-4 w-4" />
-          {/* <FileCode className="mr-2 h-4 w-4" /> */}
-          Export
-        </Button>
+        {/* Export Button with Auth */}
+        <AuthExportButton
+          onExport={(type) => handleGenerateHTML(type)}
+          disabled={items.length === 0}
+          isProcessing={isProcessingHtml}
+        />
 
         {/* Download PDF Button */}
         {/*
@@ -753,7 +759,7 @@ export function SettingsSidebar() {
         </Button>
         */}
         {items.length > 0 && (
-          <p className="mt-2 text-center text-xs text-slate-500">
+          <p className="mt-2 text-center text-xs text-muted-foreground">
             {totalCards} cards ready
           </p>
         )}

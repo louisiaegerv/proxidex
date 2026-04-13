@@ -7,6 +7,12 @@ function ThemeProvider({
   children,
   ...props
 }: React.ComponentProps<typeof NextThemesProvider>) {
+  // Initialize color theme on mount
+  React.useEffect(() => {
+    const savedColor = localStorage.getItem("color-theme") || "blue"
+    document.documentElement.setAttribute("data-theme", savedColor)
+  }, [])
+
   return (
     <NextThemesProvider
       attribute="class"

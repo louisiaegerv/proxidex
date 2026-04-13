@@ -217,12 +217,7 @@ export function ProfileManager() {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Active Profile Indicator */}
-      {activeProfile && (
-        <div className="text-xs text-blue-400 text-center">
-          Using profile: <span className="font-medium">{activeProfile.name}</span>
-        </div>
-      )}
+      
     </div>
   );
 }

@@ -1,8 +1,9 @@
 "use client"
 
 import { useState, useRef, useCallback } from "react"
-import { Layers } from "lucide-react"
+import { Layers, Crown, Check } from "lucide-react"
 import { useProxyList } from "@/stores/proxy-list"
+import { useSubscription } from "@/components/subscription-provider"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -13,6 +14,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import Link from "next/link"
 
 interface CreateDeckDialogProps {
   isOpen: boolean
@@ -25,6 +27,13 @@ export function CreateDeckDialog({ isOpen, onClose }: CreateDeckDialogProps) {
   const inputRef = useRef<HTMLInputElement>(null)
 
   const createDeck = useProxyList((state) => state.createDeck)
+  const decks = useProxyList((state) => state.decks)
+  
+  const { subscription, isLoading } = useSubscription()
+  const isPro = subscription?.isPro ?? false
+
+  // Check if free user is at deck limit
+  const isAtDeckLimit = !isPro && decks.length >= 2
 
   // Reset state when dialog opens
   const handleOpenChange = useCallback(
@@ -54,8 +63,18 @@ export function CreateDeckDialog({ isOpen, onClose }: CreateDeckDialogProps) {
       return
     }
 
+    // Check if at deck limit
+    if (isAtDeckLimit) {
+      return
+    }
+
     // Create the deck - this automatically switches to it
-    createDeck(trimmedName)
+    const result = createDeck(trimmedName)
+
+    if (result === null) {
+      // Deck creation failed due to limit
+      return
+    }
 
     // Close the dialog
     onClose()
@@ -73,6 +92,67 @@ export function CreateDeckDialog({ isOpen, onClose }: CreateDeckDialogProps) {
     }
   }
 
+  // Show upgrade prompt if free user is at deck limit
+  // if (isAtDeckLimit) {
+  //   return (
+  //     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+  //       <DialogContent className="border-slate-800 bg-slate-900 sm:max-w-md">
+  //         <DialogHeader>
+  //           <DialogTitle className="flex items-center gap-2 text-slate-100">
+  //             <Crown className="h-5 w-5 text-amber-400" />
+  //             Deck Limit Reached
+  //           </DialogTitle>
+  //           <DialogDescription className="text-slate-400">
+  //             Free users can create up to 2 decks.
+  //           </DialogDescription>
+  //         </DialogHeader>
+
+  //         <div className="mt-4 space-y-4">
+  //           <div className="rounded-lg bg-slate-800/50 p-4">
+  //             <p className="text-sm text-slate-300">
+  //               You&apos;ve reached the maximum number of decks for free users.
+  //               Upgrade to Pro for unlimited decks and premium features.
+  //             </p>
+  //             <ul className="mt-3 space-y-2">
+  //               <li className="flex items-center gap-2 text-sm text-slate-400">
+  //                 <Check className="h-4 w-4 text-amber-400" />
+  //                 Unlimited decks
+  //               </li>
+  //               <li className="flex items-center gap-2 text-sm text-slate-400">
+  //                 <Check className="h-4 w-4 text-amber-400" />
+  //                 Unlimited exports
+  //               </li>
+  //               <li className="flex items-center gap-2 text-sm text-slate-400">
+  //                 <Check className="h-4 w-4 text-amber-400" />
+  //                 Cloud sync & persistent storage
+  //               </li>
+  //             </ul>
+  //           </div>
+
+  //           <div className="flex justify-end gap-2">
+  //             <Button
+  //               variant="ghost"
+  //               onClick={handleCancel}
+  //               className="text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+  //             >
+  //               Cancel
+  //             </Button>
+  //             <Link href="/upgrade">
+  //               <Button
+  //                 className="bg-amber-500 text-slate-950 hover:bg-amber-400"
+  //                 onClick={handleCancel}
+  //               >
+  //                 <Crown className="mr-2 h-4 w-4" />
+  //                 Upgrade to Pro
+  //               </Button>
+  //             </Link>
+  //           </div>
+  //         </div>
+  //       </DialogContent>
+  //     </Dialog>
+  //   )
+  // }
+
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="border-slate-800 bg-slate-900 sm:max-w-md">
@@ -83,6 +163,11 @@ export function CreateDeckDialog({ isOpen, onClose }: CreateDeckDialogProps) {
           </DialogTitle>
           <DialogDescription className="text-slate-400">
             Enter a name for your new proxy deck.
+            {!isPro && (
+              <span className="mt-1 block text-xs text-slate-500">
+                Free users can create up to 2 decks ({decks.length}/2 used)
+              </span>
+            )}
           </DialogDescription>
         </DialogHeader>
 
@@ -117,7 +202,7 @@ export function CreateDeckDialog({ isOpen, onClose }: CreateDeckDialogProps) {
             </Button>
             <Button
               onClick={handleSubmit}
-              disabled={!deckName.trim()}
+              disabled={!deckName.trim() || isLoading}
               className="bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-50"
             >
               Create Deck

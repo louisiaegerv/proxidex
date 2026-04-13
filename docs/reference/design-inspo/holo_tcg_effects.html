@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Holo TCG Card Effects</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #1a1a2e;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      padding: 40px 20px;
+    }
+
+    h1 {
+      color: #e0e0e0;
+      font-size: 18px;
+      font-weight: 500;
+      letter-spacing: .08em;
+      margin-bottom: 36px;
+      text-align: center;
+      text-transform: lowercase;
+    }
+
+    .scene {
+      display: flex;
+      gap: 28px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* ── Shared card frame ── */
+    .frame {
+      position: relative;
+      width: 240px;
+      height: 336px;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0,0,0,.55);
+    }
+
+    .frame img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Shared overlay base */
+    .lay {
+      position: absolute;
+      inset: 0;
+      border-radius: 14px;
+      pointer-events: none;
+    }
+
+    canvas.lay {
+      mix-blend-mode: screen;
+    }
+
+    .lbl {
+      font-size: 12px;
+      font-weight: 600;
+      color: #ccc;
+      letter-spacing: .08em;
+      text-transform: lowercase;
+      text-align: center;
+    }
+
+    .dsc {
+      font-size: 11px;
+      color: #777;
+      text-align: center;
+      max-width: 200px;
+      line-height: 1.5;
+    }
+
+    /* ══════════════════════════════════════
+       EFFECT 1 — Prismatic Sweep (CSS only)
+    ══════════════════════════════════════ */
+
+    /* Layer A: moving rainbow bands */
+    .r1 {
+      background: repeating-linear-gradient(
+        120deg,
+        hsl(0,   100%, 65%)  0%,
+        hsl(40,  100%, 65%)  5%,
+        hsl(80,  100%, 65%) 10%,
+        hsl(140, 100%, 65%) 16%,
+        hsl(195, 100%, 65%) 22%,
+        hsl(250, 100%, 65%) 28%,
+        hsl(300, 100%, 65%) 34%,
+        hsl(350, 100%, 65%) 40%,
+        hsl(0,   100%, 65%) 46%
+      );
+      background-size: 280% 280%;
+      mix-blend-mode: screen;
+      opacity: .42;
+      animation: sweep 3.8s linear infinite;
+    }
+
+    @keyframes sweep {
+      0%   { background-position: 0 0; }
+      100% { background-position: 200% 200%; }
+    }
+
+    /* Layer B: diagonal white sheen */
+    .r2 {
+      background: linear-gradient(
+        132deg,
+        transparent        10%,
+        rgba(255,255,255,.30) 47%,
+        rgba(255,255,255,.06) 56%,
+        transparent        92%
+      );
+      background-size: 260% 260%;
+      mix-blend-mode: overlay;
+      animation: sheen 2.4s ease-in-out infinite alternate;
+    }
+
+    @keyframes sheen {
+      0%   { background-position: 0 0; }
+      100% { background-position: 100% 100%; }
+    }
+
+    /* Layer C: diffraction grid texture */
+    .r3 {
+      mix-blend-mode: overlay;
+      background:
+        repeating-linear-gradient(
+          0deg,
+          rgba(255,255,255,.045) 0,
+          rgba(255,255,255,.045) 1px,
+          transparent 1px,
+          transparent 5px
+        ),
+        repeating-linear-gradient(
+          90deg,
+          rgba(255,255,255,.045) 0,
+          rgba(255,255,255,.045) 1px,
+          transparent 1px,
+          transparent 5px
+        );
+    }
+
+    /* ══════════════════════════════════════
+       EFFECT 3 — Reactive Holo Shift holder
+    ══════════════════════════════════════ */
+    #f3h {
+      width: 240px;
+      height: 336px;
+      cursor: pointer;
+      perspective: 800px;
+    }
+
+    #f3 {
+      position: relative;
+      width: 240px;
+      height: 336px;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0,0,0,.55);
+      will-change: transform;
+      transform-style: preserve-3d;
+      transform-origin: center center;
+    }
+
+    #f3 img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>holographic TCG card effects</h1>
+
+  <div class="scene">
+
+    <!-- ── Card 1: Prismatic Sweep ── -->
+    <div class="col">
+      <div class="frame">
+        <img src="https://tcgplayer-cdn.tcgplayer.com/product/42402_in_1000x1000.jpg" alt="Holo Pokemon card">
+        <div class="lay r1"></div>
+        <div class="lay r2"></div>
+        <div class="lay r3"></div>
+      </div>
+      <span class="lbl">prismatic sweep</span>
+      <span class="dsc">Animated rainbow diffraction bands across foil</span>
+    </div>
+
+    <!-- ── Card 2: Stardust Glitter ── -->
+    <div class="col">
+      <div class="frame">
+        <img src="https://tcgplayer-cdn.tcgplayer.com/product/42402_in_1000x1000.jpg" alt="Holo Pokemon card">
+        <canvas class="lay" id="cv2" width="240" height="336"></canvas>
+      </div>
+      <span class="lbl">stardust glitter</span>
+      <span class="dsc">Twinkling sparkle &amp; star-point crystals</span>
+    </div>
+
+    <!-- ── Card 3: Reactive Holo Shift ── -->
+    <div class="col">
+      <div id="f3h">
+        <div id="f3">
+          <img src="https://tcgplayer-cdn.tcgplayer.com/product/42402_in_1000x1000.jpg" alt="Holo Pokemon card">
+          <canvas class="lay" id="cv3" width="240" height="336" style="mix-blend-mode:screen"></canvas>
+        </div>
+      </div>
+      <span class="lbl">reactive holo shift</span>
+      <span class="dsc">Hover to tilt &amp; shift prismatic hues</span>
+    </div>
+
+  </div>
+
+  <script>
+    const IMG = "https://tcgplayer-cdn.tcgplayer.com/product/42402_in_1000x1000.jpg";
+
+    // ═══════════════════════════════════════════
+    // EFFECT 2 — Stardust Glitter (Canvas)
+    // ═══════════════════════════════════════════
+    (function () {
+      const cv  = document.getElementById('cv2');
+      const ctx = cv.getContext('2d');
+      const W = 240, H = 336;
+
+      // Generate particles
+      const pts = Array.from({ length: 160 }, () => ({
+        x:    Math.random() * W,
+        y:    Math.random() * H,
+        r:    Math.random() * 1.9 + 0.35,          // radius
+        h:    Math.random() * 360,                   // base hue
+        s:    Math.random() * 1.9 + 0.7,            // twinkle speed
+        p:    Math.random() * Math.PI * 2,           // phase offset
+        star: Math.random() < 0.28                   // 28% are star shapes
+      }));
+
+      // Draw a 4-pointed diamond sparkle
+      function drawStar(x, y, r) {
+        ctx.beginPath();
+        ctx.moveTo(x,        y - r * 3);
+        ctx.lineTo(x + r * .42, y - r * .42);
+        ctx.lineTo(x + r * 3,   y);
+        ctx.lineTo(x + r * .42, y + r * .42);
+        ctx.lineTo(x,        y + r * 3);
+        ctx.lineTo(x - r * .42, y + r * .42);
+        ctx.lineTo(x - r * 3,   y);
+        ctx.lineTo(x - r * .42, y - r * .42);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      function tick(ts) {
+        ctx.clearRect(0, 0, W, H);
+        const t = ts / 1000;
+
+        pts.forEach(p => {
+          const alpha = (Math.sin(t * p.s + p.p) + 1) / 2;
+          if (alpha < 0.04) return;
+
+          const hue = (p.h + t * 22) % 360;
+          ctx.globalAlpha  = alpha * 0.92;
+          ctx.fillStyle    = `hsl(${hue}, 100%, 88%)`;
+
+          if (p.star) {
+            drawStar(p.x, p.y, p.r);
+          } else {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          // Soft bloom halo
+          ctx.globalAlpha = alpha * 0.12;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r * 3.8, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        ctx.globalAlpha = 1;
+        requestAnimationFrame(tick);
+      }
+
+      requestAnimationFrame(tick);
+    })();
+
+
+    // ═══════════════════════════════════════════
+    // EFFECT 3 — Reactive Holo Shift (Canvas + 3D tilt)
+    // ═══════════════════════════════════════════
+    (function () {
+      const holder = document.getElementById('f3h');
+      const card   = document.getElementById('f3');
+      const cv     = document.getElementById('cv3');
+      const ctx    = cv.getContext('2d');
+      const W = 240, H = 336;
+
+      // Interpolated mouse position (0–1 range)
+      let mx = 0.5, my = 0.5;
+      // Target mouse position
+      let tx = 0.5, ty = 0.5;
+      let hovered = false;
+
+      holder.addEventListener('mouseenter', () => hovered = true);
+      holder.addEventListener('mouseleave', () => hovered = false);
+      holder.addEventListener('mousemove', e => {
+        const r = holder.getBoundingClientRect();
+        tx = (e.clientX - r.left) / W;
+        ty = (e.clientY - r.top)  / H;
+      });
+
+      function tick(ts) {
+        const t = ts / 1000;
+
+        // Auto-wobble when not hovered
+        if (!hovered) {
+          tx = 0.5 + 0.32 * Math.sin(t * 0.58);
+          ty = 0.5 + 0.26 * Math.cos(t * 0.41);
+        }
+
+        // Smooth lerp toward target
+        mx += (tx - mx) * 0.08;
+        my += (ty - my) * 0.08;
+
+        // Apply 3D tilt
+        const rotX = (my - 0.5) * -26;
+        const rotY = (mx - 0.5) *  26;
+        card.style.transform  = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+        card.style.boxShadow  = `${rotY * 0.5}px ${-rotX * 0.4}px 48px rgba(0,0,0,.5)`;
+
+        // ── Canvas holographic layers ──
+        ctx.clearRect(0, 0, W, H);
+        const bh = (t * 48) % 360;    // slowly cycling base hue
+        const cx = mx * W;
+        const cy = my * H;
+
+        // Layer 1: conic rainbow (rotates with mouse angle)
+        if (ctx.createConicGradient) {
+          const angle = Math.atan2(my - 0.5, mx - 0.5) + t * 0.28;
+          const g = ctx.createConicGradient(angle, cx, cy);
+          for (let i = 0; i <= 14; i++) {
+            g.addColorStop(i / 14, `hsla(${(bh + i * 26) % 360}, 100%, 65%, .42)`);
+          }
+          ctx.fillStyle = g;
+          ctx.fillRect(0, 0, W, H);
+        } else {
+          // Fallback for older browsers
+          const g = ctx.createLinearGradient(0, 0, W, H);
+          for (let i = 0; i <= 7; i++) {
+            g.addColorStop(i / 7, `hsla(${(bh + i * 51) % 360}, 100%, 65%, .40)`);
+          }
+          ctx.fillStyle = g;
+          ctx.fillRect(0, 0, W, H);
+        }
+
+        // Layer 2: radial shimmer centred on cursor
+        const rg = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(W, H) * 0.8);
+        rg.addColorStop(0,   `hsla(${bh}, 100%, 96%, .22)`);
+        rg.addColorStop(0.55, `hsla(${(bh + 130) % 360}, 100%, 65%, .11)`);
+        rg.addColorStop(1,   'rgba(0,0,0,0)');
+        ctx.fillStyle = rg;
+        ctx.fillRect(0, 0, W, H);
+
+        // Layer 3: diagonal specular streak
+        const sg = ctx.createLinearGradient(cx - W * 0.6, cy - H * 0.6, cx + W * 0.6, cy + H * 0.6);
+        sg.addColorStop(0,    'rgba(0,0,0,0)');
+        sg.addColorStop(0.44, 'rgba(0,0,0,0)');
+        sg.addColorStop(0.5,  `hsla(${(bh + 60) % 360}, 100%, 95%, .18)`);
+        sg.addColorStop(0.56, 'rgba(0,0,0,0)');
+        sg.addColorStop(1,    'rgba(0,0,0,0)');
+        ctx.fillStyle = sg;
+        ctx.fillRect(0, 0, W, H);
+
+        requestAnimationFrame(tick);
+      }
+
+      requestAnimationFrame(tick);
+    })();
+  </script>
+</body>
+</html>

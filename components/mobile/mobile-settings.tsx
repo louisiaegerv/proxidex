@@ -14,8 +14,11 @@ import {
   ChevronsUpDown,
   Download,
   FileCode,
+  LogOut,
 } from "lucide-react"
 import { useProxyList } from "@/stores/proxy-list"
+import { useAuth } from "@clerk/nextjs"
+import { AuthExportButton } from "@/components/auth/export-button"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
@@ -51,21 +54,21 @@ function ExpandableSection({
   onToggle,
 }: ExpandableSectionProps) {
   return (
-    <div className="border-b border-slate-800 last:border-0">
+    <div className="border-b border-border last:border-0">
       <button
         onClick={onToggle}
-        className="flex w-full items-center justify-between px-4 py-4 transition-colors active:bg-slate-800/50"
+        className="flex w-full items-center justify-between px-4 py-4 transition-colors active:bg-muted/50"
       >
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-800 text-slate-400">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-muted-foreground">
             {icon}
           </div>
-          <span className="text-base font-medium text-slate-200">{title}</span>
+          <span className="text-base font-medium text-foreground">{title}</span>
         </div>
         {expanded ? (
-          <ChevronUp className="h-5 w-5 text-slate-500" />
+          <ChevronUp className="h-5 w-5 text-muted-foreground" />
         ) : (
-          <ChevronDown className="h-5 w-5 text-slate-500" />
+          <ChevronDown className="h-5 w-5 text-muted-foreground" />
         )}
       </button>
 
@@ -90,7 +93,7 @@ export function MobileSettings() {
   const items = getActiveDeck()?.items ?? []
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [copied, setCopied] = useState(false)
-  const [expandedSections, setExpandedSections] = useState<string[]>(["layout"])
+  const [expandedSections, setExpandedSections] = useState<string[]>([])
   
   // HTML export with bleed modal state
   const [htmlExportOpen, setHtmlExportOpen] = useState(false)
@@ -141,11 +144,25 @@ export function MobileSettings() {
     }
   }
 
-  const handleGenerateHTML = async () => {
+  const handleGenerateHTML = async (exportType: 'standard' | 'turbo' = 'standard') => {
     if (items.length === 0) return
+    
+    // For free users with standard export, add per-card artificial delay
+    const isStandardExport = exportType === 'standard'
     
     // If no bleed, use fast export
     if (settings.bleed === 0) {
+      // For standard export, simulate processing delay per card
+      if (isStandardExport) {
+        setIsProcessingHtml(true)
+        for (let i = 0; i < items.length; i++) {
+          // Randomized 1-2 second delay per card
+          const cardDelay = 1000 + Math.random() * 1000
+          await new Promise(resolve => setTimeout(resolve, cardDelay))
+        }
+        setIsProcessingHtml(false)
+      }
+      
       const html = generatePrintHTML(items, settings)
       downloadPrintHTML(html, `proxidex-${totalCards}-cards.html`)
       return
@@ -186,7 +203,7 @@ export function MobileSettings() {
 
     const getSetId = (item: (typeof items)[0]): string => {
       if (item.setId) return item.setId
-      const imageUrl = item.originalImage || item.image
+      const imageUrl = item.image
       if (imageUrl) {
         const match = imageUrl.match(/\/en\/[^/]+\/([^/]+)\//)
         if (match) return match[1]
@@ -209,7 +226,7 @@ export function MobileSettings() {
       const key = getCardKey(item)
 
       if (key === currentKey) {
-        currentQuantity += item.quantity
+        currentQuantity += 1
       } else {
         if (currentKey !== null) {
           mergedLines.push(
@@ -217,7 +234,7 @@ export function MobileSettings() {
           )
         }
         currentKey = key
-        currentQuantity = item.quantity
+        currentQuantity = 1
         currentName = item.name
         currentSetId = getSetId(item)
         currentLocalId = item.localId
@@ -242,19 +259,19 @@ export function MobileSettings() {
   }
 
   return (
-    <div className="flex h-full flex-col bg-slate-950">
+    <div className="flex h-full flex-col bg-background">
       {/* Header */}
-      <div className="flex-shrink-0 border-b border-slate-800 bg-slate-900/50 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top,0px))]">
+      <div className="flex-shrink-0 border-b border-border bg-muted/50 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top,0px))]">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-lg font-bold text-slate-100">Settings</h1>
-            <p className="text-xs text-slate-500">
+            <h1 className="text-lg font-bold text-foreground">Settings</h1>
+            <p className="text-xs text-muted-foreground">
               Customize your print output
             </p>
           </div>
           <button
             onClick={toggleAll}
-            className="rounded-md p-2 text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-200"
+            className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             title={allExpanded ? "Collapse All" : "Expand All"}
           >
             {allExpanded ? (
@@ -278,26 +295,26 @@ export function MobileSettings() {
           <div className="space-y-6">
             {/* Page Size */}
             <div className="space-y-2">
-              <Label className="text-sm text-slate-300">Page Size</Label>
+              <Label className="text-sm text-muted-foreground">Page Size</Label>
               <Select
                 value={settings.pageSize}
                 onValueChange={(value: "letter" | "a4") =>
                   updateSettings({ pageSize: value })
                 }
               >
-                <SelectTrigger className="h-12 border-slate-700 bg-slate-800 text-base text-slate-100">
+                <SelectTrigger className="h-12 border-border bg-muted text-base text-foreground">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="border-slate-700 bg-slate-900">
+                <SelectContent className="border-border bg-card">
                   <SelectItem
                     value="letter"
-                    className="h-12 text-slate-100 focus:bg-slate-800"
+                    className="h-12 text-foreground focus:bg-muted"
                   >
                     Letter (8.5&quot; × 11&quot;)
                   </SelectItem>
                   <SelectItem
                     value="a4"
-                    className="h-12 text-slate-100 focus:bg-slate-800"
+                    className="h-12 text-foreground focus:bg-muted"
                   >
                     A4 (210mm × 297mm)
                   </SelectItem>
@@ -308,8 +325,8 @@ export function MobileSettings() {
             {/* Cards Per Row */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="text-sm text-slate-300">Cards Per Row</Label>
-                <span className="text-base font-bold text-blue-400">
+                <Label className="text-sm text-muted-foreground">Cards Per Row</Label>
+                <span className="text-base font-bold text-primary">
                   {settings.cardsPerRow}
                 </span>
               </div>
@@ -328,8 +345,8 @@ export function MobileSettings() {
             {/* Rows Per Page */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="text-sm text-slate-300">Rows Per Page</Label>
-                <span className="text-base font-bold text-blue-400">
+                <Label className="text-sm text-muted-foreground">Rows Per Page</Label>
+                <span className="text-base font-bold text-primary">
                   {settings.rowsPerPage}
                 </span>
               </div>
@@ -348,10 +365,10 @@ export function MobileSettings() {
             {/* Gap Between Cards */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="text-sm text-slate-300">
+                <Label className="text-sm text-muted-foreground">
                   Gap Between Cards
                 </Label>
-                <span className="text-base font-bold text-blue-400">
+                <span className="text-base font-bold text-primary">
                   {settings.gap}mm
                 </span>
               </div>
@@ -371,7 +388,7 @@ export function MobileSettings() {
         <ExpandableSection
           title="Bleed & Cut Lines"
           icon={
-            <div className="h-5 w-5 rounded border-2 border-dashed border-slate-400" />
+            <div className="h-5 w-5 rounded border-2 border-dashed border-muted-foreground" />
           }
           expanded={expandedSections.includes("bleed")}
           onToggle={() => toggleSection("bleed")}
@@ -380,8 +397,8 @@ export function MobileSettings() {
             {/* Bleed Area */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="text-sm text-slate-300">Bleed Area</Label>
-                <span className="text-base font-bold text-blue-400">
+                <Label className="text-sm text-muted-foreground">Bleed Area</Label>
+                <span className="text-base font-bold text-primary">
                   {settings.bleed}mm
                 </span>
               </div>
@@ -397,7 +414,7 @@ export function MobileSettings() {
 
             {/* Bleed Method */}
             <div className="space-y-2">
-              <Label className="text-sm text-slate-300">Bleed Method</Label>
+              <Label className="text-sm text-muted-foreground">Bleed Method</Label>
               <RadioGroup
                 value={settings.bleedMethod}
                 onValueChange={(value: BleedMethod) =>
@@ -409,47 +426,47 @@ export function MobileSettings() {
                   className={cn(
                     "flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors",
                     settings.bleedMethod === "replicate"
-                      ? "border-blue-600 bg-blue-600/10"
-                      : "border-slate-700 bg-slate-800/50"
+                      ? "border-primary bg-primary/10"
+                      : "border-border bg-muted/50"
                   )}
                 >
                   <RadioGroupItem
                     value="replicate"
-                    className="border-slate-500"
+                    className="border-muted-foreground"
                   />
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-slate-200">
+                    <p className="text-sm font-medium text-foreground">
                       Replicate
                     </p>
-                    <p className="text-xs text-slate-500">Stretch edges</p>
+                    <p className="text-xs text-muted-foreground">Stretch edges</p>
                   </div>
                 </label>
                 <label
                   className={cn(
                     "flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors",
                     settings.bleedMethod === "mirror"
-                      ? "border-blue-600 bg-blue-600/10"
-                      : "border-slate-700 bg-slate-800/50"
+                      ? "border-primary bg-primary/10"
+                      : "border-border bg-muted/50"
                   )}
                 >
-                  <RadioGroupItem value="mirror" className="border-slate-500" />
+                  <RadioGroupItem value="mirror" className="border-muted-foreground" />
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-slate-200">Mirror</p>
-                    <p className="text-xs text-slate-500">Reflect edges</p>
+                    <p className="text-sm font-medium text-foreground">Mirror</p>
+                    <p className="text-xs text-muted-foreground">Reflect edges</p>
                   </div>
                 </label>
                 <label
                   className={cn(
                     "flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors",
                     settings.bleedMethod === "edge"
-                      ? "border-blue-600 bg-blue-600/10"
-                      : "border-slate-700 bg-slate-800/50"
+                      ? "border-primary bg-primary/10"
+                      : "border-border bg-muted/50"
                   )}
                 >
-                  <RadioGroupItem value="edge" className="border-slate-500" />
+                  <RadioGroupItem value="edge" className="border-muted-foreground" />
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-slate-200">Edge</p>
-                    <p className="text-xs text-slate-500">Solid color</p>
+                    <p className="text-sm font-medium text-foreground">Edge</p>
+                    <p className="text-xs text-muted-foreground">Solid color</p>
                   </div>
                 </label>
               </RadioGroup>
@@ -458,10 +475,10 @@ export function MobileSettings() {
             {/* Cut Lines Toggle */}
             <div className="flex items-center justify-between py-2">
               <div className="space-y-0.5">
-                <Label className="text-base text-slate-200">
+                <Label className="text-base text-foreground">
                   Show Cut Lines
                 </Label>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-muted-foreground">
                   Print guides for cutting
                 </p>
               </div>
@@ -470,7 +487,7 @@ export function MobileSettings() {
                 onCheckedChange={(checked) =>
                   updateSettings({ showCutLines: checked })
                 }
-                className="data-[state=checked]:bg-blue-600"
+                className="data-[state=checked]:bg-primary"
               />
             </div>
 
@@ -478,7 +495,7 @@ export function MobileSettings() {
               <div className="space-y-6 pt-2">
                 {/* Cut Line Color */}
                 <div className="space-y-2">
-                  <Label className="text-sm text-slate-300">
+                  <Label className="text-sm text-muted-foreground">
                     Cut line color
                   </Label>
                   <div className="flex items-center gap-3">
@@ -496,9 +513,9 @@ export function MobileSettings() {
                         const b = parseInt(hex.slice(5, 7), 16)
                         updateSettings({ cutLineColor: { r, g, b } })
                       }}
-                      className="h-12 w-12 cursor-pointer rounded-lg border border-slate-700 bg-transparent"
+                      className="h-12 w-12 cursor-pointer rounded-lg border border-border bg-transparent"
                     />
-                    <span className="text-sm text-slate-400">
+                    <span className="text-sm text-muted-foreground">
                       {settings.cutLineColor
                         ? `RGB(${settings.cutLineColor.r}, ${settings.cutLineColor.g}, ${settings.cutLineColor.b})`
                         : "Default (Emerald)"}
@@ -509,8 +526,8 @@ export function MobileSettings() {
                 {/* Cut Line Width */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <Label className="text-sm text-slate-300">Line width</Label>
-                    <span className="text-base font-bold text-blue-400">
+                    <Label className="text-sm text-muted-foreground">Line width</Label>
+                    <span className="text-base font-bold text-primary">
                       {settings.cutLineWidth ?? 1.5}px
                     </span>
                   </div>
@@ -529,10 +546,10 @@ export function MobileSettings() {
                 {/* Cut Line Length */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <Label className="text-sm text-slate-300">
+                    <Label className="text-sm text-muted-foreground">
                       Line length
                     </Label>
-                    <span className="text-base font-bold text-blue-400">
+                    <span className="text-base font-bold text-primary">
                       {settings.cutLineLength ?? 8}mm
                     </span>
                   </div>
@@ -550,7 +567,7 @@ export function MobileSettings() {
 
                 {/* Cut Line Position */}
                 <div className="space-y-2">
-                  <Label className="text-sm text-slate-300">
+                  <Label className="text-sm text-muted-foreground">
                     Line position
                   </Label>
                   <Select
@@ -559,19 +576,19 @@ export function MobileSettings() {
                       updateSettings({ cutLinePosition: value })
                     }
                   >
-                    <SelectTrigger className="h-12 border-slate-700 bg-slate-800 text-base text-slate-100">
+                    <SelectTrigger className="h-12 border-border bg-muted text-base text-foreground">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="border-slate-700 bg-slate-900">
+                    <SelectContent className="border-border bg-card">
                       <SelectItem
                         value="front"
-                        className="h-12 text-slate-100 focus:bg-slate-800"
+                        className="h-12 text-foreground focus:bg-muted"
                       >
                         In front of cards
                       </SelectItem>
                       <SelectItem
                         value="behind"
-                        className="h-12 text-slate-100 focus:bg-slate-800"
+                        className="h-12 text-foreground focus:bg-muted"
                       >
                         Behind cards
                       </SelectItem>
@@ -595,38 +612,38 @@ export function MobileSettings() {
           <div className="space-y-4">
             {/* Image Size Selection */}
             <div className="space-y-2">
-              <Label className="text-sm text-slate-300">Image Size</Label>
+              <Label className="text-sm text-muted-foreground">Image Size</Label>
               <Select
                 value={settings.imageSize ?? "lg"}
                 onValueChange={(value: "sm" | "md" | "lg") =>
                   updateSettings({ imageSize: value })
                 }
               >
-                <SelectTrigger className="h-12 border-slate-700 bg-slate-800 text-base text-slate-100">
+                <SelectTrigger className="h-12 border-border bg-muted text-base text-foreground">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="border-slate-700 bg-slate-900">
+                <SelectContent className="border-border bg-card">
                   <SelectItem
                     value="sm"
-                    className="h-12 text-slate-100 focus:bg-slate-800"
+                    className="h-12 text-foreground focus:bg-muted"
                   >
                     Draft (288×400) - Fastest
                   </SelectItem>
                   <SelectItem
                     value="md"
-                    className="h-12 text-slate-100 focus:bg-slate-800"
+                    className="h-12 text-foreground focus:bg-muted"
                   >
                     Optimized (575×800) - Balanced
                   </SelectItem>
                   <SelectItem
                     value="lg"
-                    className="h-12 text-slate-100 focus:bg-slate-800"
+                    className="h-12 text-foreground focus:bg-muted"
                   >
                     High Quality (1150×1600)
                   </SelectItem>
                 </SelectContent>
               </Select>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-muted-foreground">
                 Draft = fastest, Optimized = balanced, High Quality = best detail
               </p>
             </div>
@@ -634,8 +651,8 @@ export function MobileSettings() {
             {/* Black and White Toggle */}
             <div className="flex items-center justify-between py-2">
               <div className="space-y-0.5">
-                <Label className="text-base text-slate-200">Black & White</Label>
-                <p className="text-xs text-slate-500">
+                <Label className="text-base text-foreground">Black & White</Label>
+                <p className="text-xs text-muted-foreground">
                   Saves color ink on draft prints
                 </p>
               </div>
@@ -644,14 +661,14 @@ export function MobileSettings() {
                 onCheckedChange={(checked) =>
                   updateSettings({ blackAndWhite: checked })
                 }
-                className="data-[state=checked]:bg-blue-600"
+                className="data-[state=checked]:bg-primary"
               />
             </div>
 
             {/* Info box */}
-            <div className="flex gap-3 rounded-lg bg-slate-800/50 p-3">
-              <Info className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-400" />
-              <p className="text-xs text-slate-400">
+            <div className="flex gap-3 rounded-lg bg-muted/50 p-3">
+              <Info className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" />
+              <p className="text-xs text-muted-foreground">
                 Draft mode + B&W prints up to 4× faster and saves ink.
                 Use for test prints before final output.
               </p>
@@ -663,7 +680,7 @@ export function MobileSettings() {
         <ExpandableSection
           title="Print Offset"
           icon={
-            <div className="flex h-5 w-5 items-center justify-center rounded border border-slate-400 text-[8px] text-slate-400">
+            <div className="flex h-5 w-5 items-center justify-center rounded border border-muted-foreground text-[8px] text-muted-foreground">
               +
             </div>
           }
@@ -671,8 +688,8 @@ export function MobileSettings() {
           onToggle={() => toggleSection("offset")}
         >
           <div className="space-y-6">
-            <div className="rounded-lg bg-slate-800/50 p-3">
-              <p className="text-xs text-slate-400">
+            <div className="rounded-lg bg-muted/50 p-3">
+              <p className="text-xs text-muted-foreground">
                 Adjust if your prints are misaligned. Use small values (±5mm)
                 for fine-tuning.
               </p>
@@ -680,10 +697,10 @@ export function MobileSettings() {
 
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="text-sm text-slate-300">
+                <Label className="text-sm text-muted-foreground">
                   Horizontal Offset
                 </Label>
-                <span className="text-base font-bold text-blue-400">
+                <span className="text-base font-bold text-primary">
                   {settings.offsetX}mm
                 </span>
               </div>
@@ -699,10 +716,10 @@ export function MobileSettings() {
 
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="text-sm text-slate-300">
+                <Label className="text-sm text-muted-foreground">
                   Vertical Offset
                 </Label>
-                <span className="text-base font-bold text-blue-400">
+                <span className="text-base font-bold text-primary">
                   {settings.offsetY}mm
                 </span>
               </div>
@@ -728,7 +745,7 @@ export function MobileSettings() {
           <div className="space-y-4">
             {/* Copy Card List Button */}
             <Button
-              className="h-12 w-full border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700"
+              className="h-12 w-full border-border bg-muted text-foreground hover:bg-muted/80"
               variant="outline"
               disabled={items.length === 0}
               onClick={handleCopyCardList}
@@ -746,22 +763,16 @@ export function MobileSettings() {
               )}
             </Button>
 
-            {/* Download HTML Button */}
-            <Button
-              className="h-12 w-full bg-blue-600 text-white hover:bg-blue-500"
-              // className="h-12 w-full border-emerald-700 bg-emerald-900/50 text-emerald-400 hover:bg-emerald-900"
-              // variant="outline"
-              disabled={items.length === 0 || isProcessingHtml}
-              onClick={handleGenerateHTML}
-            >
-              <Printer className="mr-2 h-5 w-5" />
-              {/* <FileCode className="mr-2 h-5 w-5" /> */}
-              Export 
-            </Button>
+            {/* Export Button with Auth */}
+            <AuthExportButton
+              onExport={(type) => handleGenerateHTML(type)}
+              disabled={items.length === 0}
+              isProcessing={isProcessingHtml}
+            />
 
             {/* Download PDF Button */}
             {/* <Button
-              className="h-12 w-full bg-blue-600 text-white hover:bg-blue-500"
+              className="h-12 w-full bg-primary text-primary-foreground hover:bg-primary/90"
               disabled={items.length === 0 || isGenerating}
               onClick={handleGeneratePDF}
             >
@@ -779,7 +790,7 @@ export function MobileSettings() {
             </Button> */}
 
             {items.length > 0 && (
-              <p className="text-center text-xs text-slate-500">
+              <p className="text-center text-xs text-muted-foreground">
                 {totalCards} cards ready
               </p>
             )}
@@ -787,15 +798,18 @@ export function MobileSettings() {
         </ExpandableSection>
 
         {/* Reset Section */}
-        <div className="p-4">
+        <div className="p-4 space-y-3">
           <Button
             variant="outline"
-            className="h-12 w-full border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+            className="h-12 w-full border-border text-muted-foreground hover:bg-muted hover:text-foreground"
             onClick={() => setShowResetConfirm(true)}
           >
             <RotateCcw className="mr-2 h-5 w-5" />
             Reset All Settings
           </Button>
+          
+          {/* Logout Button */}
+          <LogoutButton />
         </div>
 
         {/* Bottom padding for safe area */}
@@ -805,17 +819,17 @@ export function MobileSettings() {
       {/* Reset Confirmation Dialog */}
       {showResetConfirm && (
         <div className="absolute inset-0 z-50 flex items-end justify-center bg-black/50 p-4 sm:items-center">
-          <div className="w-full max-w-sm rounded-2xl border border-slate-800 bg-slate-900 p-4">
-            <h3 className="mb-2 text-lg font-semibold text-slate-100">
+          <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-4">
+            <h3 className="mb-2 text-lg font-semibold text-foreground">
               Reset Settings?
             </h3>
-            <p className="mb-4 text-sm text-slate-400">
+            <p className="mb-4 text-sm text-muted-foreground">
               This will reset all settings to their default values.
             </p>
             <div className="flex gap-2">
               <Button
                 variant="ghost"
-                className="flex-1 text-slate-400"
+                className="flex-1 text-muted-foreground"
                 onClick={() => setShowResetConfirm(false)}
               >
                 Cancel
@@ -841,5 +855,44 @@ export function MobileSettings() {
         isProcessing={isProcessingHtml}
       />
     </div>
+  )
+}
+
+// Logout Button Component
+function LogoutButton() {
+  const { isSignedIn, signOut } = useAuth()
+  const [isSigningOut, setIsSigningOut] = useState(false)
+
+  if (!isSignedIn) return null
+
+  const handleSignOut = async () => {
+    setIsSigningOut(true)
+    try {
+      await signOut()
+    } catch (error) {
+      console.error("Failed to sign out:", error)
+      setIsSigningOut(false)
+    }
+  }
+
+  return (
+    <Button
+      variant="outline"
+      className="h-12 w-full border-red-900/50 text-red-400 hover:bg-red-950/50 hover:text-red-300"
+      onClick={handleSignOut}
+      disabled={isSigningOut}
+    >
+      {isSigningOut ? (
+        <>
+          <RotateCcw className="mr-2 h-5 w-5 animate-spin" />
+          Signing out...
+        </>
+      ) : (
+        <>
+          <LogOut className="mr-2 h-5 w-5" />
+          Sign Out
+        </>
+      )}
+    </Button>
   )
 }

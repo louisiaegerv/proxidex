@@ -77,7 +77,7 @@ export function MetaDeckSelector({ onSelectDeck }: MetaDeckSelectorProps) {
       // Convert to DeckListItem format using parseStructuredDeck for consistent set code mapping
       const items = parseStructuredDeck(detail.cards)
 
-      const cardCount = detail.cards.reduce((sum, c) => sum + c.quantity, 0)
+      const cardCount = detail.cards.length
       setStatus(`Loaded ${cardCount} cards!`)
 
       // Call the callback with parsed items
@@ -116,8 +116,8 @@ export function MetaDeckSelector({ onSelectDeck }: MetaDeckSelectorProps) {
       <div className="mb-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="font-medium text-slate-100">Meta Decks</h3>
-            <p className="text-xs text-slate-500">
+            <h3 className="font-medium text-lg text-slate-100">Meta Decks</h3>
+            <p className="text-sm text-slate-500">
               Top tournament decks from Limitless TCG
             </p>
           </div>
@@ -147,7 +147,7 @@ export function MetaDeckSelector({ onSelectDeck }: MetaDeckSelectorProps) {
       {/* Status */}
       {status && (
         <div className="mb-4 rounded-lg bg-blue-900/20 px-3 py-2">
-          <p className="flex items-center gap-2 text-xs text-blue-400">
+          <p className="flex items-center gap-2 text-sm text-blue-400">
             {isFetchingDeck ? (
               <Loader2 className="h-3 w-3 animate-spin" />
             ) : (
@@ -181,7 +181,7 @@ export function MetaDeckSelector({ onSelectDeck }: MetaDeckSelectorProps) {
           <div className="flex h-40 flex-col items-center justify-center gap-2 px-4 text-center">
             <Search className="h-8 w-8 text-slate-600" />
             <p className="text-sm text-slate-400">No decks found</p>
-            <p className="text-xs text-slate-600">
+            <p className="text-sm text-slate-600">
               Try a different search term
             </p>
           </div>
@@ -228,7 +228,7 @@ export function MetaDeckSelector({ onSelectDeck }: MetaDeckSelectorProps) {
                     </h4>
 
                     {/* Stats */}
-                    <div className="mt-1 flex flex-wrap items-center gap-3 text-xs">
+                    <div className="mt-1 flex flex-wrap items-center gap-3 text-sm">
                       <span
                         className={cn(
                           "flex items-center gap-1 font-medium",
@@ -249,7 +249,7 @@ export function MetaDeckSelector({ onSelectDeck }: MetaDeckSelectorProps) {
                 {/* Select Button */}
                 <Button
                   size="sm"
-                  className="absolute top-2 right-2 h-7 bg-blue-600 px-3 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 hover:bg-blue-500"
+                  className="absolute top-2 right-2 h-7 bg-blue-600 px-3 text-sm text-white opacity-0 transition-opacity group-hover:opacity-100 hover:bg-blue-500"
                   onClick={() => handleSelectDeck(deck)}
                   disabled={isFetchingDeck !== null}
                 >

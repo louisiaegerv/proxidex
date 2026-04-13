@@ -102,7 +102,7 @@ export function DeckUrlImport({ onImport }: DeckUrlImportProps) {
 
       // Convert to DeckListItem format using parseStructuredDeck for consistent set code mapping
       const items = parseStructuredDeck(detail.cards)
-      const cardCount = detail.cards.reduce((sum, c) => sum + c.quantity, 0)
+      const cardCount = detail.cards.length
 
       // Add to recent URLs
       addRecentUrl(url, detail.name, detail.image)

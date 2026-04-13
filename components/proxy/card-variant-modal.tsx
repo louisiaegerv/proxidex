@@ -211,7 +211,6 @@ export function CardVariantModal({
       cardId: variant.id,
       name: variant.name,
       image: mdImageUrl,
-      originalImage: mdImageUrl,
       setName: variant.setName,
       setId: variant.setId,
       localId: variant.localId,

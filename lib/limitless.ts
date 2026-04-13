@@ -250,7 +250,7 @@ export async function fetchDeckDetail(
       return {
         id: deckId,
         name: extractDeckName(html) || `Deck ${deckId}`,
-        count: cards.reduce((sum, c) => sum + c.quantity, 0),
+        count: cards.length,
         share: 0,
         score: "0 - 0 - 0",
         winRate: 0,
@@ -445,7 +445,7 @@ function decodeHtmlEntities(text: string): string {
 export function convertToDeckList(cards: LimitlessDeckCard[]): string {
   return cards
     .map((card) => {
-      let line = `${card.quantity} ${card.name}`
+      let line = `1 ${card.name}`
       if (card.setCode) {
         // Map Limitless set code to TCGDex set code
         const tcgDexSetCode = LIMITLESS_TO_TCGDEX[card.setCode] || card.setCode
