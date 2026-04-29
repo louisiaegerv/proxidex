@@ -2,7 +2,12 @@ import { create } from "zustand"
 import { persist, createJSONStorage, StateStorage } from "zustand/middleware"
 import type { ProxyItem, PrintSettings, Deck } from "@/types"
 import type { SubscriptionType } from "@/lib/pricing"
+
 import { FREE_TIER_DECK_MAX_CARDS } from "@/lib/exports"
+import { getImageUrl } from "@/lib/images"
+
+// Stable empty array to avoid new references on every call
+const EMPTY_ARRAY: ProxyItem[] = []
 
 interface ProxyListState {
   // Multi-deck structure
@@ -16,7 +21,7 @@ interface ProxyListState {
   // Storage notice for UI
   showStorageNotice: boolean
   setShowStorageNotice: (show: boolean) => void
-  storageNoticeDismissed: boolean  // Persisted: true if user dismissed it
+  storageNoticeDismissed: boolean // Persisted: true if user dismissed it
   dismissStorageNotice: () => void
 
   // Deck management methods
@@ -31,7 +36,7 @@ interface ProxyListState {
   getItems: () => ProxyItem[]
   setItems: (items: ProxyItem[]) => void
   setDecks: (decks: Deck[]) => void
-  canAddCards: (count: number) => { 
+  canAddCards: (count: number) => {
     allowed: boolean
     reason?: string
     currentCount?: number
@@ -104,73 +109,57 @@ interface ProxyListState {
 // Storage version for migrations
 const STORAGE_VERSION = 3
 
-// Storage keys
+// Storage key — free users only. Pro users use cloud (no local storage).
 const FREE_STORAGE_KEY = "proxidex-proxy-list-free"
-const PRO_STORAGE_KEY = "proxidex-proxy-list"
+
+// Track current user tier so storage adapter can behave correctly
+let currentUserTier: SubscriptionType = "free"
 
 // Track if migration has been attempted this session
 let hasAttemptedMigration = false
 
 /**
- * Create a storage adapter that dynamically chooses between localStorage and sessionStorage
- * based on user tier, with automatic migration when user upgrades.
+ * Create a storage adapter that uses sessionStorage for free users
+ * and NO local storage for Pro users (cloud is source of truth).
+ *
+ * - Pro users: return null on read, no-op on write
+ * - Free users: sessionStorage
+ * - Guests (not logged in): sessionStorage (tab-scoped, lost on close)
  */
 function createTieredStorage(): StateStorage {
   return {
     getItem: (name: string): string | null => {
       if (typeof window === "undefined") return null
 
-      const isPro = name === PRO_STORAGE_KEY
-
-      // For Pro storage key, try localStorage first
-      if (isPro) {
-        const localData = localStorage.getItem(name)
-        if (localData) return localData
-
-        // If no localStorage data, check if we need to migrate from sessionStorage
-        if (!hasAttemptedMigration) {
-          hasAttemptedMigration = true
-          const sessionData = sessionStorage.getItem(FREE_STORAGE_KEY)
-          if (sessionData) {
-            console.log(
-              "[Storage] Migrating session data to localStorage for Pro user"
-            )
-            // Migrate to localStorage
-            localStorage.setItem(name, sessionData)
-            // Clear session storage
-            sessionStorage.removeItem(FREE_STORAGE_KEY)
-            return sessionData
-          }
-        }
+      // Pro users: cloud is source of truth, never load from local storage
+      if (isProTier(currentUserTier)) {
         return null
       }
 
-      // For Free storage key, use sessionStorage
+      // Free users: use sessionStorage
       return sessionStorage.getItem(name)
     },
 
     setItem: (name: string, value: string): void => {
       if (typeof window === "undefined") return
 
-      const isPro = name === PRO_STORAGE_KEY
-
-      if (isPro) {
-        localStorage.setItem(name, value)
-      } else {
-        sessionStorage.setItem(name, value)
+      // Pro users: cloud is source of truth, don't save locally
+      if (isProTier(currentUserTier)) {
+        return
       }
+
+      // Free users: use sessionStorage
+      sessionStorage.setItem(name, value)
     },
 
     removeItem: (name: string): void => {
       if (typeof window === "undefined") return
 
-      const isPro = name === PRO_STORAGE_KEY
-
-      if (isPro) {
-        localStorage.removeItem(name)
-      } else {
-        sessionStorage.removeItem(name)
+      if (isProTier(currentUserTier)) {
+        return
       }
+
+      sessionStorage.removeItem(name)
     },
   }
 }
@@ -180,13 +169,6 @@ function createTieredStorage(): StateStorage {
  */
 function isProTier(tier: string): boolean {
   return tier !== "free" && tier !== ""
-}
-
-/**
- * Get storage key based on user tier
- */
-function getStorageKey(tier: string): string {
-  return isProTier(tier) ? PRO_STORAGE_KEY : FREE_STORAGE_KEY
 }
 
 export const useProxyList = create<ProxyListState>()(
@@ -224,26 +206,23 @@ export const useProxyList = create<ProxyListState>()(
         const wasFree = !isProTier(currentTier)
         const isNowPro = isProTier(tier)
 
-        // If upgrading from free to pro
-        if (wasFree && isNowPro && typeof window !== "undefined") {
-          console.log("[Storage] User upgraded to Pro, migrating data...")
+        // Update module-level tier so storage adapter behaves correctly
+        currentUserTier = tier
 
-          // Get current data from sessionStorage
-          const freeData = sessionStorage.getItem(FREE_STORAGE_KEY)
-          if (freeData) {
-            // Migrate to localStorage
-            localStorage.setItem(PRO_STORAGE_KEY, freeData)
-            // Clear session storage
-            sessionStorage.removeItem(FREE_STORAGE_KEY)
-            console.log("[Storage] Migration complete")
-          }
+        // If upgrading from free to pro, clear local sessionStorage
+        // so next refresh doesn't load stale free data before cloud sync
+        if (wasFree && isNowPro && typeof window !== "undefined") {
+          console.log(
+            "[Storage] User upgraded to Pro, clearing local sessionStorage..."
+          )
+          sessionStorage.removeItem(FREE_STORAGE_KEY)
         }
 
         // Only show storage notice if user hasn't dismissed it before
         const { storageNoticeDismissed } = get()
-        set({ 
-          userTier: tier, 
-          showStorageNotice: !isNowPro && !storageNoticeDismissed 
+        set({
+          userTier: tier,
+          showStorageNotice: !isNowPro && !storageNoticeDismissed,
         })
       },
 
@@ -258,12 +237,12 @@ export const useProxyList = create<ProxyListState>()(
       // Deck management
       createDeck: (name: string) => {
         const { decks, userTier } = get()
-        
+
         // Check if free user has reached deck limit (2 decks)
         if (!isProTier(userTier) && decks.length >= 2) {
           return null
         }
-        
+
         const now = Date.now()
         const newDeck: Deck = {
           id: `deck-${now}`,
@@ -330,9 +309,9 @@ export const useProxyList = create<ProxyListState>()(
 
       getItems: () => {
         const { decks, activeDeckId } = get()
-        if (!activeDeckId) return []
+        if (!activeDeckId) return EMPTY_ARRAY
         const activeDeck = decks.find((d) => d.id === activeDeckId)
-        return activeDeck?.items ?? []
+        return activeDeck?.items ?? EMPTY_ARRAY
       },
 
       setItems: (items: ProxyItem[]) => {
@@ -356,24 +335,24 @@ export const useProxyList = create<ProxyListState>()(
       canAddCards: (count: number) => {
         const { userTier, getActiveDeck } = get()
         const activeDeck = getActiveDeck()
-        
+
         // Pro users have no limit
-        if (userTier !== 'free') return { allowed: true }
-        
+        if (userTier !== "free") return { allowed: true }
+
         // Free tier: check deck size limit
         const currentCount = activeDeck?.items.length || 0
         const wouldExceed = currentCount + count > FREE_TIER_DECK_MAX_CARDS
-        
+
         if (wouldExceed) {
           return {
             allowed: false,
             reason: `Free tier: Max ${FREE_TIER_DECK_MAX_CARDS} cards per deck. Upgrade to Pro for unlimited.`,
             currentCount,
             maxAllowed: FREE_TIER_DECK_MAX_CARDS,
-            canAdd: Math.max(0, FREE_TIER_DECK_MAX_CARDS - currentCount)
+            canAdd: Math.max(0, FREE_TIER_DECK_MAX_CARDS - currentCount),
           }
         }
-        
+
         return { allowed: true }
       },
 
@@ -399,13 +378,18 @@ export const useProxyList = create<ProxyListState>()(
 
         // Check free tier deck size limit
         const targetDeck = get().decks.find((d) => d.id === targetDeckId)
-        if (get().userTier === 'free' && targetDeck) {
+        if (get().userTier === "free" && targetDeck) {
           const currentCount = targetDeck.items.length
           if (currentCount + quantity > FREE_TIER_DECK_MAX_CARDS) {
             // Only add up to the limit
-            const allowedCount = Math.max(0, FREE_TIER_DECK_MAX_CARDS - currentCount)
+            const allowedCount = Math.max(
+              0,
+              FREE_TIER_DECK_MAX_CARDS - currentCount
+            )
             if (allowedCount === 0) {
-              console.warn(`[ProxyList] Free tier deck limit reached (${FREE_TIER_DECK_MAX_CARDS} cards)`)
+              console.warn(
+                `[ProxyList] Free tier deck limit reached (${FREE_TIER_DECK_MAX_CARDS} cards)`
+              )
               return
             }
             // Adjust quantity to not exceed limit
@@ -806,39 +790,29 @@ export const useProxyList = create<ProxyListState>()(
 
         return state
       },
-      partialize: (state) => {
-        // Determine which storage key to use based on tier
-        const storageKey = getStorageKey(state.userTier)
-
-        // Temporarily update the name for this persist operation
-        // This is handled by the storage adapter, but we need to ensure
-        // the correct key is used in the storage function
-        const partialized = {
-          decks: state.decks.map((deck) => ({
-            ...deck,
-            items: deck.items.map((item) => ({
-              ...item,
-              image: undefined,
-            })),
+      partialize: (state) => ({
+        decks: state.decks.map((deck) => ({
+          ...deck,
+          items: deck.items.map((item) => ({
+            ...item,
+            image: undefined,
           })),
-          activeDeckId: state.activeDeckId,
-          settings: state.settings,
-          userTier: state.userTier,
-          // Persist dismissal state so notice doesn't show again
-          storageNoticeDismissed: state.storageNoticeDismissed,
-          // Don't persist selection state
-          selectedIds: new Set(),
-          isBulkMode: false,
-          lastSelectedId: null,
-          // Don't persist generation state
-          isGenerating: false,
-          generationProgress: null,
-          // Don't persist UI state (but do persist dismissal)
-          showStorageNotice: false,
-        }
-
-        return partialized
-      },
+        })),
+        activeDeckId: state.activeDeckId,
+        settings: state.settings,
+        userTier: state.userTier,
+        // Persist dismissal state so notice doesn't show again
+        storageNoticeDismissed: state.storageNoticeDismissed,
+        // Don't persist selection state
+        selectedIds: new Set(),
+        isBulkMode: false,
+        lastSelectedId: null,
+        // Don't persist generation state
+        isGenerating: false,
+        generationProgress: null,
+        // Don't persist UI state (but do persist dismissal)
+        showStorageNotice: false,
+      }),
       onRehydrateStorage: () => {
         // Return the rehydration callback that will receive the state
         return (rehydratedState, error) => {
@@ -902,9 +876,38 @@ export const useProxyList = create<ProxyListState>()(
             rehydratedState.userTier = "free"
           }
 
+          // Sync module-level tier so storage adapter behaves correctly on next write
+          currentUserTier = rehydratedState.userTier
+
+          // Reconstruct image URLs for items that lost them during serialization
+          // (partialize strips image to keep storage small)
+          if (rehydratedState.decks) {
+            rehydratedState.decks = rehydratedState.decks.map((deck: Deck) => ({
+              ...deck,
+              items: deck.items.map((item: ProxyItem) => {
+                if (item.image) return item
+                // Reconstruct from card metadata using md size (UI default)
+                try {
+                  return {
+                    ...item,
+                    image: getImageUrl(
+                      item.name,
+                      item.setId,
+                      item.localId,
+                      "md"
+                    ),
+                  }
+                } catch {
+                  return item
+                }
+              }),
+            }))
+          }
+
           // Show storage notice for free users (unless already dismissed)
           rehydratedState.showStorageNotice =
-            !isProTier(rehydratedState.userTier) && !rehydratedState.storageNoticeDismissed
+            !isProTier(rehydratedState.userTier) &&
+            !rehydratedState.storageNoticeDismissed
 
           // Reset selection state
           rehydratedState.selectedIds = new Set()
@@ -928,6 +931,8 @@ export function useIsPro() {
 // Helper hook to get storage notice state
 export function useStorageNotice() {
   const showStorageNotice = useProxyList((state) => state.showStorageNotice)
-  const setShowStorageNotice = useProxyList((state) => state.setShowStorageNotice)
+  const setShowStorageNotice = useProxyList(
+    (state) => state.setShowStorageNotice
+  )
   return { showStorageNotice, setShowStorageNotice }
 }

@@ -668,7 +668,7 @@ export const CardSearchBrowser = forwardRef<CardSearchBrowserRef, CardSearchBrow
                 <div className="grid grid-cols-3 gap-3 p-4 md:grid-cols-4 lg:grid-cols-5">
                   {searchResults.map((card) => {
                     const isSelected = selectedCards.has(card.id)
-                    const imageUrl = getCardImageUrl(card, "md")
+                    const imageUrl = getCardImageUrl(card, "sm")
 
                     return (
                       <div
@@ -843,7 +843,7 @@ export const CardSearchBrowser = forwardRef<CardSearchBrowserRef, CardSearchBrow
               <div className="flex flex-col gap-4 p-4">
                 <div className="aspect-[63/88] overflow-hidden rounded-lg">
                   <img
-                    src={getCardImageUrl(previewCard, 'md')}
+                    src={getCardImageUrl(previewCard, 'lg')}
                     alt={previewCard.name}
                     className="h-full w-full object-contain"
                   />

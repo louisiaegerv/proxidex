@@ -48,7 +48,7 @@ export function LoadConfirmDialog({
             onClick={onOverwrite}
             className="flex w-full items-center gap-4 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-left transition-colors hover:border-red-500/50 hover:bg-red-500/20"
           >
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-red-500/20">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-500/20">
               <Trash2 className="h-5 w-5 text-red-400" />
             </div>
             <div className="flex-1">
@@ -64,7 +64,7 @@ export function LoadConfirmDialog({
             onClick={onAddToExisting}
             className="flex w-full items-center gap-4 rounded-lg border border-blue-500/30 bg-blue-500/10 p-4 text-left transition-colors hover:border-blue-500/50 hover:bg-blue-500/20"
           >
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-blue-500/20">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-500/20">
               <Layers className="h-5 w-5 text-blue-400" />
             </div>
             <div className="flex-1">

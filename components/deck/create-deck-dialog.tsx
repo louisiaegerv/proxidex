@@ -4,6 +4,7 @@ import { useState, useRef, useCallback } from "react"
 import { Layers, Crown, Check } from "lucide-react"
 import { useProxyList } from "@/stores/proxy-list"
 import { useSubscription } from "@/components/subscription-provider"
+import { useTrophyUnlock } from "@/components/trophies/use-trophy-unlock"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -28,9 +29,10 @@ export function CreateDeckDialog({ isOpen, onClose }: CreateDeckDialogProps) {
 
   const createDeck = useProxyList((state) => state.createDeck)
   const decks = useProxyList((state) => state.decks)
-  
+
   const { subscription, isLoading } = useSubscription()
   const isPro = subscription?.isPro ?? false
+  const { unlockTrophy } = useTrophyUnlock()
 
   // Check if free user is at deck limit
   const isAtDeckLimit = !isPro && decks.length >= 2
@@ -75,6 +77,11 @@ export function CreateDeckDialog({ isOpen, onClose }: CreateDeckDialogProps) {
       // Deck creation failed due to limit
       return
     }
+
+    // Unlock first deck trophy
+    unlockTrophy("first_deck")
+    // Try to unlock deck collector (progress-based)
+    unlockTrophy("deck_collector", { progress: decks.length + 1 })
 
     // Close the dialog
     onClose()

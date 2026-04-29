@@ -23,6 +23,17 @@ export async function GET(
   // Production: Redirect to signed R2 URL
   if (imageSource === 'r2') {
     try {
+      // Debug: log env vars to diagnose missing config in dev
+      if (!process.env.R2_BUCKET_NAME) {
+        console.error('[API Images] Missing R2_BUCKET_NAME. Available R2 vars:', {
+          R2_PUBLIC_URL: process.env.R2_PUBLIC_URL ? 'set' : 'missing',
+          R2_BUCKET_NAME: process.env.R2_BUCKET_NAME ? 'set' : 'missing',
+          R2_ACCOUNT_ID: process.env.R2_ACCOUNT_ID ? 'set' : 'missing',
+          R2_ACCESS_KEY_ID: process.env.R2_ACCESS_KEY_ID ? 'set' : 'missing',
+          R2_SECRET_ACCESS_KEY: process.env.R2_SECRET_ACCESS_KEY ? 'set' : 'missing',
+        })
+      }
+      
       // Build the object key from path segments
       const objectKey = pathSegments.join('/')
       

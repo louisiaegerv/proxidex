@@ -253,7 +253,7 @@ export function CardVariantModal({
           {/* Current selection */}
           {currentItem && (
             <div className="flex items-center gap-3 rounded-lg border border-blue-800 bg-blue-900/20 p-3">
-              <div className="h-16 w-11 flex-shrink-0 overflow-hidden rounded bg-slate-800">
+              <div className="h-16 w-11 shrink-0 overflow-hidden rounded bg-slate-800">
                 {currentItem.image && (
                   <img
                     src={currentItem.image}

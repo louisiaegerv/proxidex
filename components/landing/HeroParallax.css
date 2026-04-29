@@ -1,0 +1,96 @@
+/* GLITTER TEXT CONTAINER */
+.glitter-container {
+    position: relative;
+    display: inline-block;
+}
+
+/* BASE TEXT WITH GRADIENT SHIMMER */
+.glitter-text {
+    font-weight: 900;
+    letter-spacing: -2px;
+    background: linear-gradient(
+        135deg,
+        var(--primary) 0%,
+        var(--primary) 35%,
+        #e8f8ff 48%,
+        #ffffff 50%,
+        #f3e8ff 52%,
+        var(--primary) 65%,
+        var(--primary) 100%
+    );
+    background-size: 100% 100%;
+    background-size: 250% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer-sweep 3.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    position: relative;
+    z-index: 2;
+}
+
+/* SHIMMER ANIMATION - Left to Right */
+@keyframes shimmer-sweep {
+    0% {
+        background-position: 150% 50%;
+    }
+    40% {
+        background-position: -50% 50%;
+    }
+    100% {
+        background-position: -50% 50%;
+    }
+}
+
+/* SPARKLE STARS */
+.sparkle {
+    position: absolute;
+    color: color-mix(in oklch, var(--primary) 20%, white);
+    pointer-events: none;
+    z-index: 3;
+    -webkit-text-stroke: 1px color-mix(in oklch, var(--primary) 50%, white);
+    text-shadow: 
+        1px 1px 1px color-mix(in oklch, var(--primary) 50%, white),
+        0 0 10px color-mix(in oklch, var(--primary) 50%, white),
+        0 0 20px color-mix(in oklch, var(--primary) 20%, transparent),
+        0 0 30px color-mix(in oklch, var(--primary) 50%, transparent)
+        ;
+    animation: star-pop 1.2s ease-in-out infinite;
+    line-height: 1;
+}
+
+html.light .sparkle {
+    -webkit-text-stroke: 1px var(--primary);
+}
+
+
+/* SPARKLE POSITIONING - Wide spread */
+.sparkle:nth-child(2) { top: 30%; left: 50%; animation-delay: 0.15s; font-size: 12px; }
+.sparkle:nth-child(3) { top: 82%; left: 80%; animation-delay: 0.3s; font-size: 12px; }
+.sparkle:nth-child(4) { top: 80%; left: 30%; animation-delay: 0.7 5s; font-size: 12px; }
+.sparkle:nth-child(5) { top: 40%; left: 70%; animation-delay: 0.6s; font-size: 12px; }
+.sparkle:nth-child(6) { top: 20%; left: 100%; animation-delay: 0.75s; font-size: 12px; }
+.sparkle:nth-child(7) { top: 88%; left: 0%; animation-delay: 0.15s; font-size: 12px; }
+.sparkle:nth-child(8) { top: 50%; left: 40%; animation-delay: 1.05s; font-size: 12px; }
+.sparkle:nth-child(9) { top: 15%; left: 75%; animation-delay: 1.2s; font-size: 12px; }
+.sparkle:nth-child(10) { top: 65%; left: 55%; animation-delay: .15s; font-size: 12px; }
+.sparkle:nth-child(11) { top: 5%; left: 5%; animation-delay: .75s; font-size: 12px; }
+.sparkle:nth-child(12) { top: 40%; left: 17%; animation-delay: .3s; font-size: 12px; }
+
+/* SPARKLE ANIMATION */
+@keyframes star-pop {
+    0%, 100% {
+        opacity: 0;
+        transform: scale(0) rotate(0deg);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1) rotate(72deg);
+    }
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .glitter-text {
+        font-size: 60px;
+    }
+}

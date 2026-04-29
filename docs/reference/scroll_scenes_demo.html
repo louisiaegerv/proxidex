@@ -1,0 +1,157 @@
+<!-- Scroll animation demo: 4 boxes across 4 scenes — converge, peel, fan in, triangle finale -->
+<html >
+  <body style="margin:0; padding: 0;">
+<div id="root" style="height:100dvh;overflow-y:scroll;">
+  <div style="height:3000px;">
+    <div id="stage" style="position:sticky;top:0;height:100dvh;">
+
+      <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:0.5;" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="g" width="40" height="40" patternUnits="userSpaceOnUse">
+            <circle cx="1" cy="1" r="1" fill="var(--color-border-tertiary)"/>
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#g)"/>
+      </svg>
+
+      <div id="hud" style="position:absolute;top:18px;left:0;right:0;text-align:center;pointer-events:none;z-index:10;">
+        <div id="prog-label" style="font-size:11px;font-family:var(--font-mono);letter-spacing:2px;margin-bottom:6px;">PROGRESS: 0%</div>
+        <div style="width:240px;height:2px;border-radius:2px;overflow:hidden;margin:0 auto 10px;">
+          <div id="prog-bar" style="height:100%;width:0%;border-radius:2px;"></div>
+        </div>
+        <div id="pills" style="display:flex;gap:5px;justify-content:center;"></div>
+        <div id="scene-desc" style="margin-top:7px;font-size:11px;font-family:var(--font-mono);letter-spacing:0.5px;"></div>
+      </div>
+
+      <div id="b1" style="position:absolute;left:50%;top:50%;width:80px;height:80px;border-radius:12px;background:#7F77DD;border:0.5px solid rgba(255,255,255,0.2);display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;font-weight:500;font-size:13px;font-family:var(--font-mono);z-index:4;will-change:transform,opacity;gap:2px;">
+        <span>B1</span><span style="font-size:9px;opacity:0.7;letter-spacing:1px;">HERO</span>
+      </div>
+      <div id="b2" style="position:absolute;left:50%;top:50%;width:80px;height:80px;border-radius:12px;background:#D4537E;border:0.5px solid rgba(255,255,255,0.2);display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;font-weight:500;font-size:13px;font-family:var(--font-mono);z-index:3;will-change:transform,opacity;gap:2px;">
+        <span>B2</span><span style="font-size:9px;opacity:0.7;letter-spacing:1px;">FADES</span>
+      </div>
+      <div id="b3" style="position:absolute;left:50%;top:50%;width:80px;height:80px;border-radius:12px;background:#1D9E75;border:0.5px solid rgba(255,255,255,0.2);display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;font-weight:500;font-size:13px;font-family:var(--font-mono);z-index:2;will-change:transform,opacity;gap:2px;">
+        <span>B3</span><span style="font-size:9px;opacity:0.7;letter-spacing:1px;">NEW</span>
+      </div>
+      <div id="b4" style="position:absolute;left:50%;top:50%;width:80px;height:80px;border-radius:12px;background:#BA7517;border:0.5px solid rgba(255,255,255,0.2);display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;font-weight:500;font-size:13px;font-family:var(--font-mono);z-index:1;will-change:transform,opacity;gap:2px;">
+        <span>B4</span><span style="font-size:9px;opacity:0.7;letter-spacing:1px;">NEW</span>
+      </div>
+
+      <div id="hint" style="position:absolute;bottom:18px;left:0;right:0;text-align:center;font-size:11px;font-family:var(--font-mono);letter-spacing:2px;pointer-events:none;">↓ SCROLL</div>
+    </div>
+  </div>
+
+  <div style="height:520px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;border-top:0.5px solid var(--color-border-tertiary);background:green;">
+    <p style="font-size:20px;font-weight:500;color:var(--color-text-primary);margin:0;">Next section</p>
+    <p style="font-size:11px;font-family:var(--font-mono);margin:0;letter-spacing:2px;">ANIMATION COMPLETE — NORMAL FLOW RESUMES</p>
+  </div>
+</div>
+
+<script>
+const SCENES = [
+  {range:[0,0.30],    label:'Scene 1', desc:'b1 & b2 scatter → converge'},
+  {range:[0.30,0.45], label:'Scene 2', desc:'b2 peels away, b1 remains'},
+  {range:[0.45,0.65], label:'Scene 3', desc:'b3 & b4 fade in on each side'},
+  {range:[0.65,0.85], label:'Scene 4', desc:'triangle finale — b1 spins up'},
+  {range:[0.85,1.0],  label:'End',     desc:'all fade out'},
+];
+
+const root  = document.getElementById('root');
+const b1    = document.getElementById('b1');
+const b2    = document.getElementById('b2');
+const b3    = document.getElementById('b3');
+const b4    = document.getElementById('b4');
+const hud   = document.getElementById('hud');
+const pLbl  = document.getElementById('prog-label');
+const pBar  = document.getElementById('prog-bar');
+const desc  = document.getElementById('scene-desc');
+const hint  = document.getElementById('hint');
+const pills = document.getElementById('pills');
+
+SCENES.forEach((s,i) => {
+  const p = document.createElement('div');
+  p.id = 'p'+i;
+  p.textContent = s.label;
+  p.style.cssText = 'padding:3px 8px;border-radius:20px;font-size:10px;font-family:var(--font-mono);border:0.5px solid transparent;transition:all 0.25s;white-space:nowrap;';
+  pills.appendChild(p);
+});
+
+function kf(stops, vals, t) {
+  if (t <= stops[0]) return vals[0];
+  if (t >= stops[stops.length-1]) return vals[vals.length-1];
+  for (let i = 0; i < stops.length-1; i++) {
+    if (t <= stops[i+1]) {
+      return vals[i] + (vals[i+1]-vals[i]) * (t-stops[i])/(stops[i+1]-stops[i]);
+    }
+  }
+  return vals[vals.length-1];
+}
+
+const H = 40;
+function applyBox(el, x, y, r, s, o) {
+  el.style.transform = `translate(${x-H}px,${y-H}px) rotate(${r}deg) scale(${s})`;
+  el.style.opacity = o;
+}
+
+function update(t) {
+  // Each box has its OWN keyframe arrays — this is the answer to your scatter question.
+  // B1 starts at x=-220, B2 at x=+220. Different numbers, same pattern.
+
+  applyBox(b1,
+    kf([0,    0.30            ], [-220,   0        ], t),  // x: starts left
+    kf([0,    0.30, 0.65, 0.85], [ 40,  0,  0, -130], t),  // y: drifts up in finale
+    kf([0,    0.30, 0.65, 0.85], [-20,  0,  0,  360], t),  // rotate: full spin
+    kf([0.65, 0.85            ], [  1,  1.2      ], t),  // scale: grows in finale
+    kf([0.85, 1.0             ], [  1,  0        ], t)   // opacity: fades at end
+  );
+
+  applyBox(b2,
+    kf([0,    0.30           ], [ 220,   0       ], t),  // x: starts right
+    kf([0,    0.30           ], [ -40,   0       ], t),  // y
+    kf([0,    0.30           ], [  20,   0       ], t),  // rotate
+    kf([0.30, 0.45           ], [   1,   0.2     ], t),  // scale: shrinks during peel
+    kf([0,    0.30, 0.45     ], [   1,   1,    0 ], t)   // opacity: gone by 0.45
+  );
+
+  applyBox(b3,
+    kf([0.45, 0.65, 0.85], [  0, -160, -110], t),  // x: enters center, fans left
+    kf([0.45, 0.65, 0.85], [  0,    0,  120], t),  // y: drops in finale
+    kf([0.65, 0.85      ], [  0,  -20      ], t),  // rotate
+    1,
+    kf([0.45, 0.65, 0.85, 1.0], [0, 1, 1, 0], t)  // opacity: fades in, then out
+  );
+
+  applyBox(b4,
+    kf([0.45, 0.65, 0.85], [  0,  160,  110], t),  // x: mirror of b3
+    kf([0.45, 0.65, 0.85], [  0,    0,  120], t),
+    kf([0.65, 0.85      ], [  0,   20      ], t),
+    1,
+    kf([0.45, 0.65, 0.85, 1.0], [0, 1, 1, 0], t)
+  );
+
+  const pct = Math.round(t * 100);
+  pLbl.textContent = 'PROGRESS: ' + pct + '%';
+  pBar.style.width = pct + '%';
+
+  let si = 0;
+  for (let i = SCENES.length-1; i >= 0; i--) {
+    if (t >= SCENES[i].range[0]) { si = i; break; }
+  }
+  SCENES.forEach((_,i) => {
+    const p = document.getElementById('p'+i);
+    p.style.color = i===si ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)';
+    p.style.borderColor = i===si ? 'var(--color-border-secondary)' : 'transparent';
+    p.style.background = i===si ? 'var(--color-background-primary)' : 'transparent';
+  });
+  desc.textContent = SCENES[si].desc;
+  hud.style.opacity = t > 0.9 ? 1-((t-0.9)/0.1) : 1;
+  hint.style.opacity = t < 0.04 ? 1 : 0;
+}
+
+root.addEventListener('scroll', () => {
+  update(Math.min(1, root.scrollTop / 2000));
+}, {passive:true});
+
+update(0);
+</script>
+  </body>
+</html>

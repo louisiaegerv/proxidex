@@ -31,7 +31,7 @@ export function MobileLayout({ deckSection, previewSection, settingsSection }: M
   return (
     <div className="fixed inset-0 flex flex-col bg-background">
       {/* Fixed Header - with safe area padding for status bar */}
-      <header className="flex-shrink-0 border-b border-border bg-card/95 backdrop-blur-lg">
+      <header className="shrink-0 border-b border-border bg-card/95 backdrop-blur-lg">
         <div 
           className="flex h-14 items-center justify-between px-4"
           style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
@@ -138,7 +138,7 @@ export function MobileLayout({ deckSection, previewSection, settingsSection }: M
 
       {/* Fixed Bottom Tab Bar - with safe area padding for home indicator */}
       <nav 
-        className="flex-shrink-0 border-t border-border bg-card/95 backdrop-blur-lg"
+        className="shrink-0 border-t border-border bg-card/95 backdrop-blur-lg"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         <div className="flex h-16 items-center justify-around px-2">

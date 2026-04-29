@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tournament of Elements - Scroll Story</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: #050508;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            overflow-x: hidden;
+            color: white;
+        }
+
+        .spacer {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(ellipse at center, #0a0a12 0%, #050508 100%);
+        }
+
+        .spacer-text {
+            text-align: center;
+            animation: pulse 2s infinite;
+        }
+
+        .spacer-text h1 {
+            font-size: 3rem;
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; transform: translateY(0); }
+            50% { opacity: 1; transform: translateY(-10px); }
+        }
+
+        /* Main Stage */
+        .stage {
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+            background: 
+                radial-gradient(ellipse at 20% 80%, rgba(255,107,107,0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(78,205,196,0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at center, #0f0f1a 0%, #050508 100%);
+            perspective: 1000px;
+        }
+
+        .grid-floor {
+            position: absolute;
+            bottom: -50%;
+            left: -50%;
+            width: 200%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(99, 102, 241, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(99, 102, 241, 0.1) 1px, transparent 1px);
+            background-size: 80px 80px;
+            transform: rotateX(60deg);
+            transform-origin: center top;
+            opacity: 0.3;
+        }
+
+        /* Card Base */
+        .card {
+            width: 200px;
+            height: 280px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform-style: preserve-3d;
+            transform: translate(-50%, -50%);
+        }
+
+        .card-inner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            overflow: hidden;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+
+        /* Holographic overlay */
+        .card-inner::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                125deg,
+                transparent 30%,
+                rgba(255,255,255,0.4) 50%,
+                transparent 70%
+            );
+            background-size: 200% 200%;
+            opacity: 0;
+            z-index: 20;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .card:hover .card-inner::before {
+            opacity: 1;
+            animation: holographic 3s infinite;
+        }
+
+        @keyframes holographic {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 200% 200%; }
+        }
+
+        /* Card Types */
+        .card-bg {
+            position: absolute;
+            inset: 0;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 100px;
+        }
+
+        /* Fire - Card 1 */
+        .card-1 .card-bg {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 50%, #ff9068 100%);
+            box-shadow: inset 0 0 60px rgba(255,75,43,0.5);
+        }
+        .card-1 .type-icon { content: '🔥'; }
+
+        /* Water - Card 2 */
+        .card-2 .card-bg {
+            background: linear-gradient(135deg, #2193b0 0%, #6dd5ed 50%, #cc2b5e 100%);
+            box-shadow: inset 0 0 60px rgba(33,147,176,0.5);
+        }
+        .card-2 .type-icon { content: '💧'; }
+
+        /* Grass - Card 3 */
+        .card-3 .card-bg {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e063 50%, #11998e 100%);
+            box-shadow: inset 0 0 60px rgba(86,171,47,0.5);
+        }
+        .card-3 .type-icon { content: '🌿'; }
+
+        /* Electric - Card 4 */
+        .card-4 .card-bg {
+            background: linear-gradient(135deg, #f7971e 0%, #ffd200 50%, #ffe259 100%);
+            box-shadow: inset 0 0 60px rgba(247,151,30,0.5);
+        }
+        .card-4 .type-icon { content: '⚡'; }
+
+        /* Psychic - Card 5 */
+        .card-5 .card-bg {
+            background: linear-gradient(135deg, #834d9b 0%, #d04ed6 50%, #ff00cc 100%);
+            box-shadow: inset 0 0 60px rgba(131,77,155,0.5);
+        }
+        .card-5 .type-icon { content: '🔮'; }
+
+        /* Fighting - Card 6 */
+        .card-6 .card-bg {
+            background: linear-gradient(135deg, #8e44ad 0%, #c0392b 50%, #d35400 100%);
+            box-shadow: inset 0 0 60px rgba(192,57,43,0.5);
+        }
+        .card-6 .type-icon { content: '👊'; }
+
+        .card-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 15px;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255,255,255,0.2);
+            z-index: 10;
+        }
+
+        .card-name {
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .card-type {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        .hp {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255,215,0,0.2);
+            border: 1px solid rgba(255,215,0,0.5);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            color: #ffd700;
+            z-index: 10;
+        }
+
+        /* Battle Effects */
+        .impact-flash {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, white 0%, transparent 70%);
+            border-radius: 50%;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .damage-number {
+            position: absolute;
+            font-size: 3rem;
+            font-weight: bold;
+            color: #ff0040;
+            text-shadow: 2px 2px 0px white;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 99;
+        }
+
+        /* 3x2 Grid Positions Reference */
+        /* Row 1: y = -160, Row 2: y = 160 */
+        /* Col 1: x = -240, Col 2: x = 0, Col 3: x = 240 */
+
+        /* Energy Vortex for finale */
+        .vortex {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 0;
+            height: 0;
+            border: 4px solid transparent;
+            border-radius: 50%;
+            opacity: 0;
+            z-index: 50;
+        }
+
+        .vortex-ring {
+            position: absolute;
+            border: 3px solid rgba(255,255,255,0.5);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+        }
+
+        /* Next Section */
+        .finale {
+            height: 100vh;
+            background: linear-gradient(180deg, #050508 0%, #1a1a2e 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .finale-content h2 {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Progress bar */
+        .progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #ffe259, #d04ed6);
+            width: 0%;
+            z-index: 1000;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+
+        /* Shake animation helper */
+        @keyframes shake {
+            0%, 100% { transform: translate(-50%, -50%) rotate(0deg); }
+            25% { transform: translate(-52%, -50%) rotate(-2deg); }
+            75% { transform: translate(-48%, -50%) rotate(2deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress" id="progress"></div>
+
+    <!-- Intro -->
+    <div class="spacer">
+        <div class="spacer-text">
+            <h1>THE TOURNAMENT OF ELEMENTS</h1>
+            <p>Scroll to witness the battle</p>
+        </div>
+    </div>
+
+    <!-- Main Stage -->
+    <div class="stage" id="stage">
+        <div class="grid-floor"></div>
+        <div class="impact-flash" id="flash"></div>
+
+        <!-- Vortex elements -->
+        <div class="vortex" id="vortex"></div>
+        <div class="vortex-ring" id="ring1"></div>
+        <div class="vortex-ring" id="ring2"></div>
+
+        <!-- Card 1: Inferno (Fire) -->
+        <div class="card card-1" id="c1">
+            <div class="card-inner">
+                <div class="card-bg"><span class="type-icon">🔥</span></div>
+                <div class="hp">HP 120</div>
+                <div class="card-content">
+                    <div class="card-name" style="color: #ff9068;">Inferno</div>
+                    <div class="card-type">Fire Type</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 2: Tsunami (Water) - The Rival -->
+        <div class="card card-2" id="c2">
+            <div class="card-inner">
+                <div class="card-bg"><span class="type-icon">💧</span></div>
+                <div class="hp">HP 140</div>
+                <div class="card-content">
+                    <div class="card-name" style="color: #6dd5ed;">Tsunami</div>
+                    <div class="card-type">Water Type</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 3: Verdant (Grass) -->
+        <div class="card card-3" id="c3">
+            <div class="card-inner">
+                <div class="card-bg"><span class="type-icon">🌿</span></div>
+                <div class="hp">HP 130</div>
+                <div class="card-content">
+                    <div class="card-name" style="color: #a8e063;">Verdant</div>
+                    <div class="card-type">Grass Type</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 4: Volt (Electric) -->
+        <div class="card card-4" id="c4">
+            <div class="card-inner">
+                <div class="card-bg"><span class="type-icon">⚡</span></div>
+                <div class="hp">HP 110</div>
+                <div class="card-content">
+                    <div class="card-name" style="color: #ffd200;">Volt</div>
+                    <div class="card-type">Electric Type</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 5: Mystic (Psychic) -->
+        <div class="card card-5" id="c5">
+            <div class="card-inner">
+                <div class="card-bg"><span class="type-icon">🔮</span></div>
+                <div class="hp">HP 100</div>
+                <div class="card-content">
+                    <div class="card-name" style="color: #d04ed6;">Mystic</div>
+                    <div class="card-type">Psychic Type</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 6: Brawler (Fighting) -->
+        <div class="card card-6" id="c6">
+            <div class="card-inner">
+                <div class="card-bg"><span class="type-icon">👊</span></div>
+                <div class="hp">HP 150</div>
+                <div class="card-content">
+                    <div class="card-name" style="color: #e74c3c;">Brawler</div>
+                    <div class="card-type">Fighting Type</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Finale -->
+    <div class="finale">
+        <div class="finale-content">
+            <h2>CHAMPION CROWNED</h2>
+            <p>The elements have chosen their victor</p>
+        </div>
+    </div>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Elements
+        const c1 = document.getElementById('c1');
+        const c2 = document.getElementById('c2');
+        const c3 = document.getElementById('c3');
+        const c4 = document.getElementById('c4');
+        const c5 = document.getElementById('c5');
+        const c6 = document.getElementById('c6');
+        const flash = document.getElementById('flash');
+        const vortex = document.getElementById('vortex');
+        const ring1 = document.getElementById('ring1');
+        const ring2 = document.getElementById('ring2');
+        const progress = document.getElementById('progress');
+
+        // Initial positions - SCENE 0: The Calm
+        gsap.set(c1, { x: -300, opacity: 0, rotationY: -45, scale: 0.8 });
+        gsap.set(c2, { x: 300, opacity: 0, rotationY: 45, scale: 0.8 });
+        gsap.set([c3, c4, c5, c6], { y: 500, opacity: 0, scale: 0.5, rotationZ: Math.random() * 30 - 15 });
+
+        // Create impact particles
+        function createImpact(x, y, color) {
+            for (let i = 0; i < 20; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = x + 'px';
+                p.style.top = y + 'px';
+                p.style.background = color;
+                document.getElementById('stage').appendChild(p);
+                
+                const angle = (Math.PI * 2 * i) / 20;
+                const velocity = 50 + Math.random() * 100;
+                
+                gsap.to(p, {
+                    x: Math.cos(angle) * velocity,
+                    y: Math.sin(angle) * velocity,
+                    opacity: 1,
+                    duration: 0.3,
+                    ease: "power2.out"
+                });
+                
+                gsap.to(p, {
+                    opacity: 0,
+                    duration: 0.5,
+                    delay: 0.3,
+                    onComplete: () => p.remove()
+                });
+            }
+        }
+
+        // Main Timeline - The Story
+        const tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: ".stage",
+                start: "top top",
+                end: "+=600%", // Extended for cinematic pacing
+                pin: true,
+                scrub: 0.5,
+                onUpdate: (self) => {
+                    progress.style.width = (self.progress * 100) + '%';
+                }
+            }
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // SCENE 1: "THE CHALLENGE" (0% - 15%)
+        // Fire and Water enter from opposite sides, face off
+        // ═══════════════════════════════════════════════════════════════
+        tl.to(c1, { 
+            x: -120, opacity: 1, rotationY: 0, scale: 1, 
+            duration: 0.15, ease: "power2.out" 
+        }, 0)
+        .to(c2, { 
+            x: 120, opacity: 1, rotationY: 0, scale: 1, 
+            duration: 0.15, ease: "power2.out" 
+        }, 0)
+        
+        // Tension build - slight hover
+        .to([c1, c2], {
+            y: -20,
+            duration: 0.05,
+            yoyo: true,
+            repeat: 3,
+            ease: "sine.inOut"
+        }, 0.12)
+
+        // ═══════════════════════════════════════════════════════════════
+        // SCENE 2: "THE BATTLE" (15% - 35%)
+        // Fire and Water clash violently, shake effects, impact flashes
+        // ═══════════════════════════════════════════════════════════════
+        
+        // First clash - charge and collide
+        .to(c1, { x: -50, rotation: -10, scale: 1.1, duration: 0.05, ease: "power4.in" }, 0.15)
+        .to(c2, { x: 50, rotation: 10, scale: 1.1, duration: 0.05, ease: "power4.in" }, 0.15)
+        
+        // IMPACT with flash and shake
+        .to(flash, { opacity: 1, scale: 3, duration: 0.02 }, 0.20)
+        .to(flash, { opacity: 0, scale: 5, duration: 0.03 }, 0.22)
+        
+        // Cards shake from impact
+        .to(c1, { 
+            x: 0, y: 0, rotation: -15, 
+            duration: 0.05,
+            onStart: () => createImpact(window.innerWidth/2 - 50, window.innerHeight/2, '#ff416c')
+        }, 0.20)
+        .to(c2, { 
+            x: 0, y: 0, rotation: 15, 
+            duration: 0.05,
+            onStart: () => createImpact(window.innerWidth/2 + 50, window.innerHeight/2, '#6dd5ed')
+        }, 0.20)
+
+        // Second clash - more violent
+        .to(c1, { x: -80, rotation: -20, duration: 0.03, ease: "power2.in" }, 0.25)
+        .to(c2, { x: 80, rotation: 20, duration: 0.03, ease: "power2.in" }, 0.25)
+        .to(c1, { x: -40, rotation: -25, duration: 0.02 }, 0.28)
+        .to(c2, { x: 40, rotation: 25, duration: 0.02 }, 0.28)
+        
+        // Knockout blow - Water wins type advantage
+        .to(c1, { 
+            x: -400, y: -200, rotation: -90, opacity: 0, scale: 0.6,
+            duration: 0.05, ease: "power4.in"
+        }, 0.30)
+        .to(c2, { 
+            x: 0, rotation: 0, scale: 1.2, 
+            boxShadow: "0 0 60px rgba(109, 213, 237, 0.8)",
+            duration: 0.05, ease: "back.out(1.7)"
+        }, 0.30)
+
+        // ═══════════════════════════════════════════════════════════════
+        // SCENE 3: "THE VICTORY LAP" (35% - 50%)
+        // Water card does a dramatic 3D rotation showcase (flip, spin, zoom)
+        // ═══════════════════════════════════════════════════════════════
+        
+        // Dramatic pause then 3D flip
+        .to(c2.querySelector('.card-inner'), {
+            rotationY: 180,
+            rotationX: 20,
+            scale: 1.3,
+            duration: 0.08,
+            ease: "power2.inOut"
+        }, 0.38)
+        
+        // Continue spinning
+        .to(c2.querySelector('.card-inner'), {
+            rotationY: 360,
+            rotationX: -20,
+            duration: 0.07,
+            ease: "power2.inOut"
+        }, 0.46)
+        
+        // Settle back
+        .to(c2.querySelector('.card-inner'), {
+            rotationY: 0,
+            rotationX: 0,
+            scale: 1,
+            duration: 0.05,
+            ease: "power2.out"
+        }, 0.53)
+        
+        // Water card moves to corner, shrink slightly
+        .to(c2, {
+            x: -200, y: -150, scale: 0.9, opacity: 0.7,
+            duration: 0.05
+        }, 0.50)
+
+        // ═══════════════════════════════════════════════════════════════
+        // SCENE 4: "THE ENTRANTS ARRIVE" (50% - 65%)
+        // Other 4 cards fly in chaotically from all directions (messy)
+        // ═══════════════════════════════════════════════════════════════
+        
+        // Chaotic entrance - all flying in randomly
+        .to(c3, { 
+            x: -300, y: 100, opacity: 1, scale: 0.9, rotation: -30, rotationZ: 15,
+            duration: 0.05, ease: "power3.out"
+        }, 0.50)
+        .to(c4, { 
+            x: 250, y: -100, opacity: 1, scale: 0.9, rotation: 20, rotationZ: -10,
+            duration: 0.05, ease: "power3.out"
+        }, 0.52)
+        .to(c5, { 
+            x: 150, y: 200, opacity: 1, scale: 0.9, rotation: 40, rotationZ: 25,
+            duration: 0.05, ease: "power3.out"
+        }, 0.54)
+        .to(c6, { 
+            x: -100, y: -200, opacity: 1, scale: 0.9, rotation: -20, rotationZ: -20,
+            duration: 0.05, ease: "power3.out"
+        }, 0.56)
+
+        // ═══════════════════════════════════════════════════════════════
+        // SCENE 5: "THE FORMATION" (65% - 80%)
+        // Organize messy cards into neat 3x2 grid (Proxy Print Style)
+        // ═══════════════════════════════════════════════════════════════
+        
+        // Grid positions: 
+        // Row 1: c2(-200, -150), c3(0, -150), c4(200, -150)
+        // Row 2: c5(-200, 150), c6(0, 150), c1(200, 150) - c1 revived!
+        
+        // First row formation
+        .to(c2, { 
+            x: -220, y: -160, rotation: 0, rotationY: 0, rotationZ: 0, 
+            scale: 0.85, opacity: 1, duration: 0.05, ease: "power2.inOut"
+        }, 0.65)
+        .to(c3, { 
+            x: 0, y: -160, rotation: 0, rotationZ: 0, 
+            scale: 0.85, duration: 0.05, ease: "power2.inOut"
+        }, 0.67)
+        .to(c4, { 
+            x: 220, y: -160, rotation: 0, rotationZ: 0, 
+            scale: 0.85, duration: 0.05, ease: "power2.inOut"
+        }, 0.69)
+        
+        // Second row formation (bring back c1!)
+        .to(c1, { 
+            x: -220, y: 160, rotation: 0, rotationZ: 0, 
+            scale: 0.85, opacity: 1, duration: 0.05, ease: "power2.inOut"
+        }, 0.71)
+        .to(c6, { 
+            x: 0, y: 160, rotation: 0, rotationZ: 0, 
+            scale: 0.85, duration: 0.05, ease: "power2.inOut"
+        }, 0.73)
+        .to(c5, { 
+            x: 220, y: 160, rotation: 0, rotationZ: 0, 
+            scale: 0.85, duration: 0.05, ease: "power2.inOut"
+        }, 0.75)
+        
+        // Subtle hover in formation
+        .to([c1, c2, c3, c4, c5, c6], {
+            y: "+=10",
+            duration: 0.05,
+            stagger: 0.01,
+            yoyo: true,
+            repeat: 1,
+            ease: "sine.inOut"
+        }, 0.78)
+
+        // ═══════════════════════════════════════════════════════════════
+        // SCENE 6: "THE ELEMENTAL VORTEX" (80% - 95%)
+        // Creative finale - cards levitate, spin around center, energy vortex forms
+        // ═══════════════════════════════════════════════════════════════
+        
+        // Cards rise and start orbiting
+        .to([c1, c2, c3, c4, c5, c6], {
+            y: -50,
+            scale: 0.9,
+            duration: 0.03,
+            ease: "power2.out"
+        }, 0.80)
+        
+        // Orbit animation - cards circle center while rotating
+        .to(c1, { x: 0, y: -250, rotationZ: 360, duration: 0.05 }, 0.83)
+        .to(c2, { x: 216, y: -125, rotationZ: 360, duration: 0.05 }, 0.83)
+        .to(c4, { x: 216, y: 125, rotationZ: 360, duration: 0.05 }, 0.83)
+        .to(c5, { x: 0, y: 250, rotationZ: 360, duration: 0.05 }, 0.83)
+        .to(c6, { x: -216, y: 125, rotationZ: 360, duration: 0.05 }, 0.83)
+        .to(c3, { x: -216, y: -125, rotationZ: 360, duration: 0.05 }, 0.83)
+        
+        // Vortex formation
+        .to(vortex, {
+            width: 400,
+            height: 400,
+            opacity: 1,
+            borderColor: "rgba(255,255,255,0.8)",
+            rotation: 180,
+            duration: 0.05
+        }, 0.85)
+        .to(ring1, {
+            width: 500,
+            height: 500,
+            opacity: 0.6,
+            duration: 0.05
+        }, 0.87)
+        .to(ring2, {
+            width: 600,
+            height: 600,
+            opacity: 0.3,
+            duration: 0.05
+        }, 0.89)
+        
+        // Cards merge into center flash
+        .to([c1, c2, c3, c4, c5, c6], {
+            x: 0,
+            y: 0,
+            scale: 0.1,
+            opacity: 0,
+            duration: 0.03,
+            ease: "power4.in"
+        }, 0.92)
+        
+        // Final flash
+        .to(flash, { opacity: 1, scale: 10, duration: 0.02 }, 0.93)
+        .to(flash, { opacity: 0, duration: 0.02 }, 0.95)
+        .to([vortex, ring1, ring2], { opacity: 0, scale: 2, duration: 0.02 }, 0.94);
+
+        // ═══════════════════════════════════════════════════════════════
+        // SCENE 7: Exit (95% - 100%)
+        // ═══════════════════════════════════════════════════════════════
+        // (Handled by scrollTrigger natural end - elements already cleared)
+
+        // Mouse interaction for 3D tilt (preserved from v1)
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                const rotateX = (y - centerY) / 15;
+                const rotateY = (centerX - x) / 15;
+                
+                gsap.to(card.querySelector('.card-inner'), {
+                    rotationX: rotateX,
+                    rotationY: rotateY,
+                    duration: 0.3,
+                    ease: "power2.out"
+                });
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                gsap.to(card.querySelector('.card-inner'), {
+                    rotationX: 0,
+                    rotationY: 0,
+                    duration: 0.5,
+                    ease: "power2.out"
+                });
+            });
+        });
+    </script>
+</body>
+</html>

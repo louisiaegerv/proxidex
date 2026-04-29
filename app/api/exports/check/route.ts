@@ -5,27 +5,26 @@ import { NextResponse } from "next/server"
 
 export async function POST() {
   const { userId } = await auth()
-  
+
   if (!userId) {
     return NextResponse.json(
       { error: "Unauthorized" },
       { status: 401 }
     )
   }
-  
+
   try {
-    // Check if user has Pro subscription (any Pro tier)
     const isPro = await isProUser(userId)
-    
+
     const canExport = await canUserExport(userId, isPro)
     const canTurbo = await canUseTurboExport(userId, isPro)
     const remaining = await getRemainingExports(userId, isPro)
-    
-    return NextResponse.json({ 
+
+    return NextResponse.json({
       canExport,
       canUseTurbo: canTurbo,
       remaining,
-      isPro
+      isPro,
     })
   } catch (error) {
     console.error("Error checking exports:", error)

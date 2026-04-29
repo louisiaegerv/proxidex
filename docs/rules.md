@@ -1,0 +1,2 @@
+You can write code snippets in your thinking/reasoning but dont write the entire file, save that for your tool calls to write file. This saves on context tokens.
+Use Framer animations where appropriate to improve UX/UI

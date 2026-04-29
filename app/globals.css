@@ -129,17 +129,30 @@
   --ring: oklch(0.543 0.215 154.324);
 }
 
-/* Rose Theme */
-[data-theme="rose"]:root {
-  --primary: oklch(0.557 0.246 16.439);
+/* Red Theme */
+[data-theme="red"]:root {
+  --primary: oklch(0.58 0.22 27);
   --primary-foreground: oklch(0.985 0 0);
-  --ring: oklch(0.557 0.246 16.439);
+  --ring: oklch(0.58 0.22 27);
 }
 
-.dark[data-theme="rose"] {
-  --primary: oklch(0.557 0.246 16.439);
+.dark[data-theme="red"] {
+  --primary: oklch(0.58 0.22 27);
   --primary-foreground: oklch(0.985 0 0);
-  --ring: oklch(0.557 0.246 16.439);
+  --ring: oklch(0.58 0.22 27);
+}
+
+/* Pink Theme */
+[data-theme="pink"]:root {
+  --primary: oklch(0.66 0.21 354);
+  --primary-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.66 0.21 354);
+}
+
+.dark[data-theme="pink"] {
+  --primary: oklch(0.66 0.21 354);
+  --primary-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.66 0.21 354);
 }
 
 /* Orange Theme */
@@ -155,9 +168,25 @@
   --ring: oklch(0.618 0.189 48.747);
 }
 
+/* Yellow Theme */
+[data-theme="yellow"]:root {
+  --primary: #eab308;
+  --primary-foreground: oklch(0.985 0 0);
+  --ring: #eab308;
+}
+
+.dark[data-theme="yellow"] {
+  --primary: #facc15;
+  --primary-foreground: oklch(0.985 0 0);
+  --ring: #facc15;
+}
+
 @theme inline {
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-mono:
+    var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, monospace;
+  --font-cinzel: var(--font-cinzel), Georgia, "Times New Roman", serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -203,20 +232,20 @@
   --color-color-2: var(--color-2);
   --color-color-1: var(--color-1);
   @keyframes rainbow {
-  0% {
-    background-position: 0%;
+    0% {
+      background-position: 0%;
     }
-  100% {
-    background-position: 200%;
+    100% {
+      background-position: 200%;
     }
   }
-  --animate-gradient: gradient 8s linear infinite
-;
+  --animate-gradient: gradient 8s linear infinite;
   @keyframes gradient {
-  to {
-    background-position: var(--bg-size, 300%) 0;
+    to {
+      background-position: var(--bg-size, 300%) 0;
     }
-  }}
+  }
+}
 
 @layer base {
   * {
@@ -366,7 +395,8 @@
 
 /* Glow pulse animation for VIP cards */
 @keyframes glow-pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.5;
     filter: blur(8px);
   }
@@ -403,8 +433,9 @@
 
 /* Breathing overlay effect for background */
 @keyframes breathe {
-  0%, 100% {
-    opacity: 0.70;
+  0%,
+  100% {
+    opacity: 0.7;
   }
   50% {
     opacity: 0.2;
@@ -425,7 +456,8 @@
 
 /* Logo floating animation for auth pages */
 @keyframes float-logo {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -440,7 +472,7 @@
 
 @theme inline {
   --animate-cell-ripple: cell-ripple var(--duration, 200ms) ease-out none 1
-  var(--delay, 0ms);
+    var(--delay, 0ms);
 
   @keyframes cell-ripple {
     0% {

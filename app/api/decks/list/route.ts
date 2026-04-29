@@ -31,6 +31,8 @@ export async function GET() {
   try {
     const db = getClient()
     
+    console.log(`[DecksList] Querying for userId: ${userId}, DB URL: ${process.env.TURSO_DATABASE_URL}`)
+    
     // Fetch only metadata, not the items JSON
     const result = await db.execute({
       sql: `
@@ -48,6 +50,11 @@ export async function GET() {
       args: [userId]
     })
     
+    console.log(`[DecksList] Raw DB rows returned: ${result.rows.length}`)
+    result.rows.forEach((row, i) => {
+      console.log(`[DecksList] Row ${i}: id=${row.id}, name=${row.name}, is_active=${row.is_active}`)
+    })
+    
     const decks = result.rows.map(row => ({
       id: String(row.id),
       name: String(row.name),
@@ -58,6 +65,8 @@ export async function GET() {
       // Each card is roughly 200-500 bytes in JSON
       cardCount: Math.max(0, Math.floor((Number(row.items_size) || 0) / 300))
     }))
+    
+    console.log(`[DecksList] Returning ${decks.length} decks`)
     
     return Response.json({ decks })
     

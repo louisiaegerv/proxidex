@@ -20,7 +20,6 @@ import { cn } from "@/lib/utils"
 import { AddCardsModal } from "./add-cards-modal"
 import { CardList } from "./card-list"
 import { DeckSelector } from "./deck-selector"
-import { StorageNotice } from "@/components/storage/storage-notice"
 import type { ProxyItem } from "@/types"
 
 interface DeckSidebarProps {
@@ -41,12 +40,12 @@ export function DeckSidebar({ variant = "desktop" }: DeckSidebarProps) {
   const totalCards = useProxyList((state) => state.getTotalCards)()
   const reorderItems = useProxyList((state) => state.reorderItems)
   const removeItems = useProxyList((state) => state.removeItems)
-  
+
   const { subscription } = useSubscription()
   const isPro = subscription?.isPro ?? false
 
   // Calculate unique card count
-  const uniqueCardCount = new Set(items.map(item => item.cardId)).size
+  const uniqueCardCount = new Set(items.map((item) => item.cardId)).size
   const atDeckLimit = !isPro && items.length >= FREE_TIER_DECK_MAX_CARDS
 
   const handleAddCards = async (deckItems: DeckListItem[]) => {
@@ -55,26 +54,26 @@ export function DeckSidebar({ variant = "desktop" }: DeckSidebarProps) {
     // Check free tier deck size limit before processing
     let cardsToAdd = [...deckItems]
     let limitMessage = ""
-    
+
     if (!isPro) {
       const totalCardsToAdd = deckItems.reduce((sum, item) => sum + item.quantity, 0)
       const currentCount = items.length
-      
+
       if (currentCount >= FREE_TIER_DECK_MAX_CARDS) {
         setProcessingStatus("Deck limit reached - Upgrade to Pro for unlimited")
         setTimeout(() => setProcessingStatus(""), 3000)
         setIsAddModalOpen(false)
         return
       }
-      
+
       // Calculate how many cards we can actually add
       const canAddTotal = FREE_TIER_DECK_MAX_CARDS - currentCount
-      
+
       if (totalCardsToAdd > canAddTotal) {
         // Trim the list to only add up to the limit
         let runningTotal = 0
         const trimmedCards: DeckListItem[] = []
-        
+
         for (const item of deckItems) {
           const itemTotal = runningTotal + item.quantity
           if (itemTotal <= canAddTotal) {
@@ -89,12 +88,12 @@ export function DeckSidebar({ variant = "desktop" }: DeckSidebarProps) {
             break
           }
         }
-        
+
         cardsToAdd = trimmedCards
         limitMessage = `Added ${canAddTotal} of ${totalCardsToAdd} cards (deck limit reached)`
       }
     }
-    
+
     setProcessingStatus("Processing cards...")
     setIsProcessing(true)
     setIsAddModalOpen(false)
@@ -112,17 +111,20 @@ export function DeckSidebar({ variant = "desktop" }: DeckSidebarProps) {
           setProcessingStatus(`Adding ${result.card.name}...`)
 
           // Get image URL from local storage (use md for UI, lg only for PDF generation)
-          const imageUrl = getCardImageUrl(result.card, 'md')
+          const imageUrl = getCardImageUrl(result.card, "md")
 
           // Add the card with the specified quantity
-          addItem({
-            cardId: result.card.id,
-            name: result.card.name,
-            image: imageUrl,
-            setName: result.card.set_name || "Unknown",
-            setId: result.card.set_code || "",
-            localId: result.card.local_id,
-          }, result.item.quantity)
+          addItem(
+            {
+              cardId: result.card.id,
+              name: result.card.name,
+              image: imageUrl,
+              setName: result.card.set_name || "Unknown",
+              setId: result.card.set_code || "",
+              localId: result.card.local_id,
+            },
+            result.item.quantity
+          )
 
           addedCount += result.item.quantity
         } else {
@@ -260,9 +262,6 @@ export function DeckSidebar({ variant = "desktop" }: DeckSidebarProps) {
             : "p-4"
         )}
       >
-        {/* Storage Notice for Free Users */}
-        {/* {!isMobile && <StorageNotice variant="compact" className="mb-3" />} */}
-
         {/* Processing Status */}
         {processingStatus && (
           <div
@@ -326,10 +325,7 @@ export function DeckSidebar({ variant = "desktop" }: DeckSidebarProps) {
             >
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleClearConfirm}
-            >
+            <Button variant="destructive" onClick={handleClearConfirm}>
               Clear All
             </Button>
           </DialogFooter>

@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import { parseStructuredDeck, type DeckListItem } from "@/lib/deck-parser"
+import { useTrophyUnlock } from "@/components/trophies/use-trophy-unlock"
 
 interface MetaDeckSelectorProps {
   onSelectDeck: (items: DeckListItem[], deckName: string) => void
@@ -34,6 +35,7 @@ export function MetaDeckSelector({ onSelectDeck }: MetaDeckSelectorProps) {
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [status, setStatus] = useState<string>("")
+  const { unlockTrophy } = useTrophyUnlock()
 
   const loadDecks = useCallback(async () => {
     setIsLoading(true)
@@ -80,6 +82,9 @@ export function MetaDeckSelector({ onSelectDeck }: MetaDeckSelectorProps) {
       const cardCount = detail.cards.length
       setStatus(`Loaded ${cardCount} cards!`)
 
+      // Unlock trophy for Limitless meta import
+      unlockTrophy("limitless_import")
+
       // Call the callback with parsed items
       setTimeout(() => {
         onSelectDeck(items, `Meta: ${deck.name}`)
@@ -116,7 +121,7 @@ export function MetaDeckSelector({ onSelectDeck }: MetaDeckSelectorProps) {
       <div className="mb-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="font-medium text-lg text-slate-100">Meta Decks</h3>
+            <h3 className="text-lg font-medium text-slate-100">Meta Decks</h3>
             <p className="text-sm text-slate-500">
               Top tournament decks from Limitless TCG
             </p>
@@ -159,7 +164,7 @@ export function MetaDeckSelector({ onSelectDeck }: MetaDeckSelectorProps) {
       )}
 
       {/* Deck List */}
-      <div className="overflow-y-auto pr-2 no-scrollbar">
+      <div className="no-scrollbar overflow-y-auto pr-2">
         {isLoading ? (
           <div className="flex h-40 items-center justify-center">
             <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
@@ -206,7 +211,7 @@ export function MetaDeckSelector({ onSelectDeck }: MetaDeckSelectorProps) {
                 <div className="ml-7 flex items-start gap-3">
                   {/* Pokemon Sprites */}
                   {deck.sprites && deck.sprites.length > 0 && (
-                    <div className="flex flex-shrink-0 items-center gap-0.5">
+                    <div className="flex shrink-0 items-center gap-0.5">
                       {deck.sprites.map((sprite, i) => (
                         <img
                           key={i}

@@ -8,6 +8,7 @@ import { SettingsSidebar } from "@/components/proxy/settings-sidebar"
 import { MobileLayout } from "@/components/mobile/mobile-layout"
 import { MobileSettings } from "@/components/mobile/mobile-settings"
 import { MobilePreview } from "@/components/mobile/mobile-preview"
+import { CloudSyncProvider } from "@/components/cloud/cloud-sync-provider"
 
 export default function AppPage() {
   const [isMobile, setIsMobile] = useState<boolean | null>(null)
@@ -26,6 +27,7 @@ export default function AppPage() {
   // Show nothing during SSR/hydration to prevent mismatch
   if (isMobile === null) {
     return (
+      <CloudSyncProvider>
       <div className="flex h-dvh flex-col bg-background overscroll-none">
         {/* Loading state - matches desktop structure */}
         <div className="hidden h-14 items-center justify-between border-b border-border bg-muted/50 px-4 lg:flex">
@@ -42,12 +44,14 @@ export default function AppPage() {
           </div>
         </main>
       </div>
+      </CloudSyncProvider>
     )
   }
 
   // Mobile Layout
   if (isMobile) {
     return (
+      <CloudSyncProvider>
       <div className="flex h-dvh flex-col bg-background overscroll-none">
         <MobileLayout
           deckSection={<DeckSidebar variant="mobile" />}
@@ -55,11 +59,13 @@ export default function AppPage() {
           settingsSection={<MobileSettings />}
         />
       </div>
+      </CloudSyncProvider>
     )
   }
 
   // Desktop Layout
   return (
+    <CloudSyncProvider>
     <div className="flex h-dvh flex-col bg-background overscroll-none">
       <Header />
       <main className="flex flex-1 overflow-hidden">
@@ -79,5 +85,6 @@ export default function AppPage() {
         </div>
       </main>
     </div>
+    </CloudSyncProvider>
   )
 }

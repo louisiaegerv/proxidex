@@ -34,7 +34,14 @@ import {
 import { cn } from "@/lib/utils"
 import { HTMLExportModal } from "@/components/proxy/html-export-modal"
 import { BleedMethod } from "@/types"
-import { generateProxyPDF, downloadPDF, clearImageCache, generatePrintHTML, downloadPrintHTML, batchGenerateBleedImages } from "@/lib/pdf"
+import {
+  generateProxyPDF,
+  downloadPDF,
+  clearImageCache,
+  generatePrintHTML,
+  downloadPrintHTML,
+  batchGenerateBleedImages,
+} from "@/lib/pdf"
 
 // Expandable section component
 interface ExpandableSectionProps {
@@ -94,10 +101,13 @@ export function MobileSettings() {
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [copied, setCopied] = useState(false)
   const [expandedSections, setExpandedSections] = useState<string[]>([])
-  
+
   // HTML export with bleed modal state
   const [htmlExportOpen, setHtmlExportOpen] = useState(false)
-  const [htmlExportProgress, setHtmlExportProgress] = useState({ current: 0, total: 0 })
+  const [htmlExportProgress, setHtmlExportProgress] = useState({
+    current: 0,
+    total: 0,
+  })
   const [isProcessingHtml, setIsProcessingHtml] = useState(false)
 
   const totalCards = getTotalCards()
@@ -144,49 +154,41 @@ export function MobileSettings() {
     }
   }
 
-  const handleGenerateHTML = async (exportType: 'standard' | 'turbo' = 'standard') => {
+  const handleGenerateHTML = async () => {
     if (items.length === 0) return
-    
-    // For free users with standard export, add per-card artificial delay
-    const isStandardExport = exportType === 'standard'
-    
+
     // If no bleed, use fast export
     if (settings.bleed === 0) {
-      // For standard export, simulate processing delay per card
-      if (isStandardExport) {
-        setIsProcessingHtml(true)
-        for (let i = 0; i < items.length; i++) {
-          // Randomized 1-2 second delay per card
-          const cardDelay = 1000 + Math.random() * 1000
-          await new Promise(resolve => setTimeout(resolve, cardDelay))
-        }
-        setIsProcessingHtml(false)
-      }
-      
       const html = generatePrintHTML(items, settings)
       downloadPrintHTML(html, `proxidex-${totalCards}-cards.html`)
       return
     }
-    
+
     // With bleed - show modal and process in background
     setHtmlExportOpen(true)
     setIsProcessingHtml(true)
     setHtmlExportProgress({ current: 0, total: 0 })
-    
+
     try {
       // Get unique cards count for progress
-      const uniqueImages = new Set(items.map(item => item.image).filter(Boolean))
+      const uniqueImages = new Set(
+        items.map((item) => item.image).filter(Boolean)
+      )
       setHtmlExportProgress({ current: 0, total: uniqueImages.size })
-      
+
       // Batch process all cards with bleed (use JPEG for smaller HTML file size)
-      await batchGenerateBleedImages(items, settings, (current, total) => {
-        setHtmlExportProgress({ current, total })
-      }, 'jpeg')
-      
+      await batchGenerateBleedImages(
+        items,
+        settings,
+        (current, total) => {
+          setHtmlExportProgress({ current, total })
+        },
+        "jpeg"
+      )
+
       // Generate and download HTML
       const html = generatePrintHTML(items, settings)
       downloadPrintHTML(html, `proxidex-${totalCards}-cards.html`)
-      
     } catch (error) {
       console.error("Failed to generate HTML with bleed:", error)
     } finally {
@@ -261,7 +263,7 @@ export function MobileSettings() {
   return (
     <div className="flex h-full flex-col bg-background">
       {/* Header */}
-      <div className="flex-shrink-0 border-b border-border bg-muted/50 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top,0px))]">
+      <div className="shrink-0 border-b border-border bg-muted/50 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top,0px))]">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-lg font-bold text-foreground">Settings</h1>
@@ -325,7 +327,9 @@ export function MobileSettings() {
             {/* Cards Per Row */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="text-sm text-muted-foreground">Cards Per Row</Label>
+                <Label className="text-sm text-muted-foreground">
+                  Cards Per Row
+                </Label>
                 <span className="text-base font-bold text-primary">
                   {settings.cardsPerRow}
                 </span>
@@ -345,7 +349,9 @@ export function MobileSettings() {
             {/* Rows Per Page */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="text-sm text-muted-foreground">Rows Per Page</Label>
+                <Label className="text-sm text-muted-foreground">
+                  Rows Per Page
+                </Label>
                 <span className="text-base font-bold text-primary">
                   {settings.rowsPerPage}
                 </span>
@@ -397,7 +403,9 @@ export function MobileSettings() {
             {/* Bleed Area */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="text-sm text-muted-foreground">Bleed Area</Label>
+                <Label className="text-sm text-muted-foreground">
+                  Bleed Area
+                </Label>
                 <span className="text-base font-bold text-primary">
                   {settings.bleed}mm
                 </span>
@@ -414,7 +422,9 @@ export function MobileSettings() {
 
             {/* Bleed Method */}
             <div className="space-y-2">
-              <Label className="text-sm text-muted-foreground">Bleed Method</Label>
+              <Label className="text-sm text-muted-foreground">
+                Bleed Method
+              </Label>
               <RadioGroup
                 value={settings.bleedMethod}
                 onValueChange={(value: BleedMethod) =>
@@ -438,7 +448,9 @@ export function MobileSettings() {
                     <p className="text-sm font-medium text-foreground">
                       Replicate
                     </p>
-                    <p className="text-xs text-muted-foreground">Stretch edges</p>
+                    <p className="text-xs text-muted-foreground">
+                      Stretch edges
+                    </p>
                   </div>
                 </label>
                 <label
@@ -449,10 +461,17 @@ export function MobileSettings() {
                       : "border-border bg-muted/50"
                   )}
                 >
-                  <RadioGroupItem value="mirror" className="border-muted-foreground" />
+                  <RadioGroupItem
+                    value="mirror"
+                    className="border-muted-foreground"
+                  />
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-foreground">Mirror</p>
-                    <p className="text-xs text-muted-foreground">Reflect edges</p>
+                    <p className="text-sm font-medium text-foreground">
+                      Mirror
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Reflect edges
+                    </p>
                   </div>
                 </label>
                 <label
@@ -463,7 +482,10 @@ export function MobileSettings() {
                       : "border-border bg-muted/50"
                   )}
                 >
-                  <RadioGroupItem value="edge" className="border-muted-foreground" />
+                  <RadioGroupItem
+                    value="edge"
+                    className="border-muted-foreground"
+                  />
                   <div className="flex-1">
                     <p className="text-sm font-medium text-foreground">Edge</p>
                     <p className="text-xs text-muted-foreground">Solid color</p>
@@ -526,7 +548,9 @@ export function MobileSettings() {
                 {/* Cut Line Width */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <Label className="text-sm text-muted-foreground">Line width</Label>
+                    <Label className="text-sm text-muted-foreground">
+                      Line width
+                    </Label>
                     <span className="text-base font-bold text-primary">
                       {settings.cutLineWidth ?? 1.5}px
                     </span>
@@ -612,7 +636,9 @@ export function MobileSettings() {
           <div className="space-y-4">
             {/* Image Size Selection */}
             <div className="space-y-2">
-              <Label className="text-sm text-muted-foreground">Image Size</Label>
+              <Label className="text-sm text-muted-foreground">
+                Image Size
+              </Label>
               <Select
                 value={settings.imageSize ?? "lg"}
                 onValueChange={(value: "sm" | "md" | "lg") =>
@@ -644,14 +670,17 @@ export function MobileSettings() {
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                Draft = fastest, Optimized = balanced, High Quality = best detail
+                Draft = fastest, Optimized = balanced, High Quality = best
+                detail
               </p>
             </div>
 
             {/* Black and White Toggle */}
             <div className="flex items-center justify-between py-2">
               <div className="space-y-0.5">
-                <Label className="text-base text-foreground">Black & White</Label>
+                <Label className="text-base text-foreground">
+                  Black & White
+                </Label>
                 <p className="text-xs text-muted-foreground">
                   Saves color ink on draft prints
                 </p>
@@ -667,10 +696,10 @@ export function MobileSettings() {
 
             {/* Info box */}
             <div className="flex gap-3 rounded-lg bg-muted/50 p-3">
-              <Info className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" />
+              <Info className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
               <p className="text-xs text-muted-foreground">
-                Draft mode + B&W prints up to 4× faster and saves ink.
-                Use for test prints before final output.
+                Draft mode + B&W prints up to 4× faster and saves ink. Use for
+                test prints before final output.
               </p>
             </div>
           </div>
@@ -765,7 +794,7 @@ export function MobileSettings() {
 
             {/* Export Button with Auth */}
             <AuthExportButton
-              onExport={(type) => handleGenerateHTML(type)}
+              onExport={handleGenerateHTML}
               disabled={items.length === 0}
               isProcessing={isProcessingHtml}
             />
@@ -798,7 +827,7 @@ export function MobileSettings() {
         </ExpandableSection>
 
         {/* Reset Section */}
-        <div className="p-4 space-y-3">
+        <div className="space-y-3 p-4">
           <Button
             variant="outline"
             className="h-12 w-full border-border text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -807,7 +836,7 @@ export function MobileSettings() {
             <RotateCcw className="mr-2 h-5 w-5" />
             Reset All Settings
           </Button>
-          
+
           {/* Logout Button */}
           <LogoutButton />
         </div>

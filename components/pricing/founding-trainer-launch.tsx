@@ -264,10 +264,10 @@ export function FoundingTrainerLaunch() {
         <h3 className="text-center text-xl font-semibold mb-6">All Pro Tiers Include</h3>
         <div className="grid sm:grid-cols-2 gap-4">
           {[
-            { icon: Zap, text: "Unlimited exports (no daily limits)" },
-            { icon: Zap, text: "Turbo speed always on" },
             { icon: Trophy, text: "Cloud deck sync across devices" },
-            { icon: Sparkles, text: "All future updates included" },
+            { icon: Crown, text: "Unlimited decks" },
+            { icon: Sparkles, text: "High quality exports" },
+            { icon: Zap, text: "All future updates included" },
           ].map((benefit, i) => (
             <div key={i} className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">

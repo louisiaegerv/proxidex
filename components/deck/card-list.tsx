@@ -166,7 +166,7 @@ function CardRow({
       <div className="h-8 w-6 shrink-0 overflow-hidden rounded bg-slate-800">
         {item.image ? (
           <img
-            src={getFullImageUrl(item.image, "low", "webp")}
+            src={item.image?.replace(/_(md|lg|xl)\.webp$/, '_sm.webp')}
             alt={item.name}
             className="h-full w-full object-cover"
             crossOrigin="anonymous"

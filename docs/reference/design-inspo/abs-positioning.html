@@ -1,0 +1,30 @@
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+.box { height: 50px; width:50px;position: absolute;}
+#test1 { background: green;left: 50%; top:50%;transform: translate(-50%, -50%);}
+#test2 { background: blue;left: 50%; top:50%;transform: translate(-50%,-50%)}
+#test3 {background: red;left: 50%; top:50%;transform: translate(-50%,-50%)}
+.flex {
+display: flex;
+flex-direction: column;
+justify-contents: center;
+align-items: center;
+text-align: center;
+}
+.container {
+width: 100vw;
+height: 500px;
+position: relative;
+background: yellow;
+}
+</style>
+</head>
+<body class="min-h-screen bg-slate-950 text-white antialiased">
+<div class="flex container"><div class="box" id="test1">1</div>
+<div class="box" id="test2">2</div>
+<div class="box" id="test3">3</div></div>
+</body>
+</html>

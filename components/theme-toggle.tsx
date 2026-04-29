@@ -17,11 +17,13 @@ import { Sun, Moon, Laptop, Palette, Sparkles } from "lucide-react"
 
 
 const colorThemes = [
+  { name: "emerald", label: "Emerald", color: "#10b981" },
   { name: "blue", label: "Blue", color: "#3b82f6" },
   { name: "purple", label: "Purple", color: "#8b5cf6" },
-  { name: "emerald", label: "Emerald", color: "#10b981" },
-  { name: "rose", label: "Rose", color: "#f43f5e" },
-  { name: "orange", label: "Orange", color: "#f97316" },
+  { name: "pink", label: "Pink", color: "#ec4899" },
+  { name: "red", label: "Red", color: "#dc2626" },
+  { name: "orange", label: "Orange", color: "#f97316" }, 
+  { name: "yellow", label: "Yellow", color: "#eab308" }, 
 ]
 
 export function ThemeToggle() {

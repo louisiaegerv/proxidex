@@ -120,7 +120,7 @@ export function MobilePreview() {
   return (
     <div className="flex h-full flex-col bg-background">
       {/* Header - NOT zoomed */}
-      <div className="flex-shrink-0 border-b border-border bg-muted/50 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top,0px))]">
+      <div className="shrink-0 border-b border-border bg-muted/50 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top,0px))]">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-lg font-bold text-foreground">Print Preview</h1>

@@ -185,7 +185,7 @@ export function getRecommendedSize(
 /**
  * Swap image size in a URL for PDF generation
  * Converts to specified size for printing (default: lg)
- * 
+ *
  * @param imageUrl - Current image URL (e.g., "/api/images/..._md.webp")
  * @param size - Target size: 'sm' | 'md' | 'lg' (default: 'lg')
  * @returns URL with size swapped (e.g., "/api/images/..._lg.webp")
@@ -194,3 +194,5 @@ export function getPrintImageUrl(imageUrl: string, size: 'sm' | 'md' | 'lg' = 'l
   // Pattern: _sm.webp, _md.webp, _lg.webp, _xl.webp -> _{size}.webp
   return imageUrl.replace(/_(sm|md|lg|xl)\.webp$/, `_${size}.webp`)
 }
+
+

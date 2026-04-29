@@ -18,7 +18,14 @@ import {
   FileCode,
 } from "lucide-react"
 import { useProxyList } from "@/stores/proxy-list"
-import { generateProxyPDF, downloadPDF, clearImageCache, generatePrintHTML, downloadPrintHTML, batchGenerateBleedImages } from "@/lib/pdf"
+import {
+  generateProxyPDF,
+  downloadPDF,
+  clearImageCache,
+  generatePrintHTML,
+  downloadPrintHTML,
+  batchGenerateBleedImages,
+} from "@/lib/pdf"
 import { OFFSET_LIMITS } from "@/types"
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
@@ -65,10 +72,13 @@ export function SettingsSidebar() {
   const items = getActiveDeck()?.items ?? []
   const [copied, setCopied] = useState(false)
   const [openSections, setOpenSections] = useState<string[]>([])
-  
+
   // HTML export with bleed modal state
   const [htmlExportOpen, setHtmlExportOpen] = useState(false)
-  const [htmlExportProgress, setHtmlExportProgress] = useState({ current: 0, total: 0 })
+  const [htmlExportProgress, setHtmlExportProgress] = useState({
+    current: 0,
+    total: 0,
+  })
   const [isProcessingHtml, setIsProcessingHtml] = useState(false)
 
   const totalCards = getTotalCards()
@@ -102,49 +112,41 @@ export function SettingsSidebar() {
     }
   }
 
-  const handleGenerateHTML = async (exportType: 'standard' | 'turbo' = 'standard') => {
+  const handleGenerateHTML = async () => {
     if (items.length === 0) return
-    
-    // For free users with standard export, add per-card artificial delay
-    const isStandardExport = exportType === 'standard'
-    
+
     // If no bleed, use fast export
     if (settings.bleed === 0) {
-      // For standard export, simulate processing delay per card
-      if (isStandardExport) {
-        setIsProcessingHtml(true)
-        for (let i = 0; i < items.length; i++) {
-          // Randomized 1-2 second delay per card
-          const cardDelay = 1000 + Math.random() * 1000
-          await new Promise(resolve => setTimeout(resolve, cardDelay))
-        }
-        setIsProcessingHtml(false)
-      }
-      
       const html = generatePrintHTML(items, settings)
       downloadPrintHTML(html, `proxidex-${totalCards}-cards.html`)
       return
     }
-    
+
     // With bleed - show modal and process in background
     setHtmlExportOpen(true)
     setIsProcessingHtml(true)
     setHtmlExportProgress({ current: 0, total: 0 })
-    
+
     try {
       // Get unique cards count for progress
-      const uniqueImages = new Set(items.map(item => item.image).filter(Boolean))
+      const uniqueImages = new Set(
+        items.map((item) => item.image).filter(Boolean)
+      )
       setHtmlExportProgress({ current: 0, total: uniqueImages.size })
-      
+
       // Batch process all cards with bleed (use JPEG for smaller HTML file size)
-      await batchGenerateBleedImages(items, settings, (current, total) => {
-        setHtmlExportProgress({ current, total })
-      }, 'jpeg')
-      
+      await batchGenerateBleedImages(
+        items,
+        settings,
+        (current, total) => {
+          setHtmlExportProgress({ current, total })
+        },
+        "jpeg"
+      )
+
       // Generate and download HTML
       const html = generatePrintHTML(items, settings)
       downloadPrintHTML(html, `proxidex-${totalCards}-cards.html`)
-      
     } catch (error) {
       console.error("Failed to generate HTML with bleed:", error)
     } finally {
@@ -268,7 +270,9 @@ export function SettingsSidebar() {
             <AccordionContent className="space-y-4 pb-4">
               {/* Page Size */}
               <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">Page Size</Label>
+                <Label className="text-xs text-muted-foreground">
+                  Page Size
+                </Label>
                 <Select
                   value={settings.pageSize}
                   onValueChange={(value: "letter" | "a4") =>
@@ -299,7 +303,9 @@ export function SettingsSidebar() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-muted-foreground">Cards per row</span>
-                  <span className="text-muted-foreground">{settings.cardsPerRow}</span>
+                  <span className="text-muted-foreground">
+                    {settings.cardsPerRow}
+                  </span>
                 </div>
                 <Slider
                   value={[settings.cardsPerRow]}
@@ -316,7 +322,9 @@ export function SettingsSidebar() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-muted-foreground">Rows per page</span>
-                  <span className="text-muted-foreground">{settings.rowsPerPage}</span>
+                  <span className="text-muted-foreground">
+                    {settings.rowsPerPage}
+                  </span>
                 </div>
                 <Slider
                   value={[settings.rowsPerPage]}
@@ -343,8 +351,12 @@ export function SettingsSidebar() {
               {/* Gap */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">Gap between cards</span>
-                  <span className="text-muted-foreground">{settings.gap}mm</span>
+                  <span className="text-muted-foreground">
+                    Gap between cards
+                  </span>
+                  <span className="text-muted-foreground">
+                    {settings.gap}mm
+                  </span>
                 </div>
                 <Slider
                   value={[settings.gap]}
@@ -359,7 +371,9 @@ export function SettingsSidebar() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-muted-foreground">Bleed area</span>
-                  <span className="text-muted-foreground">{settings.bleed}mm</span>
+                  <span className="text-muted-foreground">
+                    {settings.bleed}mm
+                  </span>
                 </div>
                 <Slider
                   value={[settings.bleed]}
@@ -376,7 +390,9 @@ export function SettingsSidebar() {
               {/* Bleed Method */}
               {settings.bleed > 0 && (
                 <div className="space-y-2 pt-2">
-                  <Label className="text-xs text-muted-foreground">Bleed method</Label>
+                  <Label className="text-xs text-muted-foreground">
+                    Bleed method
+                  </Label>
                   <Select
                     value={settings.bleedMethod}
                     onValueChange={(value: "replicate" | "mirror" | "edge") =>
@@ -460,7 +476,7 @@ export function SettingsSidebar() {
 
           {/* Cut Lines */}
           <AccordionItem value="cut-lines" className="border-border">
-            <AccordionTrigger className="py-3 text-sm text-muted-foreground hover:text-base hover:text-current hover:text-base hover:text-current hover:no-underline">
+            <AccordionTrigger className="py-3 text-sm text-muted-foreground hover:text-base hover:text-current hover:no-underline">
               <div className="flex items-center gap-2">
                 <Scissors className="h-4 w-4 text-muted-foreground" />
                 <span>Cut Lines</span>
@@ -468,7 +484,9 @@ export function SettingsSidebar() {
             </AccordionTrigger>
             <AccordionContent className="space-y-4 pb-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">Show cut lines</span>
+                <span className="text-xs text-muted-foreground">
+                  Show cut lines
+                </span>
                 <Switch
                   checked={settings.showCutLines}
                   onCheckedChange={(checked) =>
@@ -581,7 +599,7 @@ export function SettingsSidebar() {
 
           {/* Position Offset */}
           <AccordionItem value="position" className="border-border">
-            <AccordionTrigger className="py-3 text-sm text-muted-foreground hover:text-base hover:text-current hover:text-base hover:text-current hover:no-underline">
+            <AccordionTrigger className="py-3 text-sm text-muted-foreground hover:text-base hover:text-current hover:no-underline">
               <div className="flex items-center gap-2">
                 <Move className="h-4 w-4 text-muted-foreground" />
                 <span>Position Offset</span>
@@ -639,7 +657,9 @@ export function SettingsSidebar() {
             <AccordionContent className="space-y-4 pb-4">
               {/* Image Size / Quality */}
               <div className="space-y-2">
-                <Label className="text-xs text-muted-foreground">Image Size</Label>
+                <Label className="text-xs text-muted-foreground">
+                  Image Size
+                </Label>
                 <Select
                   value={settings.imageSize ?? "lg"}
                   onValueChange={(value: "sm" | "md" | "lg") =>
@@ -671,14 +691,17 @@ export function SettingsSidebar() {
                   </SelectContent>
                 </Select>
                 <p className="text-[10px] text-muted-foreground/60">
-                  Draft = fastest, Optimized = balanced, High Quality = best detail
+                  Draft = fastest, Optimized = balanced, High Quality = best
+                  detail
                 </p>
               </div>
 
               {/* Black and White Toggle */}
               <div className="flex items-center justify-between pt-2">
                 <div className="space-y-0.5">
-                  <span className="text-xs text-muted-foreground">Black & White</span>
+                  <span className="text-xs text-muted-foreground">
+                    Black & White
+                  </span>
                   <p className="text-[10px] text-muted-foreground/60">
                     Saves color ink on draft prints
                   </p>
@@ -732,7 +755,7 @@ export function SettingsSidebar() {
 
         {/* Export Button with Auth */}
         <AuthExportButton
-          onExport={(type) => handleGenerateHTML(type)}
+          onExport={handleGenerateHTML}
           disabled={items.length === 0}
           isProcessing={isProcessingHtml}
         />

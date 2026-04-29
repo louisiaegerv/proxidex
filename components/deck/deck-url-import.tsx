@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { parseStructuredDeck, type DeckListItem } from "@/lib/deck-parser"
+import { useTrophyUnlock } from "@/components/trophies/use-trophy-unlock"
 
 interface DeckUrlImportProps {
   onImport: (items: DeckListItem[], deckName: string) => void
@@ -78,6 +79,7 @@ export function DeckUrlImport({ onImport }: DeckUrlImportProps) {
   const [recentUrls, setRecentUrls] = useState<RecentUrl[]>(() =>
     getRecentUrls()
   )
+  const { unlockTrophy } = useTrophyUnlock()
 
   const processImport = async (
     deckId: number,
@@ -112,6 +114,9 @@ export function DeckUrlImport({ onImport }: DeckUrlImportProps) {
         type: "success",
         message: `Found ${cardCount} cards! Importing...`,
       })
+
+      // Unlock trophy for Limitless import
+      unlockTrophy("limitless_import")
 
       // Call onImport with the items
       setTimeout(() => {
@@ -210,9 +215,7 @@ export function DeckUrlImport({ onImport }: DeckUrlImportProps) {
           )}
         >
           <div className="flex items-center gap-2">
-            {status.type === "error" && (
-              <AlertCircle className="h-3.5 w-3.5" />
-            )}
+            {status.type === "error" && <AlertCircle className="h-3.5 w-3.5" />}
             {status.type === "success" && <Check className="h-3.5 w-3.5" />}
             {status.type === "info" && isLoading && (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -224,7 +227,7 @@ export function DeckUrlImport({ onImport }: DeckUrlImportProps) {
 
       {/* Supported Formats */}
       <div className="rounded-lg border border-slate-800 bg-slate-900/30 p-3">
-        <h3 className="mb-2 text-md font-medium text-slate-400">
+        <h3 className="text-md mb-2 font-medium text-slate-400">
           Supported URL formats:
         </h3>
         <ul className="space-y-1 text-sm text-slate-500">
@@ -249,7 +252,7 @@ export function DeckUrlImport({ onImport }: DeckUrlImportProps) {
               >
                 {/* Deck Image */}
                 {recent.image && (
-                  <div className="h-14 w-10 flex-shrink-0 overflow-hidden rounded bg-slate-800">
+                  <div className="h-14 w-10 shrink-0 overflow-hidden rounded bg-slate-800">
                     <img
                       src={recent.image}
                       alt={recent.name}
@@ -276,7 +279,7 @@ export function DeckUrlImport({ onImport }: DeckUrlImportProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6 flex-shrink-0 opacity-0 group-hover:opacity-100"
+                  className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100"
                   onClick={(e) => handleRemoveRecent(e, recent.url)}
                 >
                   <Trash2 className="h-3 w-3 text-slate-500" />

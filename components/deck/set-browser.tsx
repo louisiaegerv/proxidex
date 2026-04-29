@@ -161,7 +161,7 @@ export const SetBrowser = forwardRef<SetBrowserRef, SetBrowserProps>(
     return (
       <div className="flex h-full flex-col gap-4 md:flex-row">
         {/* Set Selector Panel - Collapsible on mobile, sidebar on desktop */}
-        <div className="flex-shrink-0 md:w-72">
+        <div className="shrink-0 md:w-72">
           {/* Accordion Header - Always visible */}
           <button
             onClick={() => setSetSelectorOpen(!setSelectorOpen)}
@@ -275,7 +275,7 @@ export const SetBrowser = forwardRef<SetBrowserRef, SetBrowserProps>(
                 {filteredCards.map((card) => {
                   const isSelected = selectedCards.has(card.id)
                   const quantity = selectedCards.get(card.id) || 0
-                  const imageUrl = getCardImageUrl(card, "md")
+                  const imageUrl = getCardImageUrl(card, "sm")
 
                   return (
                     <div
@@ -383,7 +383,7 @@ export const SetBrowser = forwardRef<SetBrowserRef, SetBrowserProps>(
               <div className="flex flex-col gap-4 p-4">
                 <div className="aspect-[63/88] overflow-hidden rounded-lg">
                   <img
-                    src={getCardImageUrl(previewCard, 'md')}
+                    src={getCardImageUrl(previewCard, 'lg')}
                     alt={previewCard.name}
                     className="h-full w-full object-contain"
                   />
