@@ -63,6 +63,29 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     fetchSubscription()
   }, [isSignedIn])
 
+  // Track login count for trophies (once per session)
+  useEffect(() => {
+    if (!isSignedIn) return
+
+    // Only increment login count once per session
+    if (sessionStorage.getItem("proxidex_login_tracked") === "1") return
+
+    fetch("/api/user/trophies", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "login_count" }),
+    })
+      .then(async (res) => {
+        if (res.ok) {
+          // Only mark as tracked after successful response
+          sessionStorage.setItem("proxidex_login_tracked", "1")
+        }
+      })
+      .catch(() => {
+        // Leave sessionStorage unset so it retries on next mount
+      })
+  }, [isSignedIn])
+
   return (
     <SubscriptionContext.Provider value={{ 
       subscription, 

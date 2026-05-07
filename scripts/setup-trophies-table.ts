@@ -78,21 +78,80 @@ async function main() {
     args: [],
   })
 
+  // Create user_logins table (daily deduped login counter + streaks)
+  console.log("\n  Creating user_logins table...")
+  await client.execute({
+    sql: `
+      CREATE TABLE IF NOT EXISTS user_logins (
+        user_id TEXT PRIMARY KEY,
+        login_count INTEGER DEFAULT 0,
+        current_streak INTEGER DEFAULT 0,
+        longest_streak INTEGER DEFAULT 0,
+        first_login_at DATETIME,
+        last_login_at DATETIME,
+        last_login_date TEXT
+      )
+    `,
+    args: [],
+  })
+
+  // Create user_login_events table (immutable daily events for analytics)
+  console.log("\n  Creating user_login_events table...")
+  await client.execute({
+    sql: `
+      CREATE TABLE IF NOT EXISTS user_login_events (
+        user_id TEXT NOT NULL,
+        login_date TEXT NOT NULL,
+        PRIMARY KEY (user_id, login_date)
+      )
+    `,
+    args: [],
+  })
+
+  // Indexes for analytics queries on events
+  console.log("  Creating login events indexes...")
+  await client.execute({
+    sql: `CREATE INDEX IF NOT EXISTS idx_login_events_date ON user_login_events(login_date)`,
+    args: [],
+  })
+  await client.execute({
+    sql: `CREATE INDEX IF NOT EXISTS idx_login_events_user ON user_login_events(user_id)`,
+    args: [],
+  })
+
   // Verify setup
   console.log("\n  Verifying setup...")
-  const tableCheck = await client.execute({
+  const trophiesTableCheck = await client.execute({
     sql: "SELECT name FROM sqlite_master WHERE type='table' AND name='user_trophies'",
     args: [],
   })
-  console.log(`    Table exists: ${tableCheck.rows.length > 0}`)
+  console.log(`    user_trophies exists: ${trophiesTableCheck.rows.length > 0}`)
+
+  const loginsTableCheck = await client.execute({
+    sql: "SELECT name FROM sqlite_master WHERE type='table' AND name='user_logins'",
+    args: [],
+  })
+  console.log(`    user_logins exists: ${loginsTableCheck.rows.length > 0}`)
+
+  const eventsTableCheck = await client.execute({
+    sql: "SELECT name FROM sqlite_master WHERE type='table' AND name='user_login_events'",
+    args: [],
+  })
+  console.log(`    user_login_events exists: ${eventsTableCheck.rows.length > 0}`)
 
   const indexCheck = await client.execute({
     sql: "SELECT name FROM sqlite_master WHERE type='index' AND name LIKE 'idx_user_trophies_%'",
     args: [],
   })
-  console.log(`    Indexes created: ${indexCheck.rows.length}`)
+  console.log(`    user_trophies indexes: ${indexCheck.rows.length}`)
 
-  console.log("\n✅ user_trophies table setup complete!")
+  const eventsIndexCheck = await client.execute({
+    sql: "SELECT name FROM sqlite_master WHERE type='index' AND name LIKE 'idx_login_events_%'",
+    args: [],
+  })
+  console.log(`    login_events indexes: ${eventsIndexCheck.rows.length}`)
+
+  console.log("\n✅ user_trophies + user_logins + user_login_events tables setup complete!")
   console.log("\nTrophy IDs reference:")
   console.log(
     "  Tier trophies: founding_alpha, founding_beta, founding_gamma, champion, gym_leader"

@@ -22,6 +22,28 @@ CREATE INDEX IF NOT EXISTS idx_user_trophies_user_id ON user_trophies(user_id);
 -- Index for faster lookups by trophy
 CREATE INDEX IF NOT EXISTS idx_user_trophies_trophy_id ON user_trophies(trophy_id);
 
+-- Create user_logins table (daily deduped login counter + streaks for trophies)
+CREATE TABLE IF NOT EXISTS user_logins (
+    user_id TEXT PRIMARY KEY,
+    login_count INTEGER DEFAULT 0,
+    current_streak INTEGER DEFAULT 0,
+    longest_streak INTEGER DEFAULT 0,
+    first_login_at DATETIME,
+    last_login_at DATETIME,
+    last_login_date TEXT
+);
+
+-- Create user_login_events table (immutable daily events for historical analytics)
+CREATE TABLE IF NOT EXISTS user_login_events (
+    user_id TEXT NOT NULL,
+    login_date TEXT NOT NULL,
+    PRIMARY KEY (user_id, login_date)
+);
+
+-- Indexes for analytics queries on events
+CREATE INDEX IF NOT EXISTS idx_login_events_date ON user_login_events(login_date);
+CREATE INDEX IF NOT EXISTS idx_login_events_user ON user_login_events(user_id);
+
 -- View current schema
 SELECT 
     name,

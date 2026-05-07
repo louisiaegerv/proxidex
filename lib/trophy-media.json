@@ -279,7 +279,11 @@
     }
   },
   "Venusaur": {
-    "image": "/api/images/trophy-cards/images/Venusaur.webp"
+    "image": "/api/images/trophy-cards/images/Venusaur.webp",
+    "video": {
+      "thumbnail": "/api/videos/trophy-cards/videos/Venusaur_360p_svtav1.webm",
+      "detail": "/api/videos/trophy-cards/videos/Venusaur_720p_svtav1.webm"
+    }
   },
   "Zapdos": {
     "image": "/api/images/trophy-cards/images/Zapdos.webp"
